@@ -1,7 +1,5 @@
 package com.applications.brian.targetword;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.Random;
 

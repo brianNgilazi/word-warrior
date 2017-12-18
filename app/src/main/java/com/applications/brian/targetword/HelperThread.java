@@ -99,11 +99,7 @@ public class HelperThread extends Thread {
 
         left.start();
         right.run();
-        try {
-            left.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+       
     }
 
 

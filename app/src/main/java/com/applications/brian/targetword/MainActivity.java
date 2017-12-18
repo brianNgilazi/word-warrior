@@ -47,8 +47,7 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnFr
             case R.id.crossWordHelp:
                 cross();
                 break;
-            case R.id.fab:
-                refreshTarget();
+
         }
     }
 
@@ -101,19 +100,6 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnFr
     }
 
 
-    private void refreshTarget(){
-        TargetFragment targetFragment=TargetFragment.newInstance(false,null);
-
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer,targetFragment);
-        if(getSupportFragmentManager().getBackStackEntryCount()>0) getSupportFragmentManager().popBackStack();
-        transaction.addToBackStack(null);
-        transaction.commit();
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setHomeButtonEnabled(true);
-        actionBar.setTitle("Target");
-    }
-
     public void viewHelp(){
         Intent intent=new Intent(this,HelpActivity.class);
         startActivity(intent);
@@ -144,28 +130,4 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnFr
 
     }
 
-
-
-    /*private void moveLexicon(){
-        FileOutputStream out=null;
-        try {
-            out=getApplicationContext().openFileOutput("lexicon", Context.MODE_APPEND);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        InputStream input=getApplicationContext().getResources().openRawResource(R.raw.englishwords);
-        int bufferSize=1024;
-        byte[] buffer=new byte[bufferSize];
-        int length;
-        if (out == null) throw new AssertionError();
-        try {
-            while((length=input.read(buffer))>0) out.write(buffer, 0, length);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {out.close();} catch (IOException e) {e.printStackTrace();}
-        try {input.close();} catch (IOException e) {e.printStackTrace();}
-
-    }*/
 }

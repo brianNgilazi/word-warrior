@@ -161,7 +161,10 @@ public class TargetFragment extends Fragment {
 
 
     private void initialise(){
-        if(!loadedGame) {targetWord =new Word(((MainActivity)getActivity()).dictionary);score=0;found.clear();}
+        if(!loadedGame) {
+            nextWord();
+            //targetWord =new Word(((MainActivity)getActivity()).dictionary);score=0;found.clear();
+        }
         //targets
         int[] targets= targetWord.getTargets();
 
@@ -483,6 +486,11 @@ public class TargetFragment extends Fragment {
 
         AlertDialog dialog= aBuilder.create();
         dialog.show();
+    }
+
+    public void nextWord(){
+        ParallelTask p=new ParallelTask(getActivity());
+        p.execute(((MainActivity)getActivity()).dictionary);
     }
     /**
      * This interface must be implemented by activities that contain this
