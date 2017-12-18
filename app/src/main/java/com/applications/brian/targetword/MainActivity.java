@@ -3,9 +3,7 @@ package com.applications.brian.targetword;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -51,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnFr
         }
     }
 
-    public void home(){
+    private void home(){
         HomeFragment homeFragment=new HomeFragment();
         getSupportFragmentManager().beginTransaction().add(R.id.fragmentContainer,homeFragment).commit();
 
@@ -59,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnFr
 
     }
 
-    public void startTarget(){
+    private void startTarget(){
         loadGameDialog();
     }
 
@@ -76,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnFr
        actionBar.setTitle("Target");
    }
 
-    public void loadGameDialog() {
+    private void loadGameDialog() {
         AlertDialog.Builder aBuilder=new AlertDialog.Builder(this);
         aBuilder.setMessage("Load Last Saved Game??");
         aBuilder.setTitle("Load Game");
@@ -100,13 +98,13 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnFr
     }
 
 
-    public void viewHelp(){
+    private void viewHelp(){
         Intent intent=new Intent(this,HelpActivity.class);
         startActivity(intent);
     }
 
 
-    public void cross(){
+    private void cross(){
 
         AnagramFragment anagramFragment=new AnagramFragment();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -117,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnFr
         actionBar.setDisplayHomeAsUpEnabled(true);
     }
 
-    public InputStream getInputStream(){
+    private InputStream getInputStream(){
 
         InputStream stream=null;
         try {

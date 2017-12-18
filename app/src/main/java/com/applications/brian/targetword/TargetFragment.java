@@ -12,7 +12,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.AppCompatImageButton;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,7 +49,6 @@ public class TargetFragment extends Fragment {
 
     // TODO: Rename and change types of parameters
     private boolean continueGame;
-    private String mParam2;
 
     private TextView attemptTextView;
     private ArrayList<Integer> checked;
@@ -95,7 +93,7 @@ public class TargetFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             continueGame = getArguments().getBoolean(LOAD_GAME);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            String mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
         found=new ArrayList<>();
@@ -180,7 +178,7 @@ public class TargetFragment extends Fragment {
 
         //attempt
         attemptTextView =(TextView)findViewById(R.id.newWord);
-        assert(attemptTextView!=null);
+        if (attemptTextView == null) throw new AssertionError();
         attemptTextView.setText("");
         checked=new ArrayList<>();
         stringBuilder=new StringBuilder();
@@ -189,7 +187,7 @@ public class TargetFragment extends Fragment {
         scoreText=(TextView)findViewById(R.id.scoreTextView);
         scoreText.setText(String.format(Locale.getDefault(),"Found Words: %d",score));
 
-        ArrayAdapter<String> adapter=new ArrayAdapter<String>(getContext(),android.R.layout.simple_list_item_1,found);
+        ArrayAdapter<String> adapter= new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, found);
         adapter.setNotifyOnChange(true);
         ListView listView=(ListView)findViewById(R.id.foundWords);
         listView.setAdapter(adapter);
@@ -219,7 +217,7 @@ public class TargetFragment extends Fragment {
                 if(!checked.contains(position)) {
                     checked.add(position);
                     stringBuilder.append(t.getText());
-                    assert (attemptTextView != null);
+                    if (attemptTextView == null) throw new AssertionError();
                     attemptTextView.setText(stringBuilder.toString());
 
                 }
@@ -257,7 +255,7 @@ public class TargetFragment extends Fragment {
                 if(stringBuilder.length()>0) {
                     stringBuilder.deleteCharAt(stringBuilder.length() - 1);
                     TextView newWord = ((TextView) findViewById(R.id.newWord));
-                    assert (newWord != null);
+                    if (newWord == null) throw new AssertionError();
                     newWord.setText(stringBuilder.toString());
                     checked.remove(checked.size() - 1);
                 }
@@ -277,7 +275,7 @@ public class TargetFragment extends Fragment {
 
     private void submitWord(){
         TextView word=((TextView)findViewById(R.id.newWord));
-        assert(word!=null);
+        if (word == null) throw new AssertionError();
         String potential=word.getText().toString();
         if(!found.contains(potential) && targetWord.getAnswers().contains(potential.toLowerCase())){
             incrementProgress(potential);
@@ -298,7 +296,7 @@ public class TargetFragment extends Fragment {
         checked.clear();
         stringBuilder.delete(0,stringBuilder.length());
         TextView newWord=((TextView)findViewById(R.id.newWord));
-        assert(newWord!= null);
+        if (newWord == null) throw new AssertionError();
         newWord.setText("");
     }
 
@@ -402,7 +400,7 @@ public class TargetFragment extends Fragment {
         dialog.show();
     }
 
-    public void saveGame(){
+    private void saveGame(){
 
         PrintWriter writer= null;
         try {
@@ -410,6 +408,7 @@ public class TargetFragment extends Fragment {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        if (writer == null) throw new AssertionError();
         writer.println(targetWord);
         writer.println(targetWord.getJumbledWord());
         for(String w:found){
@@ -420,8 +419,8 @@ public class TargetFragment extends Fragment {
 
     }
 
-    public boolean loadGame(){
-        FileInputStream inputStream=null;
+    private boolean loadGame(){
+        FileInputStream inputStream;
         try {
 
             inputStream=getActivity().openFileInput("savedGame");
@@ -451,7 +450,7 @@ public class TargetFragment extends Fragment {
     }
 
 
-    public void refresh(){
+    private void refresh(){
 
          System.gc();
          exiting=false;
@@ -459,12 +458,12 @@ public class TargetFragment extends Fragment {
 
     }
 
-    public View findViewById(int id){
+    private View findViewById(int id){
         return getActivity().findViewById(id);
 
     }
 
-    public void saveGameDialog() {
+    private void saveGameDialog() {
         AlertDialog.Builder aBuilder=new AlertDialog.Builder(
                 getContext());
         aBuilder.setMessage("Would you like to save your game before exiting");
@@ -488,7 +487,7 @@ public class TargetFragment extends Fragment {
         dialog.show();
     }
 
-    public void nextWord(){
+    private void nextWord(){
         ParallelTask p=new ParallelTask(getActivity());
         p.execute(((MainActivity)getActivity()).dictionary);
     }

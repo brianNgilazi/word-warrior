@@ -26,7 +26,6 @@
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
-        android:onClick="getSolutions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
@@ -90,7 +89,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/crossword_help"
-            android:id="@+id/patternButton"
             android:checked="false" />
     </RadioGroup>
 

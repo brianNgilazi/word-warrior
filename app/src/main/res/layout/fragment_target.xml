@@ -64,7 +64,6 @@
         android:indeterminate="false"
         android:progress="1"
         android:indeterminateOnly="false"
-        android:progressTint="@android:color/holo_blue_bright"
         android:layout_below="@+id/gridView"
         android:layout_alignEnd="@+id/clearButton"
         android:layout_toEndOf="@+id/space" />

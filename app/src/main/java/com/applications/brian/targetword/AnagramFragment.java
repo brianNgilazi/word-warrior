@@ -1,18 +1,15 @@
 package com.applications.brian.targetword;
 
-import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RadioButton;
@@ -23,6 +20,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 
 /**
@@ -40,15 +38,9 @@ public class AnagramFragment extends Fragment {
     private static final String ARG_PARAM2 = "param2";
 
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
     private ArrayList<String> dictionary;
     private List<String> solutions;
     private ArrayAdapter<String> adapter;
-
-    private OnFragmentInteractionListener mListener;
 
     public AnagramFragment() {
         // Required empty public constructor
@@ -76,8 +68,8 @@ public class AnagramFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            String mParam1 = getArguments().getString(ARG_PARAM1);
+            String mParam2 = getArguments().getString(ARG_PARAM2);
         }
         solutions= new ArrayList<>();
         adapter= new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1,solutions);
@@ -95,14 +87,14 @@ public class AnagramFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ListView listView=((ListView)view.findViewById(R.id.listView));
-        assert(listView!=null);
+        if (listView == null) throw new AssertionError();
         adapter.setNotifyOnChange(true);
         listView.setAdapter(adapter);
         FloatingActionButton fab=(FloatingActionButton)findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getSolutions(v);
+                getSolutions();
             }
         });
         RadioGroup option=(RadioGroup)findViewById(R.id.radioGroup);
@@ -143,20 +135,20 @@ public class AnagramFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        OnFragmentInteractionListener mListener = null;
     }
 
 
-    public View findViewById(int id){
+    private View findViewById(int id){
         return getActivity().findViewById(id);
 
     }
 
-    public void getSolutions(View view){
+    private void getSolutions(){
 
         EditText input=(EditText)findViewById(R.id.editText);
 
-        assert(input!=null);
+        if (input == null) throw new AssertionError();
         String pattern= input.getText().toString().toLowerCase();
         adapter.clear();
         RadioButton mode=(RadioButton) findViewById(R.id.anagramButton);
@@ -189,9 +181,11 @@ public class AnagramFragment extends Fragment {
         Collections.sort(solutions);
         int results=solutions.size();
         TextView resultText=(TextView)findViewById(R.id.searchResults);
-        resultText.setText(String.format("Results for \'%s\' (%d)",pattern,results));
+        resultText.setText(String.format(Locale.getDefault(),"Results for \'%s\' (%d)",pattern,results));
 
     }
+
+
 
     /**
      * This interface must be implemented by activities that contain this

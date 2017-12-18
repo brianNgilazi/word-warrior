@@ -55,7 +55,6 @@
         <ImageView
             android:layout_width="50dp"
             android:layout_height="100dp"
-            android:id="@+id/imageView3"
             android:src="@android:mipmap/sym_def_app_icon"
             android:layout_weight="0.22"
             android:clickable="false"

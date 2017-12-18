@@ -4,15 +4,13 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 
-import java.io.InputStream;
-
 /**
  * Created by Brian on 19-Jan-17.
  */
-public class ParallelTask extends AsyncTask<Dictionary,Void,Word> {
+class ParallelTask extends AsyncTask<Dictionary,Void,Word> {
 
-    ProgressDialog progress;
-    Context context;
+    private ProgressDialog progress;
+    private Context context;
 
     public ParallelTask(Context context1){
         context=context1;
@@ -22,8 +20,7 @@ public class ParallelTask extends AsyncTask<Dictionary,Void,Word> {
 
     @Override
     protected Word doInBackground(Dictionary... params) {
-        Word targetWord =new Word(params[0]);
-        return targetWord;
+        return new Word(params[0]);
     }
 
     @Override

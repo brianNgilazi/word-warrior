@@ -7,7 +7,7 @@ import java.util.Random;
 import java.util.Scanner;
 
 
-public class Dictionary {
+class Dictionary {
     private InputStream input=null;
     private ArrayList<String> wordList;
     private ArrayList<String> nLetterWords;
@@ -69,9 +69,9 @@ public class Dictionary {
 
     }
 
-    public void populateList(){
+    private void populateList(){
         Scanner s;
-        assert(input!=null);
+        if (input == null) throw new AssertionError();
         s=new Scanner(input);
 
         if(wordSize!=0) {

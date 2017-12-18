@@ -13,10 +13,12 @@ import java.util.ArrayList;
 
 public class HelperThread extends Thread {
     private String word;
-    Adder list;
-    ArrayList<String> allWords;
-    int start, end, wordSize;
-    char center;
+    private Adder list;
+    private ArrayList<String> allWords;
+    private int start;
+    private int end;
+    private int wordSize;
+    private char center;
 
 
 
