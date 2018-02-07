@@ -10,4 +10,8 @@
     <string name="enter_letters_here">Enter Letters Here</string>
     <string name="results">Results</string>
     <string name="crossword_help">Crossword Help</string>
+    <string name="how_to">How to Play</string>
+    <string name="good">Good</string>
+    <string name="great">Great</string>
+    <string name="perfect">Perfect</string>
 </resources>

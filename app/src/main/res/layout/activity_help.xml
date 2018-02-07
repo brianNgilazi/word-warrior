@@ -11,12 +11,13 @@
     tools:context="com.applications.brian.targetword.HelpActivity">
 
     <ImageView
+        android:id="@+id/imageView"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:src="@raw/help"
-        android:fitsSystemWindows="true"
         android:layout_gravity="center"
-        android:cropToPadding="true" />
+        android:cropToPadding="true"
+        android:fitsSystemWindows="true"
+        android:scaleType="fitXY" />
 
     <android.support.v7.widget.Toolbar
         android:layout_width="fill_parent"

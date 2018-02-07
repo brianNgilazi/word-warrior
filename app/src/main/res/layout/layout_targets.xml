@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/perfectStar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/greatStar"
+        app:layout_constraintLeft_toRightOf="@+id/greatStar"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/greatStar"
+        app:srcCompat="@drawable/ic_star" />
+
+    <ImageView
+        android:id="@+id/greatStar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/goodStar"
+        app:layout_constraintLeft_toRightOf="@+id/goodStar"
+        app:layout_constraintRight_toLeftOf="@+id/perfectStar"
+        app:layout_constraintTop_toTopOf="@+id/goodStar"
+        app:srcCompat="@drawable/ic_star" />
+
+    <ImageView
+        android:id="@+id/goodStar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/greatStar"
+        app:layout_constraintTop_toBottomOf="@+id/goodTextView"
+        app:srcCompat="@drawable/ic_star" />
+
+    <TextView
+        android:id="@+id/goodTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/good"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="@+id/goodStar"
+        app:layout_constraintRight_toRightOf="@+id/goodStar"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/greatTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:text="@string/great"
+        app:layout_constraintBottom_toTopOf="@+id/greatStar"
+        app:layout_constraintHorizontal_bias="0.444"
+        app:layout_constraintLeft_toLeftOf="@+id/greatStar"
+        app:layout_constraintRight_toRightOf="@+id/greatStar" />
+
+    <TextView
+        android:id="@+id/perfectTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:text="@string/perfect"
+        app:layout_constraintBottom_toTopOf="@+id/perfectStar"
+        app:layout_constraintHorizontal_bias="0.466"
+        app:layout_constraintLeft_toLeftOf="@+id/perfectStar"
+        app:layout_constraintRight_toRightOf="@+id/perfectStar" />
+</android.support.constraint.ConstraintLayout>

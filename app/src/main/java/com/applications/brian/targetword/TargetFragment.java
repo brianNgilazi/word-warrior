@@ -1,70 +1,79 @@
 package com.applications.brian.targetword;
 
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.AppCompatImageButton;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
-import android.widget.ListView;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 
+import Logic.Game;
+
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link TargetFragment.OnFragmentInteractionListener} interface
+ * {@link OnFragmentInteractionListener} interface
  * to handle interaction events.
  * Use the {@link TargetFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
 public class TargetFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String LOAD_GAME = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
+
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    private static final String LOAD_GAME = "LOAD_GAME_PARAMETER";
+
+
+    private static final String SAVE_FILE_NAME="savedGame";
+
+    //parameters
     private boolean continueGame;
 
-    private TextView attemptTextView;
-    private ArrayList<Integer> checked;
-    private Word targetWord;
-    private int score;
-    private TextView scoreText;
-    private ProgressBar progress;
-    private ArrayList<String> found;
+
+
+
+    private Game game;
+    LetterAdapter adapter;
+    ArrayAdapter<String> foundWordsAdapter;
     private StringBuilder stringBuilder;
-    private boolean loadedGame;
-    private boolean exiting=true;
-    private FileOutputStream outputStream;
 
 
+
+    //Views
+    private TextView attemptTextView,foundTextView;
     private OnFragmentInteractionListener mListener;
-    private String savepath;
+    private TextView goodText,greatText,perfectText;
+    ImageView goodStar,greatStar,perfectStar;
+    ProgressBar progressBar;
+    GridView grid;
 
     public TargetFragment() {
         // Required empty public constructor
@@ -74,16 +83,14 @@ public class TargetFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
+     * @param load boolean indicating if a saved game should be loaded
      * @return A new instance of fragment TargetFragment.
      */
-    // TODO: Rename and change types and number of parameters
-    public static TargetFragment newInstance(boolean param1, String param2) {
+
+    public static TargetFragment newInstance(boolean load) {
         TargetFragment fragment = new TargetFragment();
         Bundle args = new Bundle();
-        args.putBoolean(LOAD_GAME, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putBoolean(LOAD_GAME, load);
         fragment.setArguments(args);
         return fragment;
     }
@@ -93,54 +100,44 @@ public class TargetFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             continueGame = getArguments().getBoolean(LOAD_GAME);
-            String mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
-        found=new ArrayList<>();
-        if(continueGame && loadGame()) {loadedGame=true;return;}
-        targetWord =new Word(((MainActivity)getActivity()).dictionary);
-        score=0;
-
-
+        game=null;
+        game=new Game(((MainActivity)getActivity()).controller);
+        if(!(continueGame && loadGame())) {
+            game=new Game(((MainActivity)getActivity()).controller);
+        }
 
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        if(exiting) saveGameDialog();
-    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_target, container, false);
+        return inflater.inflate(R.layout.target_layout, container, false);
 
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(View view) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(view);
-        }
-    }
+
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-       /* if (context instanceof OnFragmentInteractionListener) {
+       if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
-        }*/
+        }
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        setUp();
+        initialise(view);
+
     }
 
     @Override
@@ -149,203 +146,168 @@ public class TargetFragment extends Fragment {
         mListener = null;
     }
 
-    private void setUp(){
-
-        initialise();
-        prepareButtons();
-        prepareGrid();
-        savepath=getContext().getFilesDir().getPath();
-    }
 
 
-    private void initialise(){
-        if(!loadedGame) {
-            nextWord();
-            //targetWord =new Word(((MainActivity)getActivity()).dictionary);score=0;found.clear();
-        }
+    //  Initialisation Methods
+    private void initialise(View view){
+
         //targets
-        int[] targets= targetWord.getTargets();
-
-        TextView target=(TextView)findViewById(R.id.targetTextView);
-        assert target != null;
-        target.setText(String.format(Locale.getDefault(),"Good: %d    Great: %d    Perfect: %d",targets[0],targets[1],targets[2]));
-
-        //Progress
-        progress=(ProgressBar)findViewById(R.id.progressBar);
-        assert progress != null;
-        progress.setProgress(score);
-        progress.setMax(targets[2]);
+        goodText=(TextView)view.findViewById(R.id.goodTextView);
+        greatText=(TextView)view.findViewById(R.id.greatTextView);
+        perfectText=(TextView)view.findViewById(R.id.perfectTextView);
 
         //attempt
-        attemptTextView =(TextView)findViewById(R.id.newWord);
-        if (attemptTextView == null) throw new AssertionError();
-        attemptTextView.setText("");
-        checked=new ArrayList<>();
+        attemptTextView =(TextView)view.findViewById(R.id.newWord);
         stringBuilder=new StringBuilder();
 
-        //score
-        scoreText=(TextView)findViewById(R.id.scoreTextView);
-        scoreText.setText(String.format(Locale.getDefault(),"Found Words: %d",score));
 
-        ArrayAdapter<String> adapter= new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, found);
-        adapter.setNotifyOnChange(true);
-        ListView listView=(ListView)findViewById(R.id.foundWords);
-        listView.setAdapter(adapter);
+        //Progress
 
-        (findViewById(R.id.goodStar)).setVisibility(View.INVISIBLE);
-        (findViewById(R.id.greatStar)).setVisibility(View.INVISIBLE);
-        (findViewById(R.id.perfectStar)).setVisibility(View.INVISIBLE);
-        checkLevel("");
+        GridView foundGridView=(GridView)view.findViewById(R.id.drawerList);
+        progressBar=(ProgressBar)view.findViewById(R.id.progressBar);
+        foundTextView=(TextView)view.findViewById(R.id.foundCountView);
+        foundWordsAdapter=new ArrayAdapter<>(getContext(),android.R.layout.simple_list_item_1);
+        foundGridView.setAdapter(foundWordsAdapter);
 
+        goodStar=(ImageView) (view.findViewById(R.id.goodStar));
+        greatStar=(ImageView) (view.findViewById(R.id.greatStar));
+        perfectStar=(ImageView) (view.findViewById(R.id.perfectStar));
+
+        initialiseViewValues();
+        prepareButtons(view);
+        prepareGrid(view);
 
     }
 
-    private void prepareGrid(){
+    private void prepareGrid(View view){
 
         List<String> letters= new ArrayList<>();
-        ArrayAdapter<String> adapter= new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1,letters);
+        adapter=new LetterAdapter(getContext(),letters);
         populateAdapter(adapter);
-
-        GridView grid = (GridView) findViewById(R.id.gridView);
-        assert grid != null;
+        grid = (GridView)view.findViewById(R.id.gridView);
         grid.setAdapter(adapter);
+        grid.setChoiceMode(GridView.CHOICE_MODE_MULTIPLE_MODAL);
+        grid.setMultiChoiceModeListener(new MultiListener());
         grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //   RandomAccessFile file = getFile();
-                TextView t = ((TextView) view);
-                if(!checked.contains(position)) {
-                    checked.add(position);
-                    stringBuilder.append(t.getText());
+                boolean b=!adapter.isSelected(position);
+                if(b)
+                {
+                    grid.setItemChecked(position, true);
+                    adapter.setSelected(position);
+                    stringBuilder.append(adapter.getItem(position));
                     if (attemptTextView == null) throw new AssertionError();
                     attemptTextView.setText(stringBuilder.toString());
 
                 }
+                else {
+                    grid.setItemChecked(position, false);
+                    adapter.removeSelected(position);
+                    stringBuilder.deleteCharAt(stringBuilder.indexOf(adapter.getItem(position)));
+                    attemptTextView.setText(stringBuilder.toString());
+                }
 
             }
-
         });
-
     }
 
-    private void prepareButtons(){
-        @SuppressLint("WrongViewCast") final AppCompatImageButton ok=(AppCompatImageButton)findViewById(R.id.submitButton);
-        assert ok != null;
-        ok.setOnClickListener(new View.OnClickListener() {
+    private void prepareButtons(final View view){
+
+        FloatingActionButton fab=(FloatingActionButton)view.findViewById(R.id.fab);
+        assert fab != null;
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 submitWord();
             }
         });
 
-        @SuppressLint("WrongViewCast") final AppCompatImageButton clearButton=(AppCompatImageButton) findViewById(R.id.clearButton);
-        assert clearButton != null;
-        clearButton.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton refresh=(FloatingActionButton)view.findViewById(R.id.reset);
+        assert refresh != null;
+        refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                clear();
+                reset();
             }
         });
 
-        @SuppressLint("WrongViewCast") final AppCompatImageButton backSpace=(AppCompatImageButton) findViewById(R.id.backSpaceButton);
-        assert backSpace != null;
-        backSpace.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton solve=(FloatingActionButton)view.findViewById(R.id.solve);
+        assert solve != null;
+        solve.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(stringBuilder.length()>0) {
-                    stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-                    TextView newWord = ((TextView) findViewById(R.id.newWord));
-                    if (newWord == null) throw new AssertionError();
-                    newWord.setText(stringBuilder.toString());
-                    checked.remove(checked.size() - 1);
-                }
+                mListener.manageWord(game.getJumbledGameWord());
             }
         });
-
-        FloatingActionButton fab=(FloatingActionButton)findViewById(R.id.fab);
-        assert fab != null;
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                refresh();
-            }
-        });
-
     }
 
     private void submitWord(){
-        TextView word=((TextView)findViewById(R.id.newWord));
-        if (word == null) throw new AssertionError();
-        String potential=word.getText().toString();
-        if(!found.contains(potential) && targetWord.getAnswers().contains(potential.toLowerCase())){
+
+        String potential=attemptTextView.getText().toString();
+        if(!game.checkPlayed(potential) && game.submitWord(potential)){
             incrementProgress(potential);
             clear();
             Uri ringtone= RingtoneManager.getActualDefaultRingtoneUri(getContext(),RingtoneManager.TYPE_NOTIFICATION);
             MediaPlayer mp=MediaPlayer.create(getContext(),ringtone);
-            //Ringtone rt=RingtoneManager.getRingtone(this,ringtone);
             mp.start();
-            //mp.release();
         }
-        else if(found.contains(potential)){
-            alreadyFound(potential.toLowerCase());
+        else if(game.checkPlayed(potential)){
+            showAlreadyFoundMessage(potential.toLowerCase());
         }
-        else incorrectWord(potential.toLowerCase());
+        else showIncorrectMessage(potential.toLowerCase());
     }
 
     private void clear(){
-        checked.clear();
+        adapter.clearSelection();
         stringBuilder.delete(0,stringBuilder.length());
-        TextView newWord=((TextView)findViewById(R.id.newWord));
-        if (newWord == null) throw new AssertionError();
-        newWord.setText("");
+        attemptTextView.setText("");
     }
 
     private void incrementProgress(String word){
-        found.add(word);
-        scoreText.setText(String.format(Locale.getDefault(),"Found Words: %d",++score));
-        progress.incrementProgressBy(1);
-        checkLevel(word);
+        foundWordsAdapter.add(word);
+        foundTextView.setText(String.format(Locale.getDefault(),"Found Words: %d",game.getScore()));
+        progressBar.incrementProgressBy(1);
+        //check targets
+        switch (game.target_status()){
+            case GOOD:
+                goodStar.setVisibility(View.VISIBLE);
+                break;
+            case GREAT:
+                greatStar.setVisibility(View.VISIBLE);
+                break;
+            case PERFECT:
+                greatStar.setVisibility(View.VISIBLE);
+                showVictoryMessage("Congratulations! You found all the words.");
+                break;
+        }
+
+        if(word.length()==game.targetWordLength())showVictoryMessage("Congratulations! You got the 9 Letter word.");
 
     }
 
-    private void populateAdapter(ArrayAdapter<String> adapter){
-        for(char c: targetWord.shuffle()){
+
+    private void populateAdapter(LetterAdapter adapter){
+        for(char c: game.getGameLetters()){
             adapter.add(Character.toString(c).toUpperCase());
         }
-
-
     }
 
-    private void checkLevel(String word){
-        //check targets
-        int[] t= targetWord.getTargets();
-        View star;
-        if(score==t[0]) {
-            star=findViewById(R.id.goodStar);
-            assert (star) != null;
-            star.setVisibility(View.VISIBLE);
-        }
 
-        if(score==t[1]) {
-            star=findViewById(R.id.greatStar);
-            assert (star) != null;
-            star.setVisibility(View.VISIBLE);
+    private  void checkLevel(){
+        switch (game.target_status()){
+            case GOOD:
+                goodStar.setVisibility(View.VISIBLE);
+            case GREAT:
+                greatStar.setVisibility(View.VISIBLE);
+            case PERFECT:
+                greatStar.setVisibility(View.VISIBLE);
+                showVictoryMessage("Congratulations! You found all the words.");
+                break;
         }
-
-        if(score==t[2]){
-            star=findViewById(R.id.perfectStar);
-            assert (star) != null;
-            star.setVisibility(View.VISIBLE);
-            victory("Congratulations! You found all the words.");
-        }
-
-        if(word.length()==9){
-            victory("Congratulations! You got the 9 Letter word.");
-        }
-
     }
 
-    private  void incorrectWord(String s){
+    private  void showIncorrectMessage(String s){
         AlertDialog.Builder aBuilder=new AlertDialog.Builder(getContext());
         aBuilder.setMessage("Sorry, \""+s+ "\" is an invalid word.");
         aBuilder.setTitle("Invalid Word");
@@ -361,7 +323,7 @@ public class TargetFragment extends Fragment {
 
     }
 
-    private void alreadyFound(String s){
+    private void showAlreadyFoundMessage(String s){
         AlertDialog.Builder aBuilder=new AlertDialog.Builder(getContext());
         aBuilder.setMessage("\""+s+"\" has already been found");
         aBuilder.setTitle("Word Already Found");
@@ -376,7 +338,7 @@ public class TargetFragment extends Fragment {
         dialog.show();
     }
 
-    private void victory(String message){
+    private void showVictoryMessage(String message){
         AlertDialog.Builder aBuilder=new AlertDialog.Builder(getContext());
         aBuilder.setMessage(message);
         aBuilder.setTitle("Victory");
@@ -384,10 +346,10 @@ public class TargetFragment extends Fragment {
         aBuilder.setPositiveButton("Next Game", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                refresh();
+                reset();
             }
         });
-        if(score!= targetWord.getTargets()[2]) {
+        if(game.allSolutionsFound()) {
             aBuilder.setNegativeButton("Continue Playing", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -402,16 +364,16 @@ public class TargetFragment extends Fragment {
 
     private void saveGame(){
 
-        PrintWriter writer= null;
+        PrintStream writer= null;
         try {
-            writer = new PrintWriter(savepath+"/savedGame");
+            writer = new PrintStream(getContext().openFileOutput(SAVE_FILE_NAME,Context.MODE_PRIVATE));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
         if (writer == null) throw new AssertionError();
-        writer.println(targetWord);
-        writer.println(targetWord.getJumbledWord());
-        for(String w:found){
+        writer.println(game.getGameWord());
+        writer.println(game.getJumbledGameWord());
+        for(String w:game.getFoundWords()){
             writer.println(w);
         }
         writer.close();
@@ -423,7 +385,7 @@ public class TargetFragment extends Fragment {
         FileInputStream inputStream;
         try {
 
-            inputStream=getActivity().openFileInput("savedGame");
+            inputStream=getActivity().openFileInput(SAVE_FILE_NAME);
         } catch (FileNotFoundException e) {
             return false;
         }
@@ -433,10 +395,9 @@ public class TargetFragment extends Fragment {
         if(scanner.hasNextLine())actualWord=scanner.nextLine();
         if(scanner.hasNextLine())anagram=scanner.nextLine();
         if(anagram.length()==0||actualWord.length()==0)return false;
-        targetWord=new Word(actualWord,anagram,(((MainActivity)getActivity()).dictionary));
+        game=new Game(((MainActivity)getActivity()).controller,actualWord,anagram);
         while(scanner.hasNextLine()){
-            found.add(scanner.nextLine());
-            score++;
+            game.submitWord(actualWord);
         }
         try {
             inputStream.close();
@@ -444,26 +405,35 @@ public class TargetFragment extends Fragment {
             e.printStackTrace();
         }
         scanner.close();
-
-       // checkLevel("");
         return true;
     }
 
-
-    private void refresh(){
-
-         System.gc();
-         exiting=false;
-        ((MainActivity)getActivity()).startTarget(false);
-
-    }
-
-    private View findViewById(int id){
-        return getActivity().findViewById(id);
+    private void reset(){
+        clear();
+        adapter.clear();
+        foundWordsAdapter.clear();
+        game.resetGame();
+        initialiseViewValues();
+        populateAdapter(adapter);
+        checkLevel();
 
     }
 
-    private void saveGameDialog() {
+    private void initialiseViewValues(){
+        goodStar.setVisibility(View.INVISIBLE);
+        greatStar.setVisibility(View.INVISIBLE);
+        perfectStar.setVisibility(View.INVISIBLE);
+        goodText.setText(String.format(Locale.getDefault(),"GOOD: %d",game.getGoodTarget()));
+        greatText.setText(String.format(Locale.getDefault(),"GREAT: %d",game.getGreatTarget()));
+        perfectText.setText(String.format(Locale.getDefault(),"PERFECT: %d",game.getPerfectTarget()));
+        attemptTextView.setText("");
+        progressBar.setMax(game.getPerfectTarget());
+        progressBar.setProgress(0);
+        foundTextView.setText(String.format(Locale.getDefault(),"Found Words: %d",game.getScore()));
+    }
+
+
+  /*  private void saveGameDialog() {
         AlertDialog.Builder aBuilder=new AlertDialog.Builder(
                 getContext());
         aBuilder.setMessage("Would you like to save your game before exiting");
@@ -485,26 +455,86 @@ public class TargetFragment extends Fragment {
 
         AlertDialog dialog= aBuilder.create();
         dialog.show();
+    }*/
+
+
+    private class LetterAdapter extends ArrayAdapter<String>{
+
+        private ArrayList<Integer> selectedItems;
+
+        LetterAdapter(Context context,List<String> list){
+            super(context, R.layout.simple_grid_item,list);
+            selectedItems=new ArrayList<>(9);
+        }
+
+        @NonNull
+        @Override
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+            LayoutInflater inflater = LayoutInflater.from(getContext());
+
+            View item=convertView;
+            if(item==null)item=inflater.inflate(R.layout.simple_grid_item,parent,false);
+            TextView textView=(TextView)item.findViewById(R.id.letter);
+            (textView).setText(this.getItem(position));
+            if(position==4){
+                textView.setTextColor(Color.YELLOW);
+
+            }
+
+            return item;
+
+        }
+
+        void setSelected(int position){
+            selectedItems.add(position);
+        }
+
+        void removeSelected(Integer position){
+            selectedItems.remove(position);
+        }
+
+        boolean isSelected(int position){
+            return  selectedItems.contains(position);
+        }
+
+        void clearSelection(){
+            for(int i:adapter.selectedItems){grid.setItemChecked(i,false);}
+            selectedItems.clear();
+        }
+
+
     }
 
-    private void nextWord(){
-        ParallelTask p=new ParallelTask(getActivity());
-        p.execute(((MainActivity)getActivity()).dictionary);
+
+    private class MultiListener implements GridView.MultiChoiceModeListener {
+
+        @Override
+        public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+
+        }
+
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            return false;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+
+        }
     }
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(View view);
-    }
+
+
 
 
 

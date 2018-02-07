@@ -1,7 +1,10 @@
-package com.applications.brian.targetword;
+package Logic;
+
+
 
 import java.util.ArrayList;
 import java.util.Random;
+
 
 
 public class Word {
@@ -23,7 +26,14 @@ public class Word {
 
     }
 
-    public Word(String actualWord, String anagram,Dictionary dict){
+    /**
+     * Constructor to get a word from a saved game
+     * @param actualWord- the n letter word
+     * @param anagram- an anagram  of the b letter word
+     * @param dict- the dictionary
+     *
+     */
+    Word(String actualWord, String anagram, Dictionary dict){
         center=anagram.charAt(4);
         word=actualWord;
         answers=new ArrayList<>();
@@ -33,9 +43,11 @@ public class Word {
     }
 
     private void populateList(){
+        //choose new center letter if not chosen already
         if((int)center==0) center = word.charAt(new Random().nextInt(word.length()));
 
         HelperThread helperThread=new HelperThread(word,center,answers,dictionary.allWords(),HelperThread.HelpType.FIND_TARGET_ANSWERS);
+        helperThread.setPriority(Thread.MIN_PRIORITY);
         helperThread.start();
         try {
             helperThread.join();
@@ -45,15 +57,16 @@ public class Word {
 
     }
 
-    //public String getWord(){return word;}
-    public ArrayList<String> getAnswers(){return answers;}
+
+    ArrayList<String> getAnswers(){return answers;}
+
     public char getCenter() {return center;}
-  //  public Dictionary getDictionary(){return dictionary;}
-    public int[] getTargets() {
+
+    int[] getTargets() {
         return targets;
     }
 
-    public static boolean checkCharacter(String potential,String word){
+    static boolean checkCharacter(String potential,String word){
         for(char c:potential.toCharArray()) {
             int potentialCounter = 0;
             for (char s : potential.toCharArray()) {
@@ -72,7 +85,7 @@ public class Word {
         return true;
     }
 
-    public static boolean patternMatch(String pattern,String potential){
+    static boolean patternMatch(String pattern,String potential){
         if(potential.length()!=pattern.length())return  false;
         char[] patternArray=pattern.toCharArray();
         char[] potentialArray=potential.toCharArray();
@@ -83,7 +96,7 @@ public class Word {
         return true;
     }
 
-    public char[] shuffle(){
+    char[] shuffle(){
         if(jumbledWord!=null){return jumbledWord.toCharArray();}
         char[] original=word.toCharArray();
         char[] shuffled=new char[original.length];
@@ -118,7 +131,7 @@ public class Word {
 
     }
 
-    public String getJumbledWord() {
+    String getJumbledWord() {
         return jumbledWord;
     }
 

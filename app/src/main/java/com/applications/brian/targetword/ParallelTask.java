@@ -4,23 +4,32 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import Logic.Dictionary;
+import Logic.Word;
+
 /**
  * Created by Brian on 19-Jan-17.
+ *
  */
-class ParallelTask extends AsyncTask<Dictionary,Void,Word> {
+class ParallelTask extends AsyncTask<Dictionary,Void, Word> {
 
     private ProgressDialog progress;
-    private Context context;
+    private Word target;
 
-    public ParallelTask(Context context1){
-        context=context1;
+
+
+    ParallelTask(Context context1,Word aWord){
+
         progress=new ProgressDialog(context1);
+        target=aWord;
 
     }
 
     @Override
     protected Word doInBackground(Dictionary... params) {
-        return new Word(params[0]);
+
+        target= new Word(params[0]);
+        return target;
     }
 
     @Override

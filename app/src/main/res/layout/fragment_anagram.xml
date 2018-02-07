@@ -1,62 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.applications.brian.targetword.AnagramFragment">
+    tools:context="com.applications.brian.targetword.SolverFragment"
+    tools:layout_editor_absoluteY="25dp"
+    tools:layout_editor_absoluteX="0dp">
 
 
     <EditText
+        android:id="@+id/editText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/editText"
-        android:layout_below="@+id/toolbar"
-        android:layout_marginTop="61dp"
-        android:inputType="text"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
         android:editable="false"
+        android:ems="10"
+        android:inputType="text"
         android:selectAllOnFocus="true"
         android:singleLine="true"
+        android:text="@string/enter_letters_here"
         android:textAlignment="center"
         android:textStyle="bold"
-        android:text="@string/enter_letters_here" />
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
         android:src="@android:drawable/ic_search_category_default"
-        android:layout_marginLeft="@dimen/fab_margin"
-        android:layout_marginRight="@dimen/fab_margin"
-        android:layout_alignParentBottom="true"
-        android:layout_alignEnd="@+id/radioGroup" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/centerLetter"
-        android:inputType="text"
-        android:editable="false"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:textAlignment="center"
-        android:textStyle="bold"
-        android:layout_alignTop="@+id/editText"
-        android:layout_alignParentEnd="true"
-        android:maxLength="1" />
-
-    <ListView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/listView"
-        android:layout_below="@+id/editText"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="53dp"
-        android:layout_above="@+id/fab" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="8dp"
+        tools:layout_editor_absoluteX="312dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -64,46 +43,31 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/results"
         android:id="@+id/searchResults"
-        android:layout_below="@+id/editText"
-        android:layout_marginTop="30dp"
-        android:layout_alignParentStart="true"
-        android:labelFor="@id/listView" />
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@+id/editText"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent" />
 
-    <RadioGroup
+    <GridView
+        android:id="@+id/listView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/radioGroup"
-        android:orientation="horizontal"
-        android:layout_alignParentTop="true"
-        android:layout_alignEnd="@+id/centerLetter">
+        android:layout_marginTop="8dp"
+        android:numColumns="3"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/searchResults"
+        app:layout_constraintHorizontal_bias="0.0" />
 
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/anagram"
-            android:id="@+id/anagramButton"
-            android:checked="true"
-            android:layout_gravity="right" />
-
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/crossword_help"
-            android:checked="false" />
-    </RadioGroup>
-
-    <TextView
+    <Spinner
+        android:id="@+id/spinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/center_letter"
-        android:id="@+id/centerLetterLabel"
-        android:labelFor="@id/listView"
-        android:layout_above="@+id/listView"
-        android:layout_alignBottom="@+id/editText"
-        android:layout_marginBottom="5dp"
-        android:layout_toStartOf="@+id/centerLetter" />
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/editText"
+        app:layout_constraintLeft_toRightOf="@+id/editText" />
 
 
-</RelativeLayout>
+</android.support.constraint.ConstraintLayout>
 

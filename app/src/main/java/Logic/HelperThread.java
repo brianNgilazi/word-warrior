@@ -1,20 +1,19 @@
-package com.applications.brian.targetword;
+package Logic;
 
 
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Brian on 18-Jan-17.
+ * Class to help with computation
  */
-
-
 
 
 public class HelperThread extends Thread {
     private String word;
     private Adder list;
-    private ArrayList<String> allWords;
+    private List<String> allWords;
     private int start;
     private int end;
     private int wordSize;
@@ -22,11 +21,11 @@ public class HelperThread extends Thread {
 
 
 
-    public enum HelpType {FIND_TARGET_ANSWERS, CROSSWORD_SOLUTION, NLETTERWORDS, ANAGRAMS}
+    public enum HelpType {FIND_TARGET_ANSWERS, CROSSWORD_SOLUTION, N_LETTER_WORDS, ANAGRAMS}
 
     private HelpType helpType;
 
-    private HelperThread(ArrayList<String> aList, ArrayList<String> all, int s, int e, HelpType type) {
+    private HelperThread(List<String> aList, List<String> all, int s, int e, HelpType type) {
         list = new Adder(aList);
         allWords = all;
         start = s;
@@ -37,7 +36,7 @@ public class HelperThread extends Thread {
 
     }
 
-    public HelperThread(String targetWord,char center,ArrayList<String> aList,ArrayList<String> all,HelpType help){
+    public HelperThread(String targetWord, char center, List<String> aList, List<String> all, HelpType help){
 
         this(aList,all,0,all.size(),help);
         word=targetWord;
@@ -45,7 +44,7 @@ public class HelperThread extends Thread {
 
     }
 
-    public  HelperThread(String crossword,ArrayList<String> aList,ArrayList<String> all,HelpType help){
+    public HelperThread(String crossword,List<String> aList,List<String> all,HelpType help){
         this(aList,all,0,all.size(),help);
         word=crossword;
     }
@@ -60,7 +59,7 @@ public class HelperThread extends Thread {
                 case FIND_TARGET_ANSWERS:
                     for (int i = start; i < end; i++) {
                         String w = allWords.get(i);
-                        if (w.length() > 3 && (w.contains(center + "")||center==' ') && Word.checkCharacter(w,word))
+                        if (w.length() > 3 && (w.contains(String.valueOf(center))||center==' ') && Word.checkCharacter(w,word))
                             list.add(w);
                     }
                     return;
@@ -72,7 +71,7 @@ public class HelperThread extends Thread {
                     }
                     return;
 
-                case NLETTERWORDS:
+                case N_LETTER_WORDS:
                     for (int i = start; i < end; i++) {
                         String w = allWords.get(i);
                         if (w.length() > wordSize) list.add(w);
@@ -94,30 +93,35 @@ public class HelperThread extends Thread {
             case CROSSWORD_SOLUTION:
                 left.word=right.word=word;
                 break;
-            case NLETTERWORDS:
+            case N_LETTER_WORDS:
                 left.wordSize=right.wordSize=wordSize;
                 break;
         }
 
         left.start();
         right.run();
-       
+        try {
+            left.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
 
 
 
     private class Adder {
 
-        ArrayList<String> array;
+        List<String> array;
 
-        public Adder(ArrayList<String> arrayList) {
+        Adder(List<String> arrayList) {
             array = arrayList;
         }
 
-        public synchronized void add(String s) {
+        synchronized void add(String s) {
             array.add(s);
         }
-       // public synchronized boolean contains(String word){return  array.contains(word);}
+
 
     }
 }

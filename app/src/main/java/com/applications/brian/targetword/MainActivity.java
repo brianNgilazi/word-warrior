@@ -9,48 +9,69 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.view.WindowManager;
+import android.widget.TextView;
 
-import java.io.InputStream;
+import Logic.Controller;
 
-public class MainActivity extends AppCompatActivity implements HomeFragment.OnFragmentInteractionListener {
-    Dictionary dictionary;
+
+public class MainActivity extends AppCompatActivity implements OnFragmentInteractionListener {
+
     private ActionBar actionBar;
+    Controller controller;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        home();
+
+        //Toolbar
+
         Toolbar toolbar=(Toolbar)findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         actionBar = getSupportActionBar();
         if (actionBar == null) throw new AssertionError();
-        actionBar.setLogo(R.mipmap.ic_target);
         actionBar.setTitle("Home");
-        dictionary=new Dictionary(getInputStream(),9);
+
+
+        controller=new Controller(getResources().openRawResource(R.raw.englishwords));
+        home();
     }
 
 
     @Override
     public void onFragmentInteraction(View view) {
-        switch (view.getId()){
-            case R.id.target:
-                startTarget();
-                break;
-            case R.id.help:
-                viewHelp();
-                break;
-            case R.id.crossWordHelp:
-                cross();
-                break;
 
+
+        try{
+
+            String selected=(String)((TextView)view).getText();
+            switch(selected){
+                case "Target":
+                    startTarget();
+                    break;
+                case "Help":
+                    viewHelp();
+                    break;
+                case "Anagram Solver":
+                    solver(null);
+                    break;
+
+            }
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
         }
     }
 
+    @Override
+    public void manageWord(String string) {
+        solver(string);
+    }
+
     private void home(){
-        HomeFragment homeFragment=new HomeFragment();
+        HomeFragment homeFragment=  HomeFragment.newInstance(null,null);
         getSupportFragmentManager().beginTransaction().add(R.id.fragmentContainer,homeFragment).commit();
 
 
@@ -63,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnFr
 
    public void startTarget(boolean load){
 
-       TargetFragment targetFragment=TargetFragment.newInstance(load,null);
+       TargetFragment targetFragment=TargetFragment.newInstance(load);
        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
        transaction.replace(R.id.fragmentContainer,targetFragment);
        if(getSupportFragmentManager().getBackStackEntryCount()>0) getSupportFragmentManager().popBackStack();
@@ -104,28 +125,16 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnFr
     }
 
 
-    private void cross(){
+    private void solver(String string){
 
-        AnagramFragment anagramFragment=new AnagramFragment();
+        SolverFragment solverFragment = SolverFragment.newInstance(string);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer,anagramFragment);
+        transaction.replace(R.id.fragmentContainer, solverFragment);
         transaction.addToBackStack(null);
         transaction.commit();
-        actionBar.setTitle("Solver");
+        actionBar.setTitle("solver");
         actionBar.setDisplayHomeAsUpEnabled(true);
     }
 
-    private InputStream getInputStream(){
-
-        InputStream stream=null;
-        try {
-            stream= getBaseContext().getResources().openRawResource(R.raw.englishwords);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return stream;
-
-    }
 
 }
