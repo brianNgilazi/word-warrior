@@ -1,4 +1,4 @@
-package com.applications.brian.targetword;
+package com.applications.brian.targetword.Presentation;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -13,12 +13,12 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import com.applications.brian.targetword.Logic.GameWord;
+import com.applications.brian.targetword.R;
+
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-
-import Logic.HelperThread;
 
 
 /**
@@ -37,12 +37,13 @@ public class SolverFragment extends Fragment {
 
 
     private List<String> lexiconList;
-    private List<String> solutions;
     private String unsolved;
     private ArrayAdapter<String> adapter;
     private OnFragmentInteractionListener mListener;
     private TextView resultText;
     private EditText input;
+
+    private enum SOLUTION_TYPE {TARGET,CROSSWORD,ANAGRAM}
 
 
     public SolverFragment() {
@@ -71,8 +72,7 @@ public class SolverFragment extends Fragment {
         if (getArguments() != null) {
             unsolved = getArguments().getString(WORD_TO_SOLVE_ARG,null);
         }
-        solutions= new ArrayList<>();
-        adapter= new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1,solutions);
+        adapter= new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1);
         lexiconList =((MainActivity)getActivity()).controller.getAllWords();
     }
 
@@ -80,7 +80,7 @@ public class SolverFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_anagram, container, false);
+        return inflater.inflate(R.layout.fragment_solver, container, false);
     }
 
     @Override
@@ -94,18 +94,18 @@ public class SolverFragment extends Fragment {
     private void init(View view){
         resultText=(TextView)view.findViewById(R.id.searchResults);
         input=(EditText)view.findViewById(R.id.editText);
-        GridView gridView=((GridView)view.findViewById(R.id.listView));
+        GridView gridView=((GridView)view.findViewById(R.id.gridView));
         if (gridView == null) throw new AssertionError();
         gridView.setAdapter(adapter);
         FloatingActionButton fab=(FloatingActionButton)view.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getSolutions(input.getText().toString());
+                getSolutions(input.getText().toString(),SOLUTION_TYPE.ANAGRAM);
             }
         });
         if(unsolved!=null){
-            getSolutions(unsolved);
+            getSolutions(unsolved,SOLUTION_TYPE.TARGET);
         }
     }
 
@@ -128,23 +128,39 @@ public class SolverFragment extends Fragment {
 
     
 
-    private void getSolutions(String pattern){
+    private void getSolutions(String pattern,SOLUTION_TYPE solution_type){
+        input.setText(pattern);
         pattern=pattern.toLowerCase();
         adapter.clear();
-        HelperThread help=new HelperThread(pattern,pattern.charAt(4),solutions, lexiconList, HelperThread.HelpType.ANAGRAMS);
+        switch (solution_type){
 
-        help.start();
-        try {
-            help.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            case TARGET:
+                for (String word:lexiconList) {
+                    if(GameWord.isAnagram(word,pattern) && word.contains(String.valueOf(pattern.charAt(4)))) adapter.add(word);
+                }
+                break;
+            case CROSSWORD:
+                break;
+            case ANAGRAM:
+                for (String word:lexiconList) {
+                    if(GameWord.isAnagram(word,pattern)) adapter.add(word);
+                }
+                break;
         }
 
-        Collections.sort(solutions);
-        resultText.setText(String.format(Locale.getDefault(),"Results for \'%s\' (%d)",pattern,solutions.size()));
 
-
+        adapter.sort(new Comparator<String>() {
+            @Override
+            public int compare(String lhs, String rhs) {
+                int lengthDifference =lhs.length()-rhs.length();
+                if(lengthDifference!=0)return lengthDifference;
+                return lhs.compareTo(rhs);
+            }
+        });
+        resultText.setText(String.format(Locale.getDefault(),"Results for \'%s\' (%d)",pattern,adapter.getCount()));
     }
+
+
 
 
 }

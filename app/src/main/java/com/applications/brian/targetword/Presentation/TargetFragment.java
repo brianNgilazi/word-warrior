@@ -1,6 +1,7 @@
-package com.applications.brian.targetword;
+package com.applications.brian.targetword.Presentation;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
@@ -11,6 +12,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -25,16 +27,12 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintStream;
+import com.applications.brian.targetword.Logic.TargetGame;
+import com.applications.brian.targetword.R;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Scanner;
-
-import Logic.Game;
 
 
 /**
@@ -50,22 +48,17 @@ public class TargetFragment extends Fragment {
 
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String LOAD_GAME = "LOAD_GAME_PARAMETER";
+    private static final String LOAD_GAME_DATA = "LOAD_GAME_DATA_PARAMETER";
+    private static final String LEVEL = "LEVEL_PARAMETER";
+    private boolean loadGame;
 
+    public static final String SAVE_FILE_NAME="savedGame";
 
-    private static final String SAVE_FILE_NAME="savedGame";
-
-    //parameters
-    private boolean continueGame;
-
-
-
-
-    private Game game;
+    //Other Fields
+    private TargetGame targetGame;
     LetterAdapter adapter;
     ArrayAdapter<String> foundWordsAdapter;
     private StringBuilder stringBuilder;
-
-
 
     //Views
     private TextView attemptTextView,foundTextView;
@@ -83,14 +76,16 @@ public class TargetFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param load boolean indicating if a saved game should be loaded
+     * @param load boolean indicating if a saved targetGame should be loaded
      * @return A new instance of fragment TargetFragment.
      */
 
-    public static TargetFragment newInstance(boolean load) {
+    public static TargetFragment newInstance(boolean load,String data,String level) {
         TargetFragment fragment = new TargetFragment();
         Bundle args = new Bundle();
         args.putBoolean(LOAD_GAME, load);
+        args.putString(LOAD_GAME_DATA,data);
+        args.putString(LEVEL,level);
         fragment.setArguments(args);
         return fragment;
     }
@@ -98,19 +93,43 @@ public class TargetFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        String level=" ";
         if (getArguments() != null) {
-            continueGame = getArguments().getBoolean(LOAD_GAME);
+            level=getArguments().getString(LEVEL);
+            loadGame = getArguments().getBoolean(LOAD_GAME);
+            if(loadGame){
+                String loadGameData = getArguments().getString(LOAD_GAME_DATA);
+                targetGame = new TargetGame(((MainActivity) getActivity()).controller, loadGameData) ;
+                return;
+            }
         }
+        load(TargetGame.GAME_LEVEL.valueOf(level));
+       // targetGame = new TargetGame(((MainActivity) getActivity()).controller,  TargetGame.GAME_LEVEL.valueOf(level));
+    }
 
-        game=null;
-        game=new Game(((MainActivity)getActivity()).controller);
-        if(!(continueGame && loadGame())) {
-            game=new Game(((MainActivity)getActivity()).controller);
+    private void load(final TargetGame.GAME_LEVEL game_level){
+
+        ProgressDialog progressDialog=new ProgressDialog(getActivity());
+        progressDialog.setMessage("LoadingFragment");
+        progressDialog.setTitle("LoadingFragment");
+        progressDialog.show();
+        Thread t=new Thread(new Runnable() {
+            @Override
+            public void run() {
+                targetGame=new TargetGame(((MainActivity) getActivity()).controller,game_level);
+
+            }
+        });
+        t.setPriority(Thread.MIN_PRIORITY);
+        t.start();
+        try {
+            t.join();
+            progressDialog.dismiss();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
     }
-
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -120,7 +139,11 @@ public class TargetFragment extends Fragment {
 
     }
 
-
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        initialise(view);
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -133,24 +156,10 @@ public class TargetFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        initialise(view);
-
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
 
 
     //  Initialisation Methods
     private void initialise(View view){
-
         //targets
         goodText=(TextView)view.findViewById(R.id.goodTextView);
         greatText=(TextView)view.findViewById(R.id.greatTextView);
@@ -237,22 +246,34 @@ public class TargetFragment extends Fragment {
         solve.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.manageWord(game.getJumbledGameWord());
+                //mListener.manageWord(targetGame.getJumbledGameWord());
+                DialogFragment dialogFragment=new SolverDialog();
+                dialogFragment.show(getFragmentManager(),null);
             }
         });
+
+        FloatingActionButton save=(FloatingActionButton)view.findViewById(R.id.save);
+        assert save != null;
+        save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveGameDialog();
+            }
+        });
+
     }
 
     private void submitWord(){
 
         String potential=attemptTextView.getText().toString();
-        if(!game.checkPlayed(potential) && game.submitWord(potential)){
+        if(!targetGame.checkPlayed(potential) && targetGame.submitWord(potential)){
             incrementProgress(potential);
             clear();
             Uri ringtone= RingtoneManager.getActualDefaultRingtoneUri(getContext(),RingtoneManager.TYPE_NOTIFICATION);
             MediaPlayer mp=MediaPlayer.create(getContext(),ringtone);
             mp.start();
         }
-        else if(game.checkPlayed(potential)){
+        else if(targetGame.checkPlayed(potential)){
             showAlreadyFoundMessage(potential.toLowerCase());
         }
         else showIncorrectMessage(potential.toLowerCase());
@@ -266,42 +287,32 @@ public class TargetFragment extends Fragment {
 
     private void incrementProgress(String word){
         foundWordsAdapter.add(word);
-        foundTextView.setText(String.format(Locale.getDefault(),"Found Words: %d",game.getScore()));
+        foundTextView.setText(String.format(Locale.getDefault(),"Found Words: %d", targetGame.getScore()));
         progressBar.incrementProgressBy(1);
-        //check targets
-        switch (game.target_status()){
-            case GOOD:
-                goodStar.setVisibility(View.VISIBLE);
-                break;
-            case GREAT:
-                greatStar.setVisibility(View.VISIBLE);
-                break;
-            case PERFECT:
-                greatStar.setVisibility(View.VISIBLE);
-                showVictoryMessage("Congratulations! You found all the words.");
-                break;
-        }
-
-        if(word.length()==game.targetWordLength())showVictoryMessage("Congratulations! You got the 9 Letter word.");
+        checkLevel();
+        if(word.length()== targetGame.targetWordLength())showVictoryMessage("Congratulations! You got the 9 Letter word.");
 
     }
 
-
     private void populateAdapter(LetterAdapter adapter){
-        for(char c: game.getGameLetters()){
+        for(char c: targetGame.getGameLetters()){
             adapter.add(Character.toString(c).toUpperCase());
         }
     }
 
-
     private  void checkLevel(){
-        switch (game.target_status()){
+        switch (targetGame.target_status()){
             case GOOD:
                 goodStar.setVisibility(View.VISIBLE);
+                break;
             case GREAT:
+                goodStar.setVisibility(View.VISIBLE);
                 greatStar.setVisibility(View.VISIBLE);
+                break;
             case PERFECT:
+                goodStar.setVisibility(View.VISIBLE);
                 greatStar.setVisibility(View.VISIBLE);
+                perfectStar.setVisibility(View.VISIBLE);
                 showVictoryMessage("Congratulations! You found all the words.");
                 break;
         }
@@ -310,7 +321,7 @@ public class TargetFragment extends Fragment {
     private  void showIncorrectMessage(String s){
         AlertDialog.Builder aBuilder=new AlertDialog.Builder(getContext());
         aBuilder.setMessage("Sorry, \""+s+ "\" is an invalid word.");
-        aBuilder.setTitle("Invalid Word");
+        aBuilder.setTitle("Invalid GameWord");
         aBuilder.setIcon(R.mipmap.ic_target);
         aBuilder.setNeutralButton("Ok", new DialogInterface.OnClickListener() {
             @Override
@@ -326,7 +337,7 @@ public class TargetFragment extends Fragment {
     private void showAlreadyFoundMessage(String s){
         AlertDialog.Builder aBuilder=new AlertDialog.Builder(getContext());
         aBuilder.setMessage("\""+s+"\" has already been found");
-        aBuilder.setTitle("Word Already Found");
+        aBuilder.setTitle("GameWord Already Found");
         aBuilder.setIcon(R.mipmap.ic_target);
         aBuilder.setNeutralButton("Ok", new DialogInterface.OnClickListener() {
             @Override
@@ -343,13 +354,13 @@ public class TargetFragment extends Fragment {
         aBuilder.setMessage(message);
         aBuilder.setTitle("Victory");
         aBuilder.setIcon(R.mipmap.ic_target);
-        aBuilder.setPositiveButton("Next Game", new DialogInterface.OnClickListener() {
+        aBuilder.setPositiveButton("Next TargetGame", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 reset();
             }
         });
-        if(game.allSolutionsFound()) {
+        if(!targetGame.allSolutionsFound()) {
             aBuilder.setNegativeButton("Continue Playing", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -362,57 +373,14 @@ public class TargetFragment extends Fragment {
         dialog.show();
     }
 
-    private void saveGame(){
-
-        PrintStream writer= null;
-        try {
-            writer = new PrintStream(getContext().openFileOutput(SAVE_FILE_NAME,Context.MODE_PRIVATE));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        if (writer == null) throw new AssertionError();
-        writer.println(game.getGameWord());
-        writer.println(game.getJumbledGameWord());
-        for(String w:game.getFoundWords()){
-            writer.println(w);
-        }
-        writer.close();
 
 
-    }
-
-    private boolean loadGame(){
-        FileInputStream inputStream;
-        try {
-
-            inputStream=getActivity().openFileInput(SAVE_FILE_NAME);
-        } catch (FileNotFoundException e) {
-            return false;
-        }
-        Scanner scanner=new Scanner(inputStream);
-        String actualWord="";
-        String anagram="";
-        if(scanner.hasNextLine())actualWord=scanner.nextLine();
-        if(scanner.hasNextLine())anagram=scanner.nextLine();
-        if(anagram.length()==0||actualWord.length()==0)return false;
-        game=new Game(((MainActivity)getActivity()).controller,actualWord,anagram);
-        while(scanner.hasNextLine()){
-            game.submitWord(actualWord);
-        }
-        try {
-            inputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        scanner.close();
-        return true;
-    }
 
     private void reset(){
         clear();
         adapter.clear();
         foundWordsAdapter.clear();
-        game.resetGame();
+        targetGame.resetGame();
         initialiseViewValues();
         populateAdapter(adapter);
         checkLevel();
@@ -423,26 +391,34 @@ public class TargetFragment extends Fragment {
         goodStar.setVisibility(View.INVISIBLE);
         greatStar.setVisibility(View.INVISIBLE);
         perfectStar.setVisibility(View.INVISIBLE);
-        goodText.setText(String.format(Locale.getDefault(),"GOOD: %d",game.getGoodTarget()));
-        greatText.setText(String.format(Locale.getDefault(),"GREAT: %d",game.getGreatTarget()));
-        perfectText.setText(String.format(Locale.getDefault(),"PERFECT: %d",game.getPerfectTarget()));
+        goodText.setText(String.format(Locale.getDefault(),"GOOD: %d", targetGame.getGoodTarget()));
+        greatText.setText(String.format(Locale.getDefault(),"GREAT: %d", targetGame.getGreatTarget()));
+        perfectText.setText(String.format(Locale.getDefault(),"PERFECT: %d", targetGame.getPerfectTarget()));
         attemptTextView.setText("");
-        progressBar.setMax(game.getPerfectTarget());
-        progressBar.setProgress(0);
-        foundTextView.setText(String.format(Locale.getDefault(),"Found Words: %d",game.getScore()));
+        progressBar.setMax(targetGame.getPerfectTarget());
+        progressBar.setProgress(targetGame.getScore());
+        foundTextView.setText(String.format(Locale.getDefault(),"Found Words: %d", targetGame.getScore()));
+        if(loadGame)foundWordsAdapter.addAll(targetGame.getFoundWords());
     }
 
 
-  /*  private void saveGameDialog() {
+    private void saveGameDialog() {
         AlertDialog.Builder aBuilder=new AlertDialog.Builder(
                 getContext());
-        aBuilder.setMessage("Would you like to save your game before exiting");
-        aBuilder.setTitle("Save Game Before Exit?");
-        aBuilder.setIcon(R.mipmap.ic_target);
+        aBuilder.setMessage("Would you like to save your Game before exiting").
+                setTitle("Save TargetGame Before Exit?").setIcon(R.mipmap.ic_target);
+
         aBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                saveGame();
+                if(!targetGame.isNewGame()){
+                    dialog.dismiss();
+                    overwriteDialog();
+                }
+               else {
+                    targetGame.save(TargetGame.SAVING_STATUS.NEW_SAVE);
+                    dialog.dismiss();
+                }
             }
         });
         aBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -455,7 +431,29 @@ public class TargetFragment extends Fragment {
 
         AlertDialog dialog= aBuilder.create();
         dialog.show();
-    }*/
+    }
+
+    private void  overwriteDialog(){
+        AlertDialog.Builder builder=new AlertDialog.Builder(
+                getContext());
+        builder.setMessage("A save of this already exists. Overwrite existing save?");
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                targetGame.save(TargetGame.SAVING_STATUS.OVERRIDE);
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        AlertDialog dialog= builder.create();
+        dialog.show();
+    }
 
 
     private class LetterAdapter extends ArrayAdapter<String>{

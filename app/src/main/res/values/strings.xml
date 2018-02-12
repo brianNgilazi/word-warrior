@@ -14,4 +14,10 @@
     <string name="good">Good</string>
     <string name="great">Great</string>
     <string name="perfect">Perfect</string>
+    <string name="delete">Delete</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="loading">Loading...</string>
+    <string name="loadung_message">These are precious moments of your life you won\'t be getting back.</string>
 </resources>

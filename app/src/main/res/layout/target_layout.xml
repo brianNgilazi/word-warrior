@@ -12,29 +12,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <GridView
-            android:id="@+id/gridView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:clipChildren="false"
-            android:clipToPadding="false"
-            android:gravity="center_vertical|center_horizontal"
-            android:horizontalSpacing="0dp"
-            android:numColumns="3"
-            android:verticalSpacing="2dp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/view"
-            app:layout_constraintVertical_bias="0.25"
-            tools:listitem="@layout/simple_grid_item"
-            app:layout_constraintBottom_toTopOf="@+id/reset" />
-
         <include
             android:id="@+id/include"
             layout="@layout/layout_targets"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
@@ -43,7 +24,8 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:layout_constraintLeft_creator="1" />
+            tools:layout_constraintLeft_creator="1"
+            android:layout_marginEnd="8dp" />
 
         <TextView
             android:id="@+id/newWord"
@@ -91,14 +73,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:layout_marginStart="16dp"
             android:clickable="true"
             app:backgroundTint="@android:color/holo_red_dark"
             app:fabSize="mini"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:srcCompat="@drawable/ic_refresh"
-            tools:layout_editor_absoluteX="272dp" />
+            tools:layout_editor_absoluteX="16dp" />
 
 
         <android.support.design.widget.FloatingActionButton
@@ -106,13 +87,50 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:layout_marginStart="32dp"
+            android:layout_marginStart="16dp"
             android:clickable="true"
             app:backgroundTint="@android:color/holo_blue_dark"
             app:fabSize="mini"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/reset"
-            app:srcCompat="@android:drawable/ic_menu_info_details" />
+            app:srcCompat="@android:drawable/ic_menu_info_details"
+            android:layout_marginLeft="8dp"
+            app:layout_constraintLeft_toLeftOf="@+id/reset" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/save"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="16dp"
+            android:clickable="true"
+            app:backgroundTint="@android:color/holo_orange_light"
+            app:fabSize="mini"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="@+id/solve"
+            app:layout_constraintStart_toEndOf="@id/solve"
+            app:srcCompat="@android:drawable/ic_menu_save" />
+
+        <GridView
+            android:id="@+id/gridView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:gravity="center_vertical|center_horizontal"
+            android:horizontalSpacing="0dp"
+            android:numColumns="3"
+            android:verticalSpacing="2dp"
+            app:layout_constraintBottom_toTopOf="@+id/reset"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/view"
+            app:layout_constraintVertical_bias="0.275"
+            tools:listitem="@layout/simple_grid_item" />
 
     </android.support.constraint.ConstraintLayout>
 
@@ -120,7 +138,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@color/back_overlay">
+        android:background="@color/red_overlay">
 
         <include
             android:id="@+id/header"

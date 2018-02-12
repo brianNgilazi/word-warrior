@@ -1,10 +1,12 @@
-package com.applications.brian.targetword;
+package com.applications.brian.targetword.Presentation;
 
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.WindowManager;
+
+import com.applications.brian.targetword.R;
 
 public class HelpActivity extends AppCompatActivity {
 

@@ -1,6 +1,4 @@
-package com.applications.brian.targetword;
-
-import android.view.View;
+package com.applications.brian.targetword.Presentation;
 
 /**
  * This interface must be implemented by activities that contain this
@@ -12,9 +10,13 @@ import android.view.View;
  * "http://developer.android.com/training/basics/fragments/communicating.html"
  * >Communicating with Other Fragments</a> for more information.
  */
-public interface OnFragmentInteractionListener {
-    // TODO: Update argument type and name
-    void onFragmentInteraction(View view);
+interface OnFragmentInteractionListener {
 
-    void  manageWord(String string);
+    void onArcadeGameSelected(String arcadeGame);
+
+    void loadGameData(String string,String level);
+
+    void onLevelSelect(String mItem);
+
+    void onGameModeSelected(String title);
 }
