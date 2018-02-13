@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.applications.brian.targetword.Logic.Controller;
 import com.applications.brian.targetword.R;
 
 /**
@@ -19,7 +18,7 @@ import com.applications.brian.targetword.R;
  */
 public class LoadingFragment extends Fragment {
 
-    OnFragmentInteractionListener listener;
+    private OnFragmentInteractionListener listener;
 
 
     public LoadingFragment() {
@@ -28,12 +27,6 @@ public class LoadingFragment extends Fragment {
 
     public static LoadingFragment newInstance() {
         return new LoadingFragment();
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -57,7 +50,6 @@ public class LoadingFragment extends Fragment {
 
     @Override
     public void onDetach() {
-        Controller controller=((MainActivity)getActivity()).controller=new Controller(getActivity());
         super.onDetach();
     }
 }

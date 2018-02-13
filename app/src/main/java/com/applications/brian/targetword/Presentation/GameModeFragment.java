@@ -41,11 +41,6 @@ public class GameModeFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.game_mode_fragment, container, false);
@@ -82,13 +77,13 @@ public class GameModeFragment extends Fragment {
     
     static class GameMode{
 
-        static final String STORY_MODE="NEW STORY MODE";
-        static final String CONTINUE_STORY_MODE="CONTINUE STORY MODE";
+        static final String STORY_MODE="STORY MODE";
+        //static final String CONTINUE_STORY_MODE="CONTINUE STORY MODE";
         static final String ARCADE_MODE="ARCADE MODE";
         static final String TOOLS ="UTILITIES";
         
-        private String detail;
-        private String title;
+        private final String detail;
+        private final String title;
         
         GameMode(String title, String detail){
             this.title=title;
@@ -108,9 +103,9 @@ public class GameModeFragment extends Fragment {
 
     private static List<GameMode> getItems(){
         List<GameMode> list=new ArrayList<>(4);
-        list.add(new GameMode(GameMode.CONTINUE_STORY_MODE,"Continue your journey from the last save point."));
-        list.add(new GameMode(GameMode.STORY_MODE,"Embark on a new (but ultimately meaningless in the greater scheme of things) adventure"));
         list.add(new GameMode(GameMode.ARCADE_MODE,"Test your skills in a game of your choice"));
+        //list.add(new GameMode(GameMode.CONTINUE_STORY_MODE,"Continue your journey from the last save point."));
+        list.add(new GameMode(GameMode.STORY_MODE,"Embark on a fun (but ultimately meaningless in the greater scheme of things) adventure"));
         list.add(new GameMode(GameMode.TOOLS,"General word related tools"));
         return list;
     }

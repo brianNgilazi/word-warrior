@@ -18,9 +18,9 @@ import java.util.Scanner;
  */
 
 public class Controller {
-    private GameDictionary gameDictionary;
+    private final GameDictionary gameDictionary;
     private GameWord word;
-    private Context context;
+    private final Context context;
 
 
 

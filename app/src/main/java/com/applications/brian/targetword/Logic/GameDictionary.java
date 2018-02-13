@@ -8,17 +8,17 @@ import java.util.Scanner;
 
 
 
-public class GameDictionary {
-    private List<String> wordList;
-    private List<List<String>> gameLevelsList;
-    private InputStream[] gameLevelInputStreams;
+class GameDictionary {
+    private final List<String> wordList;
+    private final List<List<String>> gameLevelsList;
+    private final InputStream[] gameLevelInputStreams;
 
     GameDictionary(InputStream inputStream,InputStream[] gameLevelInputStreams){
         wordList=new ArrayList<>();
         populateAllWordsList(inputStream);
         this.gameLevelInputStreams=gameLevelInputStreams;
         gameLevelsList=new ArrayList<>(gameLevelInputStreams.length);
-        for(int i=0;i<gameLevelInputStreams.length;i++){
+        for (InputStream gameLevelInputStream : gameLevelInputStreams) {
             gameLevelsList.add(null);
         }
     }

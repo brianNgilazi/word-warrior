@@ -3,6 +3,7 @@ package com.applications.brian.targetword.Presentation;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -39,12 +40,7 @@ public class GameLevelFragment extends Fragment {
         return new GameLevelFragment();
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-    
-    
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -81,8 +77,9 @@ public class GameLevelFragment extends Fragment {
     private static class GameLevel{
 
 
-        private String title;
-        private int back,front;
+        private final String title;
+        private final int back;
+        private final int front;
         
 
         GameLevel(String title, int b,int f){
@@ -121,7 +118,6 @@ public class GameLevelFragment extends Fragment {
     /**
      * {@link RecyclerView.Adapter} that can display a GameLevel and makes a call to the
      * specified {@link OnFragmentInteractionListener}.
-     * TODO: Replace the implementation with code for your data type.
      */
     static class GameLevelRecyclerViewAdapter extends RecyclerView.Adapter<GameLevelRecyclerViewAdapter.ViewHolder> {
 
@@ -144,9 +140,10 @@ public class GameLevelFragment extends Fragment {
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
             holder.mItem = mValues.get(position);
+            Context context=holder.mIdView.getContext();
             holder.mIdView.setText(mValues.get(position).getTitle());
-            holder.mIdView.setTextColor(holder.mItem.getFrontColor());
-           // holder.mIdView.setBackgroundColor(holder.mItem.getBackColor());
+            holder.mIdView.setTextColor(ContextCompat.getColor(context,holder.mItem.getFrontColor()));
+            holder.mIdView.setBackgroundColor(ContextCompat.getColor(context,holder.mItem.getBackColor()));
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override

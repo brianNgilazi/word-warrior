@@ -20,9 +20,6 @@
             android:name=".Presentation.HelpActivity"
             android:label="@string/how_to"
             android:parentActivityName=".Presentation.MainActivity" />
-        <activity android:name=".Presentation.Splash"
-            android:theme="@style/SplashTheme">
-        </activity>
     </application>
 
 </manifest>

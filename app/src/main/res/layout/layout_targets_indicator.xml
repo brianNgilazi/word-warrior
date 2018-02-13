@@ -10,9 +10,9 @@
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="@+id/greatStar"
         app:layout_constraintLeft_toRightOf="@+id/greatStar"
-        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="@+id/greatStar"
-        app:srcCompat="@drawable/ic_star" />
+        app:srcCompat="@drawable/ic_star"
+        app:layout_constraintRight_toRightOf="parent" />
 
     <ImageView
         android:id="@+id/greatStar"
@@ -38,8 +38,6 @@
         android:id="@+id/goodTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="0dp"
-        android:layout_marginRight="0dp"
         android:layout_marginTop="8dp"
         android:text="@string/good"
         app:layout_constraintHorizontal_bias="0.0"
@@ -52,8 +50,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
         android:text="@string/great"
         app:layout_constraintBottom_toTopOf="@+id/greatStar"
         app:layout_constraintHorizontal_bias="0.444"
@@ -65,11 +61,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
         android:text="@string/perfect"
         app:layout_constraintBottom_toTopOf="@+id/perfectStar"
         app:layout_constraintHorizontal_bias="0.466"
         app:layout_constraintLeft_toLeftOf="@+id/perfectStar"
         app:layout_constraintRight_toRightOf="@+id/perfectStar" />
+
 </android.support.constraint.ConstraintLayout>

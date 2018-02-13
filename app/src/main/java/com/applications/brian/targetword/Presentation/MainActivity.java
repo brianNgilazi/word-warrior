@@ -4,10 +4,9 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.Gravity;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -27,9 +26,8 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
 
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar=(Toolbar)findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        //controller = new Controller(MainActivity.this);
+     /*   Toolbar toolbar=(Toolbar)findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);*/
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         LoadingParallelTask task=new LoadingParallelTask(this);
@@ -63,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
 
     }
 
-    public void startTarget(boolean load,String loadData,String level){
+    private void startTarget(boolean load, String loadData, String level){
        TargetFragment targetFragment=TargetFragment.newInstance(load,loadData,level);
        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
        transaction.replace(R.id.fragmentContainer,targetFragment);
@@ -73,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
 
    }
 
-    private void loadGameDialog() {
+    public void loadGameDialog() {
         AlertDialog.Builder aBuilder=new AlertDialog.Builder(this);
         aBuilder.setMessage("Load Saved TargetGame??");
         aBuilder.setTitle("Load TargetGame");
@@ -106,12 +104,9 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         transaction.commit();
     }
 
-    private void selectLevel(){
-        GameLevelFragment gameLevelFragment = GameLevelFragment.newInstance();
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer, gameLevelFragment);
-        if(getSupportFragmentManager().getBackStackEntryCount()>0)getSupportFragmentManager().popBackStack();
-        transaction.commit();
+    void selectLevel(){
+        DialogFragment dialogFragment=new LevelPickerDialog();
+        dialogFragment.show(getSupportFragmentManager(),null);
     }
     
     void selectGameModeDialog(){
@@ -148,15 +143,11 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
     @Override
     public void onGameModeSelected(String title) {
         switch (title){
-            case GameModeFragment.GameMode.TOOLS:
-            case GameModeFragment.GameMode.CONTINUE_STORY_MODE:
-            case GameModeFragment.GameMode.STORY_MODE:
-                Toast toast=Toast.makeText(this,"Mode Currently Unavailable.",Toast.LENGTH_SHORT);
-                toast.setGravity(Gravity.CENTER,0,0);
-                toast.show();
-                break;
             case GameModeFragment.GameMode.ARCADE_MODE:
                 arcadeHome();
+                break;
+            default:
+                Toast.makeText(this,"Mode Currently Unavailable.",Toast.LENGTH_SHORT).show();
                 break;
         }
     }

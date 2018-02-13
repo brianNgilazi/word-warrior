@@ -40,14 +40,6 @@ public class ArcadeHomeFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        
-
-
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -98,9 +90,9 @@ public class ArcadeHomeFragment extends Fragment {
 
         static final String TARGET="Target";
 
-        private String title;
-        private String detail;
-        private int icon;
+        private final String title;
+        private final String detail;
+        private final int icon;
 
         ArcadeGameItem(String title, String detail,int icon){
             this.title=title;

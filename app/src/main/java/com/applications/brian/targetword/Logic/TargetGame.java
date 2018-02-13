@@ -16,7 +16,7 @@ public class TargetGame {
     private GameWord currentGameWord;
     private int score;
     private List<String> foundWords;
-    private Controller controller;
+    private final Controller controller;
     private boolean newGame=true;
 
 
@@ -107,7 +107,7 @@ public class TargetGame {
     }
 
     public boolean isNewGame() {
-        return newGame;
+        return !newGame;
     }
 
     public int getGoodTarget(){

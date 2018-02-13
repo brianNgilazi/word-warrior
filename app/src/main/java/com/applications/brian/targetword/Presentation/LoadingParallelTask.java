@@ -13,7 +13,7 @@ import com.applications.brian.targetword.R;
  */
 class LoadingParallelTask extends AsyncTask<Void,Void, Void> {
 
-    private Context context;
+    private final Context context;
 
 
 

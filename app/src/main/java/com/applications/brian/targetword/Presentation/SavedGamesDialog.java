@@ -31,8 +31,8 @@ import java.util.Locale;
  */
 
 public class SavedGamesDialog extends Fragment {
-    SavedGameAdapter adapter;
-    OnFragmentInteractionListener mListener;
+    private SavedGameAdapter adapter;
+    private OnFragmentInteractionListener mListener;
 
 
     @Override
@@ -80,9 +80,9 @@ public class SavedGamesDialog extends Fragment {
      */
     static class SavedGameAdapter extends RecyclerView.Adapter<SavedGameAdapter.SavedGameHolder> {
 
-        private List<SavedGame> savedGames;
-        private OnFragmentInteractionListener listener;
-        private Controller controller;
+        private final List<SavedGame> savedGames;
+        private final OnFragmentInteractionListener listener;
+        private final Controller controller;
 
         SavedGameAdapter(List<String> data, OnFragmentInteractionListener listener, Controller controller){
             savedGames=new ArrayList<>();
@@ -148,11 +148,14 @@ public class SavedGamesDialog extends Fragment {
 
 
         static class SavedGameHolder extends RecyclerView.ViewHolder {
-            TextView row1,row2,row3;
-            TextView date, fractionFound;
-            View card;
-            ProgressBar gameProgress;
-            ImageView menuButton;
+            final TextView row1;
+            final TextView row2;
+            final TextView row3;
+            final TextView date;
+            final TextView fractionFound;
+            final View card;
+            final ProgressBar gameProgress;
+            final ImageView menuButton;
             SavedGame savedGame;
 
 

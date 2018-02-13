@@ -10,8 +10,9 @@ import java.util.Random;
 
 public class GameWord {
     private ArrayList<String> answers;
-    private String word, gameAnagram;
-    private GameDictionary gameDictionary;
+    private final String word;
+    private String gameAnagram;
+    private final GameDictionary gameDictionary;
     private char center;
     private int[] targets;
 

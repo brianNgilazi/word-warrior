@@ -4,16 +4,15 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -22,10 +21,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.applications.brian.targetword.Logic.TargetGame;
 import com.applications.brian.targetword.R;
@@ -56,17 +57,18 @@ public class TargetFragment extends Fragment {
 
     //Other Fields
     private TargetGame targetGame;
-    LetterAdapter adapter;
-    ArrayAdapter<String> foundWordsAdapter;
+    private LetterAdapter adapter;
+    private ArrayAdapter<String> foundWordsAdapter;
     private StringBuilder stringBuilder;
 
     //Views
     private TextView attemptTextView,foundTextView;
-    private OnFragmentInteractionListener mListener;
     private TextView goodText,greatText,perfectText;
-    ImageView goodStar,greatStar,perfectStar;
-    ProgressBar progressBar;
-    GridView grid;
+    private ImageView goodStar;
+    private ImageView greatStar;
+    private ImageView perfectStar;
+    private ProgressBar progressBar;
+    private GridView grid;
 
     public TargetFragment() {
         // Required empty public constructor
@@ -104,7 +106,7 @@ public class TargetFragment extends Fragment {
             }
         }
         load(TargetGame.GAME_LEVEL.valueOf(level));
-       // targetGame = new TargetGame(((MainActivity) getActivity()).controller,  TargetGame.GAME_LEVEL.valueOf(level));
+
     }
 
     private void load(final TargetGame.GAME_LEVEL game_level){
@@ -145,17 +147,6 @@ public class TargetFragment extends Fragment {
         initialise(view);
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-       if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
 
 
     //  Initialisation Methods
@@ -188,6 +179,20 @@ public class TargetFragment extends Fragment {
 
     }
 
+    private void initialiseViewValues(){
+        goodStar.setVisibility(View.INVISIBLE);
+        greatStar.setVisibility(View.INVISIBLE);
+        perfectStar.setVisibility(View.INVISIBLE);
+        goodText.setText(String.format(Locale.getDefault(),"GOOD: %d", targetGame.getGoodTarget()));
+        greatText.setText(String.format(Locale.getDefault(),"GREAT: %d", targetGame.getGreatTarget()));
+        perfectText.setText(String.format(Locale.getDefault(),"PERFECT: %d", targetGame.getPerfectTarget()));
+        attemptTextView.setText("");
+        progressBar.setMax(targetGame.getPerfectTarget());
+        progressBar.setProgress(targetGame.getScore());
+        foundTextView.setText(String.format(Locale.getDefault(),"Found Words: %d", targetGame.getScore()));
+        if(loadGame)foundWordsAdapter.addAll(targetGame.getFoundWords());
+    }
+
     private void prepareGrid(View view){
 
         List<String> letters= new ArrayList<>();
@@ -200,7 +205,7 @@ public class TargetFragment extends Fragment {
         grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                boolean b=!adapter.isSelected(position);
+                boolean b= adapter.isSelected(position);
                 if(b)
                 {
                     grid.setItemChecked(position, true);
@@ -222,26 +227,35 @@ public class TargetFragment extends Fragment {
     }
 
     private void prepareButtons(final View view){
-
-        FloatingActionButton fab=(FloatingActionButton)view.findViewById(R.id.fab);
-        assert fab != null;
-        fab.setOnClickListener(new View.OnClickListener() {
+        Button submitButton=(Button)view.findViewById(R.id.submitButton);
+        assert submitButton != null;
+        submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 submitWord();
             }
         });
 
-        FloatingActionButton refresh=(FloatingActionButton)view.findViewById(R.id.reset);
-        assert refresh != null;
-        refresh.setOnClickListener(new View.OnClickListener() {
+        Button clearButton=(Button)view.findViewById(R.id.clearButton);
+        assert clearButton != null;
+        clearButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clear();
+            }
+        });
+
+
+        ImageView newGame=(ImageView) view.findViewById(R.id.newGameIcon);
+        assert newGame != null;
+        newGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 reset();
             }
         });
 
-        FloatingActionButton solve=(FloatingActionButton)view.findViewById(R.id.solve);
+        ImageView solve=(ImageView) view.findViewById(R.id.solutionsIcon);
         assert solve != null;
         solve.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -252,14 +266,17 @@ public class TargetFragment extends Fragment {
             }
         });
 
-        FloatingActionButton save=(FloatingActionButton)view.findViewById(R.id.save);
-        assert save != null;
-        save.setOnClickListener(new View.OnClickListener() {
+
+
+        ImageView menu=(ImageView) view.findViewById(R.id.overFlowIcon);
+        assert menu != null;
+        menu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveGameDialog();
+                menuDialog();
             }
         });
+
 
     }
 
@@ -290,7 +307,7 @@ public class TargetFragment extends Fragment {
         foundTextView.setText(String.format(Locale.getDefault(),"Found Words: %d", targetGame.getScore()));
         progressBar.incrementProgressBy(1);
         checkLevel();
-        if(word.length()== targetGame.targetWordLength())showVictoryMessage("Congratulations! You got the 9 Letter word.");
+        if(word.length()== targetGame.targetWordLength() &&targetGame.target_status()!= TargetGame.TARGET_STATUS.PERFECT)showVictoryMessage("Congratulations! You got the 9 Letter word.");
 
     }
 
@@ -313,6 +330,7 @@ public class TargetFragment extends Fragment {
                 goodStar.setVisibility(View.VISIBLE);
                 greatStar.setVisibility(View.VISIBLE);
                 perfectStar.setVisibility(View.VISIBLE);
+
                 showVictoryMessage("Congratulations! You found all the words.");
                 break;
         }
@@ -354,7 +372,7 @@ public class TargetFragment extends Fragment {
         aBuilder.setMessage(message);
         aBuilder.setTitle("Victory");
         aBuilder.setIcon(R.mipmap.ic_target);
-        aBuilder.setPositiveButton("Next TargetGame", new DialogInterface.OnClickListener() {
+        aBuilder.setPositiveButton("Next Game", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 reset();
@@ -374,8 +392,6 @@ public class TargetFragment extends Fragment {
     }
 
 
-
-
     private void reset(){
         clear();
         adapter.clear();
@@ -387,31 +403,16 @@ public class TargetFragment extends Fragment {
 
     }
 
-    private void initialiseViewValues(){
-        goodStar.setVisibility(View.INVISIBLE);
-        greatStar.setVisibility(View.INVISIBLE);
-        perfectStar.setVisibility(View.INVISIBLE);
-        goodText.setText(String.format(Locale.getDefault(),"GOOD: %d", targetGame.getGoodTarget()));
-        greatText.setText(String.format(Locale.getDefault(),"GREAT: %d", targetGame.getGreatTarget()));
-        perfectText.setText(String.format(Locale.getDefault(),"PERFECT: %d", targetGame.getPerfectTarget()));
-        attemptTextView.setText("");
-        progressBar.setMax(targetGame.getPerfectTarget());
-        progressBar.setProgress(targetGame.getScore());
-        foundTextView.setText(String.format(Locale.getDefault(),"Found Words: %d", targetGame.getScore()));
-        if(loadGame)foundWordsAdapter.addAll(targetGame.getFoundWords());
-    }
-
-
     private void saveGameDialog() {
         AlertDialog.Builder aBuilder=new AlertDialog.Builder(
                 getContext());
-        aBuilder.setMessage("Would you like to save your Game before exiting").
-                setTitle("Save TargetGame Before Exit?").setIcon(R.mipmap.ic_target);
+        aBuilder.setMessage("Would you like to save your game before exiting").
+                setTitle("Save Game Before Exit?").setIcon(R.mipmap.ic_target);
 
         aBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if(!targetGame.isNewGame()){
+                if(targetGame.isNewGame()){
                     dialog.dismiss();
                     overwriteDialog();
                 }
@@ -455,10 +456,47 @@ public class TargetFragment extends Fragment {
         dialog.show();
     }
 
+    private void menuDialog(){
+        ArrayList<String> menuItems=new ArrayList<>();
+
+        menuItems.add("Save Game");
+        menuItems.add("Load Game");
+        menuItems.add("Change Level");
+        menuItems.add("Exit (without saving)");
+        menuItems.add("Setting");
+        menuItems.add("Help");
+        String[] m=new String[menuItems.size()];
+        AlertDialog.Builder builder=new  AlertDialog.Builder(getContext());
+        builder.setTitle("Select An Option");
+        builder.setItems(menuItems.toArray(m), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case 0:
+                        saveGameDialog();
+                        break;
+                    case 1:
+                        ((MainActivity)getContext()).loadGameDialog();
+                        break;
+                    case 2:
+                        ((MainActivity)getContext()).selectLevel();
+                        break;
+                    case 3:
+                        ((MainActivity)getContext()).selectGameModeDialog();
+                        break;
+                    default:
+                        Toast.makeText(getContext(),"Item not yet Available",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        builder.create().show();
+    }
+
+
 
     private class LetterAdapter extends ArrayAdapter<String>{
 
-        private ArrayList<Integer> selectedItems;
+        private final ArrayList<Integer> selectedItems;
 
         LetterAdapter(Context context,List<String> list){
             super(context, R.layout.simple_grid_item,list);
@@ -475,7 +513,8 @@ public class TargetFragment extends Fragment {
             TextView textView=(TextView)item.findViewById(R.id.letter);
             (textView).setText(this.getItem(position));
             if(position==4){
-                textView.setTextColor(Color.YELLOW);
+                textView.setTextColor(ContextCompat.getColor(getContext(),R.color.black));
+                textView.setBackgroundColor(ContextCompat.getColor(getContext(),R.color.white));
 
             }
 
@@ -492,7 +531,7 @@ public class TargetFragment extends Fragment {
         }
 
         boolean isSelected(int position){
-            return  selectedItems.contains(position);
+            return !selectedItems.contains(position);
         }
 
         void clearSelection(){
@@ -531,9 +570,6 @@ public class TargetFragment extends Fragment {
 
         }
     }
-
-
-
 
 
 }

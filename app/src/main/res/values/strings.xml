@@ -4,12 +4,8 @@
 
     <!-- TODO: Remove or change this placeholder text -->
 
-    <string name="dummy_content">DUMMY\nCONTENT</string>
-    <string name="anagram">Anagram</string>
-    <string name="center_letter">Center Letter</string>
     <string name="enter_letters_here">Enter Letters Here</string>
     <string name="results">Results</string>
-    <string name="crossword_help">Crossword Help</string>
     <string name="how_to">How to Play</string>
     <string name="good">Good</string>
     <string name="great">Great</string>
@@ -17,7 +13,12 @@
     <string name="delete">Delete</string>
 
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="loading">Loading...</string>
+    <string name="loading">Loading…</string>
     <string name="loadung_message">These are precious moments of your life you won\'t be getting back.</string>
+    <string name="submit">Submit</string>
+    <string name="new_game">New Game</string>
+    <string name="solutions">Solutions</string>
+    <string name="more">More</string>
+    <string name="ok">OK</string>
+    <string name="textview">TextView</string>
 </resources>
