@@ -7,7 +7,7 @@
     android:orientation="vertical">
 
     <android.support.v7.widget.CardView
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
@@ -40,14 +40,15 @@
                 android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="@+id/gameProgress"
                 app:layout_constraintLeft_toRightOf="@+id/gameProgress"
-                android:layout_marginLeft="4dp" />
+                android:layout_marginLeft="4dp"
+                android:layout_marginStart="4dp" />
 
             <ProgressBar
                 android:id="@+id/gameProgress"
                 style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
+                android:layout_marginLeft="16dp"
                 android:layout_marginStart="16dp"
                 app:layout_constraintBottom_toBottomOf="@+id/row3"
                 app:layout_constraintLeft_toRightOf="@+id/row3" />
@@ -56,7 +57,7 @@
                 android:id="@+id/date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
+                android:layout_marginLeft="16dp"
                 android:layout_marginStart="16dp"
                 android:text="TextView"
                 android:textSize="18sp"
@@ -64,18 +65,17 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <ImageView
-                android:id="@+id/menuImageView"
+                android:id="@+id/deleteImageView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_overflow" />
+                app:srcCompat="@android:drawable/ic_menu_close_clear_cancel" />
 
             <TextView
                 android:id="@+id/row3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0dp"
                 android:background="@color/white"
                 android:elevation="2dp"
                 android:ems="3"

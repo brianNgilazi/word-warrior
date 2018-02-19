@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="match_parent"
-    tools:context="com.applications.brian.targetword.Presentation.SolverFragment"
+    tools:context="com.applications.brian.wordWarrior.Presentation.SolverFragment"
     tools:layout_editor_absoluteY="25dp"
     tools:layout_editor_absoluteX="0dp">
 

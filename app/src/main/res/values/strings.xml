@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Target Word</string>
+    <string name="app_name">Word Warrior</string>
     <string name="clear">Clear</string>
 
     <!-- TODO: Remove or change this placeholder text -->
@@ -14,11 +14,19 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="loading">Loading…</string>
-    <string name="loadung_message">These are precious moments of your life you won\'t be getting back.</string>
+    <string name="loading_message">These are precious moments of your life you won\'t be getting back.</string>
     <string name="submit">Submit</string>
     <string name="new_game">New Game</string>
     <string name="solutions">Solutions</string>
     <string name="more">More</string>
     <string name="ok">OK</string>
-    <string name="textview">TextView</string>
+    <string name="textView">TextView</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="_0">(0)</string>
+    <string name="zero">0</string>
+    <string name="game_over">GAME OVER!!</string>
+    <string name="exit">Exit</string>
+    <string name="reset_game">Reset Game</string>
 </resources>

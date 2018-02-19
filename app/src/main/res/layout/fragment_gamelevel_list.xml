@@ -7,5 +7,5 @@
     android:layout_height="match_parent"
     android:padding="4dp"
     app:layoutManager="LinearLayoutManager"
-    tools:context="com.applications.brian.targetword.Presentation.GameLevelFragment"
+    tools:context="com.applications.brian.wordWarrior.Presentation.GameLevelFragment"
     tools:listitem="@layout/fragment_gamelevel_item" />
