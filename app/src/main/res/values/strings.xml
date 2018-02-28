@@ -10,7 +10,6 @@
     <string name="good">Good</string>
     <string name="great">Great</string>
     <string name="perfect">Perfect</string>
-    <string name="delete">Delete</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="loading">Loading…</string>
@@ -25,8 +24,13 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="_0">(0)</string>
-    <string name="zero">0</string>
-    <string name="game_over">GAME OVER!!</string>
     <string name="exit">Exit</string>
     <string name="reset_game">Reset Game</string>
+    <string name="load_game">Load Game</string>
+    <string name="help">Help</string>
+
+    <string name="target_info">"Create as many 4+ letter words as you can using the letters displayed. Each word must contain the center letter."</string>
+    <string name="scrabble_info">From a 6x6 grid of letters, the challenge is to form as many high scoring words as possible. Words may only be formed from sequences of adjacent tiles.Two tiles are adjacent if their edges or corners meet.A tile can only be used once.</string>
+    <string name="arcade_info">I dont know fam. Just play the damn game to find out what it\'s about.</string>
+    <string name="scrabble_row_sample">A B C D E F</string>
 </resources>

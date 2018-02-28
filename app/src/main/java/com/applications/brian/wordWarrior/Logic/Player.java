@@ -20,7 +20,7 @@ import java.util.Random;
 
 public class Player {
     private Rect collisionBoundary;
-    private StringBuilder wordInProgress;
+    private final StringBuilder wordInProgress;
     private String currentWord;
 
     private Bitmap icon;
@@ -40,14 +40,14 @@ public class Player {
     private int direction;
 
 
-    private List<String> allWords;
+    private final List<String> allWords;
 
 
     Player(Context context,List<String> allWords) {
 
         imagesSetUp(context);
         this.allWords = allWords;
-        currentWord = allWords.get(TestGame.RANDOM_GENERATOR.nextInt(allWords.size())).toUpperCase();
+        currentWord = allWords.get(ArcadeGame.RANDOM_GENERATOR.nextInt(allWords.size())).toUpperCase();
         wordInProgress = new StringBuilder();
         for(int i = 0; i< currentWord.length(); i++){
             wordInProgress.append("-");
@@ -56,8 +56,8 @@ public class Player {
     }
 
     private void coordinatesSetUp(){
-        this.maxX = TestGame.Maximum_X- icon.getWidth();
-        this.maxY = TestGame.Maximum_Y;
+        this.maxX = ArcadeGame.Maximum_X- icon.getWidth();
+        this.maxY = ArcadeGame.Maximum_Y;
         x = maxX / 2;
         y = maxY - icon.getHeight()+20;//a little padding
         collisionBoundary = new Rect(x, y, x + icon.getWidth(), maxY);
@@ -66,17 +66,17 @@ public class Player {
 
     private void imagesSetUp(Context context) {
         bitmaps = new ArrayList<>();
-        bitmaps.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.big_shaq_sayan));
-        bitmaps.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.big_shaq_super));
-        bitmaps.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.big_shaq_left));
-        bitmaps.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.big_shaq_right));
+        bitmaps.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.mouse));
+        bitmaps.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.mouse));
+        bitmaps.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.mouse));
+        bitmaps.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.mouse));
 
         icon = bitmaps.get(NORMAL_ICON);
 
     }
 
     public void reset(){
-        currentWord = allWords.get(TestGame.RANDOM_GENERATOR.nextInt(allWords.size())).toUpperCase();
+        currentWord = allWords.get(ArcadeGame.RANDOM_GENERATOR.nextInt(allWords.size())).toUpperCase();
         clear();
         x=maxX/2;
         collisionBoundary = new Rect(x, y, x + icon.getWidth(), maxY);
@@ -91,8 +91,8 @@ public class Player {
             if (x > maxX) {
                 x = maxX;
             }
-            if (x < TestGame.MINIMUM_X) {
-                x = TestGame.MINIMUM_X;
+            if (x < ArcadeGame.MINIMUM_X) {
+                x = ArcadeGame.MINIMUM_X;
             }
             collisionBoundary.set(x, y, x + icon.getWidth(), maxY);
         }

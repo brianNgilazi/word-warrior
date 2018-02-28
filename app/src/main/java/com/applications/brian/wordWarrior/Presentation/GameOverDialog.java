@@ -17,14 +17,14 @@ import com.applications.brian.wordWarrior.R;
 
 public class GameOverDialog extends DialogFragment {
 
-    public static final String TITLE_ARG="DIALOG TITLE";
+    private static final String TITLE_ARG="DIALOG TITLE";
     public static final String GAME_OVER="GAME OVER";
     public static final String GAME_OVER_MESSAGE="Wow! You couldn't beat the game? Utterly unsurprising.";
     public static final String PAUSE_GAME="PAUSED";
     public static final String PAUSE_MESSAGE="Press the back button to continue. Or don't. I'm not your boss.";
-    public static final String MESSAGE_ARG="MESSAGE";
-    static View.OnClickListener listener;
-    static GameView.CancelListener cancelListener;
+    private static final String MESSAGE_ARG="MESSAGE";
+    private static View.OnClickListener listener;
+    private static GameView.CancelListener cancelListener;
 
     @Nullable
     @Override
@@ -56,6 +56,6 @@ public class GameOverDialog extends DialogFragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        ((GameView.CancelListener)cancelListener).onCancel();
+        (cancelListener).onCancel();
     }
 }

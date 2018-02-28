@@ -2,6 +2,7 @@ package com.applications.brian.wordWarrior.Logic;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
@@ -10,11 +11,13 @@ import java.util.Scanner;
 
 class GameDictionary {
     private final List<String> wordList;
+    private final HashMap<Character,List<String>> scrabbleList;
     private final List<List<String>> gameLevelsList;
     private final InputStream[] gameLevelInputStreams;
 
     GameDictionary(InputStream inputStream,InputStream[] gameLevelInputStreams){
         wordList=new ArrayList<>();
+        scrabbleList=new HashMap<>();
         populateAllWordsList(inputStream);
         this.gameLevelInputStreams=gameLevelInputStreams;
         gameLevelsList=new ArrayList<>(gameLevelInputStreams.length);
@@ -61,6 +64,10 @@ class GameDictionary {
         return wordList;
     }
 
+    HashMap<Character,List<String>> indexedWords() {
+        return scrabbleList;
+    }
+
     /**
      * Method to populate the required lists
      *
@@ -69,12 +76,22 @@ class GameDictionary {
     private void populateAllWordsList(InputStream input){
         if (input == null) throw new AssertionError();
         Scanner scanner=new Scanner(input);
+
         //if an n letter word is required make a list of n letter words.
         //TODO: Consider creating text file of different word sizes to improve efficiency
 
         while (scanner.hasNextLine()) {
             String word = scanner.nextLine();
             wordList.add(word);
+            char firstLetter=word.charAt(0);
+            if(scrabbleList.keySet().contains(firstLetter)){
+                scrabbleList.get(firstLetter).add(word);
+            }
+            else{
+                List<String> list=new ArrayList<>();
+                list.add(word);
+                scrabbleList.put(firstLetter,list);
+            }
         }
         scanner.close();
 
@@ -100,6 +117,7 @@ class GameDictionary {
         }
         scanner.close();
     }
+
 
 
 }

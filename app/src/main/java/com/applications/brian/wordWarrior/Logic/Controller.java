@@ -2,16 +2,15 @@ package com.applications.brian.wordWarrior.Logic;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import com.applications.brian.wordWarrior.Presentation.MainActivity;
-import com.applications.brian.wordWarrior.Presentation.TargetFragment;
 import com.applications.brian.wordWarrior.R;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
@@ -24,8 +23,8 @@ public class Controller {
     private final GameDictionary gameDictionary;
     private GameWord word;
     private final Context context;
-
-
+    private SharedPreferences preferences;
+    private Profile profile;
 
 
     public Controller(Context context){
@@ -35,12 +34,52 @@ public class Controller {
         InputStream extra_large=context.getResources().openRawResource(R.raw.target_extra_large);
         gameDictionary =new GameDictionary(context.getResources().openRawResource(R.raw.englishwords), new InputStream[]{quick,avg,large,extra_large});
         this.context=context;
+        openProfile();
     }
 
+    //Profile
+    private void openProfile(){
+        preferences = ((MainActivity) context).getPreferences(Context.MODE_PRIVATE);
+        profile=new Profile(preferences.getString(Profile.PREFERENCE_KEY,"0 0 0"));
+    }
+
+    public void updatePoints(int points){
+        profile.incrementPoints(points);
+    }
+
+    public void updateGamesPlayed(){
+        profile.incrementGamesPlayed();
+    }
+
+    public void updateGamesWon(){
+        profile.incrementGamesWon();
+    }
+
+    public void saveProfile(){
+        preferences.edit().putString(Profile.PREFERENCE_KEY,profile.toString()).apply();
+    }
+
+    public String profileInfo(){
+        return profile.profileInfo();
+    }
+
+    //Accessing Dictionary and Data
+    /**
+     *
+     * @return a List containing all the words in the 'dictionary'
+     */
     public List<String> getAllWords(){
         return gameDictionary.allWords();
     }
 
+    /**
+     *
+     * @return a HashMap where each key is a letter of the alphabet and
+     * the value corresponding to each key is a list of letters starting with the key letter
+     */
+    HashMap<Character,List<String>> getIndexedWords() {
+        return gameDictionary.indexedWords();
+    }
 
     GameWord getWord(String actualWord, String anagram){
         word=new GameWord(actualWord,anagram, gameDictionary);
@@ -48,21 +87,21 @@ public class Controller {
 
     }
 
-
-
     GameWord getWord(TargetGame.GAME_LEVEL game_level){
         word= new GameWord(gameDictionary,game_level);
         return word;
     }
+
     public List<String> getCurrentWordSolutions(){
         return word.getAnswers();
     }
 
-    //Utility Methods
-    public List<String> savedGamesData() {
+
+    //Save and Delete Methods
+    public List<String> savedGamesData(String fileName) {
         List<String> data = new ArrayList<>();
         try {
-            InputStream inputStream = context.openFileInput(TargetFragment.SAVE_FILE_NAME);
+            InputStream inputStream = context.openFileInput(fileName);
             Scanner scanner = new Scanner(inputStream);
             while (scanner.hasNextLine()) {
                 data.add(scanner.nextLine());
@@ -71,20 +110,28 @@ public class Controller {
             inputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
+
         }
 
         return data;
     }
 
-    List<SavedGame> savedGamesList() {
+    List<SavedGame> savedGamesList(String fileName) {
 
         List<SavedGame> savedGames = new ArrayList<>();
         try {
-            InputStream inputStream = context.openFileInput(TargetFragment.SAVE_FILE_NAME);
+
+            InputStream inputStream = context.openFileInput(fileName);
             Scanner scanner = new Scanner(inputStream);
-            while (scanner.hasNextLine()) {
-                savedGames.add(new SavedGame(scanner.nextLine()));
+            switch (fileName){
+                case TargetGame.SAVE_FILE_NAME:
+                    while (scanner.hasNextLine()) {savedGames.add(new TargetGame.TargetSavedGame(scanner.nextLine()));}
+                    break;
+                case ScrabbleGame.SAVE_FILE_NAME:
+                    while (scanner.hasNextLine()) {savedGames.add(new ScrabbleGame.ScrabbleSavedGame(scanner.nextLine()));}
+                    break;
             }
+
             scanner.close();
         }
         catch (IOException e) {
@@ -93,9 +140,9 @@ public class Controller {
         return savedGames;
     }
 
-    void saveGame(List<SavedGame> savedGames){
+    void saveGame(String fileName,List<SavedGame> savedGames){
         try {
-            PrintStream printStream = new PrintStream(context.openFileOutput(TargetFragment.SAVE_FILE_NAME, Context.MODE_PRIVATE));
+            PrintStream printStream = new PrintStream(context.openFileOutput(fileName, Context.MODE_PRIVATE));
             for (SavedGame savedGame : savedGames) {
                 printStream.println(savedGame);
             }
@@ -103,24 +150,19 @@ public class Controller {
         }
         catch (IOException e){
             e.printStackTrace();
-            saveGame(savedGames);
+            saveGame(fileName,savedGames);
 
         }
-
-        SharedPreferences.Editor editor = ((MainActivity)context).getPreferences(Context.MODE_PRIVATE).edit();
-        editor.putInt(TargetFragment.SAVE_FILE_NAME,savedGames.size());
-        Log.i("Save Count: OnModify",String.format("count= %d",savedGames.size()));
-        editor.commit();
-
     }
 
-    public void delete(String name) {
-        List<SavedGame> savedGames = savedGamesList();
-        for(int i=0;i<savedGames.size();i++){
+    public void deleteSavedGame(String name, String fileName) {
+        List<SavedGame> savedGames = savedGamesList(fileName);
+        for(int i = 0; i< savedGames.size(); i++){
             if(savedGames.get(i).getName().equals(name)){
                 savedGames.remove(i);
             }
         }
-        saveGame(savedGames);
+        saveGame(fileName,savedGames);
     }
+
 }

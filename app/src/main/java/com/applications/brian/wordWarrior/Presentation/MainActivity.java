@@ -7,16 +7,17 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.view.View;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 import com.applications.brian.wordWarrior.Logic.Controller;
+import com.applications.brian.wordWarrior.Logic.ScrabbleGame;
+import com.applications.brian.wordWarrior.Logic.TargetGame;
 import com.applications.brian.wordWarrior.R;
 
 
 
-public class MainActivity extends AppCompatActivity implements OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements OnFragmentInteractionListener,View.OnClickListener {
 
 
     Controller controller;
@@ -32,17 +33,24 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         task.execute();
     }
 
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(controller!=null)controller.saveProfile();
+    }
+
     @Override
     public void onBackPressed() {
         FragmentManager manager=getSupportFragmentManager();
         int stackCount=manager.getBackStackEntryCount();
-        if(stackCount>1)super.onBackPressed();
+        if(stackCount>1) showHome();
         else{
             exitDialog();
         }
     }
 
-    private void exitDialog(){
+    void exitDialog(){
         AlertDialog.Builder aBuilder=new AlertDialog.Builder(
                 this);
         aBuilder.setMessage("Are you sure you want to give up on this like you give up on everything else?").
@@ -66,13 +74,6 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
     }
 
 
-    private void arcadeHome(){
-        ArcadeHomeFragment arcadeHomeFragment =  ArcadeHomeFragment.newInstance();
-        FragmentTransaction transaction=getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer, arcadeHomeFragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
-    }
 
    /* private void solver(String anagramWord){
         SolverFragment solverFragment = SolverFragment.newInstance(anagramWord);
@@ -100,83 +101,74 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
 
    }
 
-    private void startTestGame(){
-        TestGameFragment testGameFragment=TestGameFragment.newInstance();
+    private void startScrabble(boolean load, String loadData){
+        ScrabbleFragment scrabbleFragment=ScrabbleFragment.newInstance(load,loadData);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer,testGameFragment);
+        transaction.replace(R.id.fragmentContainer,scrabbleFragment);
         //if(getSupportFragmentManager().getBackStackEntryCount()>0)getSupportFragmentManager().popBackStack();
         transaction.addToBackStack(null);
         transaction.commit();
 
     }
 
-    public void loadGameDialog() {
-        int savedGames=getPreferences(MODE_PRIVATE).getInt(TargetFragment.SAVE_FILE_NAME,0);
-        Log.i("Save Count: On Check",String.format("count= %d",savedGames));
-        if(savedGames<1){
-            selectLevel();
-        }
-        else {
-            AlertDialog.Builder aBuilder = new AlertDialog.Builder(this);
-            aBuilder.setMessage("Load Saved Game??");
-            aBuilder.setTitle("Load Game").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    loadPickerDialog();
 
-                }
-            }).setNegativeButton("No", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    selectLevel();
-                }
-            });
+    private void startArcadeGame(){
+        ArcadeGameFragment arcadeGameFragment= ArcadeGameFragment.newInstance();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragmentContainer,arcadeGameFragment);
+        //if(getSupportFragmentManager().getBackStackEntryCount()>0)getSupportFragmentManager().popBackStack();
+        transaction.addToBackStack(null);
+        transaction.commit();
 
-
-            AlertDialog dialog = aBuilder.create();
-            dialog.show();
-        }
     }
 
-    private void loadPickerDialog(){
-        SavedGamesDialog savedGamesDialog=SavedGamesDialog.newInstance(controller.savedGamesData());
+
+
+    /*private void loadPickerDialog(){
+        SavedGamesDialog savedGamesDialog=SavedGamesDialog.newInstance(controller.savedGamesData(TargetGame.SAVE_FILE_NAME));
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragmentContainer,savedGamesDialog);
         if(getSupportFragmentManager().getBackStackEntryCount()>0)getSupportFragmentManager().popBackStack();
         transaction.addToBackStack(null);
         transaction.commit();
-    }
+    }*/
 
     void selectLevel(){
         DialogFragment dialogFragment=new LevelPickerDialog();
         dialogFragment.show(getSupportFragmentManager(),null);
     }
 
-    void selectGameModeDialog(){
-        GameModeFragment gameModeFragment = GameModeFragment.newInstance();
+    void savedGamesDialog(String fileName){
+        SavedGamesDialog  dialog = SavedGamesDialog.newInstance(fileName,controller.savedGamesData(fileName));
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer, gameModeFragment);
+        transaction.replace(R.id.fragmentContainer, dialog);
+        transaction.addToBackStack(null);
+        transaction.commit();
+    }
+
+
+    void showHome(){
+        HomeFragment  homeFragment = HomeFragment.newInstance();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragmentContainer, homeFragment);
         transaction.addToBackStack(null);
         transaction.commit();
     }
     
 
-    //Fragment Interaction Methods
+
     @Override
-    public void onArcadeGameSelected(String gameSelected) {
-        switch(gameSelected){
-            case ArcadeHomeFragment.ArcadeGameItem.TARGET:
-                loadGameDialog();
+    public void loadGame(String fileName,String string, String level) {
+        switch (fileName){
+            case TargetGame.SAVE_FILE_NAME:
+                startTarget(true,string,level);
                 break;
-            case ArcadeHomeFragment.ArcadeGameItem.TEST:
-                startTestGame();
+            case ScrabbleGame.SAVE_FILE_NAME:
+                startScrabble(true,string);
+                break;
+
         }
 
-    }
-
-    @Override
-    public void loadGameData(String string,String level) {
-        startTarget(true,string,level);
     }
 
     @Override
@@ -184,15 +176,29 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         startTarget(false,null,mItem);
     }
 
+
     @Override
-    public void onGameModeSelected(String title) {
-        switch (title){
-            case GameModeFragment.GameMode.ARCADE_MODE:
-                arcadeHome();
+    public void onClick(View v) {
+        int id=v.getId();
+        switch (id){
+            case R.id.targetNewGame:
+                selectLevel();
                 break;
-            default:
-                Toast.makeText(this,"Mode Currently Unavailable.",Toast.LENGTH_SHORT).show();
+            case R.id.targetLoadGame:
+                savedGamesDialog(TargetGame.SAVE_FILE_NAME);
                 break;
+            case R.id.scrabbleNewGame:
+                startScrabble(false,null);
+                break;
+            case R.id.scrabbleLoadGame:
+                savedGamesDialog(ScrabbleGame.SAVE_FILE_NAME);
+                break;
+            case R.id.arcadeNewGame:
+                startArcadeGame();
+                break;
+
+
         }
+
     }
 }

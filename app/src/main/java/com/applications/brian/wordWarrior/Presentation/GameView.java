@@ -13,15 +13,17 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.Toast;
 
+import com.applications.brian.wordWarrior.Logic.ArcadeGame;
 import com.applications.brian.wordWarrior.Logic.BackgroundItem;
+import com.applications.brian.wordWarrior.Logic.Controller;
 import com.applications.brian.wordWarrior.Logic.Letter;
 import com.applications.brian.wordWarrior.Logic.Obstacle;
 import com.applications.brian.wordWarrior.Logic.Player;
-import com.applications.brian.wordWarrior.Logic.TestGame;
 import com.applications.brian.wordWarrior.R;
 
-import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by brian on 2018/02/13.
@@ -30,32 +32,35 @@ import java.util.List;
 
 public class GameView extends SurfaceView implements Runnable,View.OnClickListener{
     private SurfaceHolder surfaceHolder;
-    volatile boolean playing;
-    Thread gameThread=null;
-    Paint paint;
-    Canvas canvas;
-    TestGame game;
+    private volatile boolean playing;
+    private Thread gameThread=null;
+    private Paint paint;
+    private Canvas canvas;
+    private ArcadeGame game;
     private int maxX;
     private int maxY;
-    Bitmap pauseIcon;
-    Rect pauseButtonRect;
-    DialogFragment gameStoppedDialog;
-    private CancelListener cancelListener =new CancelListener();
+    private Bitmap pauseIcon;
+    private Rect pauseButtonRect;
+    private DialogFragment gameStoppedDialog;
+
+    private Controller controller;
+    private final CancelListener cancelListener =new CancelListener();
 
 
     public GameView(Context context){
         super(context);
 
     }
-    public GameView (Context context,int maxX, int maxY, List<String> allWords){
+    public GameView (Context context, int maxX, int maxY, Controller controller){
         super(context);
-        game=new TestGame(context,maxX, maxY, allWords);
+        this.controller=controller;
+        game=new ArcadeGame(context,maxX, maxY, controller.getAllWords());
         surfaceHolder = getHolder();
         paint=new Paint();
         this.maxX=maxX;
         this.maxY=maxY;
         pauseIcon= BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_pause_game);
-        pauseButtonRect=new Rect(maxX-pauseIcon.getWidth()+50,0,maxX,pauseIcon.getHeight()+50);
+        pauseButtonRect=new Rect(maxX-pauseIcon.getWidth()-50,0,maxX,pauseIcon.getHeight()+50);
 
     }
 
@@ -65,6 +70,8 @@ public class GameView extends SurfaceView implements Runnable,View.OnClickListen
            canvas=surfaceHolder.lockCanvas();
            canvas.drawColor(Color.BLACK);
            paint.setColor(Color.WHITE);
+           paint.setFakeBoldText(true);
+
            //progress
            paint.setTextSize(40);
            paint.setTextAlign(Paint.Align.CENTER);
@@ -75,32 +82,35 @@ public class GameView extends SurfaceView implements Runnable,View.OnClickListen
 
            //backgroundItems
            for(BackgroundItem item: game.getBackgroundItems()){
-               paint.setTextSize(20);
-               paint.setColor(Color.GREEN);
 
-               canvas.drawText(item.getItem()+"",item.getX(),item.getY(),paint);
+               paint.setStrokeWidth(2);
+               canvas.drawLine(0,item.getLinePosition(),maxX,item.getLinePosition(),paint);
            }
             //Character
           canvas.drawBitmap(player.getIcon(), player.getX(), player.getY(),paint);
 
            //   Letters
+           paint.setStyle(Paint.Style.STROKE);
+           paint.setStrokeWidth(2);
+
            for(Letter letter:game.getLetters()){
-               canvas.drawBitmap(letter.getIcon(),letter.getX(),letter.getY(),paint);
+               paint.setStyle(Paint.Style.STROKE);
+               paint.setColor(Color.BLUE);
+               canvas.drawCircle(letter.getX(),letter.getY(),64,paint);
+
+               paint.setTextSize(64);
                paint.setStyle(Paint.Style.FILL);
                paint.setColor(Color.WHITE);
-               paint.setTextSize(56);
-               canvas.drawText(letter.getText(),letter.getTextX(),letter.getTextY(),paint);
+               canvas.drawText(letter.getText(),letter.getX(),letter.getY(),paint);
+
            }
 
            //  Obstacles
            for(Obstacle obstacle:game.getObstacles()){
                canvas.drawBitmap(obstacle.getIcon(),obstacle.getX(),obstacle.getY(),paint);
-               paint.setStyle(Paint.Style.FILL);
-               paint.setColor(Color.WHITE);
-               paint.setTextSize(56);
+               paint.setTextSize(64);
                canvas.drawText(obstacle.getPenalty(),obstacle.getTextX(),obstacle.getTextY(),paint);
            }
-
            if(game.isGameOver()){
                playing=false;
 
@@ -123,11 +133,14 @@ public class GameView extends SurfaceView implements Runnable,View.OnClickListen
             gameStoppedDialog.setCancelable(false);
             gameStoppedDialog.show(((MainActivity) getContext()).getSupportFragmentManager(), null);
 
+
         }
 
         else if(game.isPaused()) {
             gameStoppedDialog=GameOverDialog.newInstance(GameOverDialog.PAUSE_GAME,GameOverDialog.PAUSE_MESSAGE,this, cancelListener);
+            gameStoppedDialog.setCancelable(true);
             gameStoppedDialog.show(((MainActivity)getContext()).getSupportFragmentManager(),null);
+
 
         }
     }
@@ -140,7 +153,7 @@ public class GameView extends SurfaceView implements Runnable,View.OnClickListen
         }
     }
 
-    protected void pause(){
+    void pause(){
         playing=false;
         game.pause();
         try {
@@ -154,6 +167,12 @@ public class GameView extends SurfaceView implements Runnable,View.OnClickListen
         playing=true;
         gameThread=new Thread(this);
         gameThread.start();
+    }
+
+    private void updatePoints(){
+        int points=game.getPoints();
+        controller.updatePoints(points);
+        Toast.makeText(getContext(),String.format(Locale.getDefault(),"%d points earned",points),Toast.LENGTH_SHORT).show();
     }
 
 
@@ -183,7 +202,6 @@ public class GameView extends SurfaceView implements Runnable,View.OnClickListen
                 case R.id.quitButton:
                     gameStoppedDialog.dismiss();
                     ((Activity)getContext()).onBackPressed();
-                    gameStoppedDialog.dismiss();
                     break;
                 case R.id.newGameButton:
                     game.reset();

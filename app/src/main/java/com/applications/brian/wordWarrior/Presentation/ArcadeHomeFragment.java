@@ -4,7 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,6 +43,7 @@ public class ArcadeHomeFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
 
+
         return inflater.inflate(R.layout.arcade_home_fragment, container, false);
     }
 
@@ -53,9 +54,10 @@ public class ArcadeHomeFragment extends Fragment {
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
-            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+            recyclerView.setLayoutManager(new GridLayoutManager(context,3));
             recyclerView.setAdapter(new ArcadeHomeAdapter(getItems(),mListener));
         }
+
     }
 
     @Override
@@ -75,10 +77,12 @@ public class ArcadeHomeFragment extends Fragment {
         mListener = null;
     }
 
+
     private static List<ArcadeGameItem> getItems(){
         List<ArcadeGameItem> list=new ArrayList<>(4);
         list.add(new ArcadeGameItem(ArcadeGameItem.TARGET,"Create as many 4+ letter words as you can using the letters displayed. Each word must contain the center letter."));
         list.add(new ArcadeGameItem(ArcadeGameItem.TEST,"Check This out y'all"));
+        list.add(new ArcadeGameItem(ArcadeGameItem.SCRABBLE,"Scrabble basically. "));
         return list;
     }
 
@@ -86,6 +90,7 @@ public class ArcadeHomeFragment extends Fragment {
 
         static final String TARGET="Target";
         static final String TEST="Test Game";
+        public static final String SCRABBLE ="Scrabble?" ;
 
         private final String title;
         private final String detail;
@@ -140,7 +145,7 @@ public class ArcadeHomeFragment extends Fragment {
                     if (null != mListener) {
                         // Notify the active callbacks interface (the activity, if the
                         // fragment is attached to one) that an item has been selected.
-                        mListener.onArcadeGameSelected(holder.mItem.getTitle());
+
                     }
                 }
             });

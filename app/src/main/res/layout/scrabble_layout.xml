@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:theme="@style/AlertDialog.AppCompat"
+    app:layout_collapseParallaxMultiplier="1.0"
+    app:layout_scrollFlags="scroll">
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/currentScore"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/_0"
+            app:layout_constraintLeft_toRightOf="@+id/newWord"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/newGameIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            app:srcCompat="@drawable/ic_refresh"
+            app:layout_constraintLeft_toLeftOf="@+id/newGameText"
+            app:layout_constraintRight_toRightOf="@+id/newGameText"
+            app:layout_constraintHorizontal_bias="0.6"
+            app:layout_constraintBottom_toTopOf="@+id/newGameText" />
+
+        <TextView
+            android:id="@+id/solutionsText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:fontFamily="sans-serif-smallcaps"
+            android:text="@string/solutions"
+            app:layout_constraintLeft_toRightOf="@+id/newGameText"
+            app:layout_constraintTop_toTopOf="@+id/newGameText"
+            app:layout_constraintBottom_toBottomOf="@+id/newGameText"
+            app:layout_constraintRight_toLeftOf="@+id/moreText" />
+
+        <ImageView
+            android:id="@+id/solutionsIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            app:layout_constraintBottom_toTopOf="@+id/solutionsText"
+            app:layout_constraintHorizontal_bias="0.47"
+            app:layout_constraintLeft_toLeftOf="@+id/solutionsText"
+            app:layout_constraintRight_toRightOf="@+id/solutionsText"
+            app:srcCompat="@drawable/ic_done" />
+
+        <TextView
+            android:id="@+id/newGameText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:fontFamily="sans-serif-smallcaps"
+            android:text="@string/new_game"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginBottom="4dp"
+            app:layout_constraintRight_toLeftOf="@+id/solutionsText"
+            app:layout_constraintLeft_toLeftOf="parent" />
+
+
+        <TextView
+            android:id="@+id/newWord"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:ems="9"
+            android:minEms="9"
+            android:text="@string/app_name"
+            android:textAlignment="center"
+            android:textSize="24sp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/include"
+
+            app:layout_constraintHorizontal_bias="0.503" />
+
+        <View
+            android:id="@+id/view"
+            android:layout_width="0dp"
+            android:layout_height="2dp"
+            android:background="@color/white"
+            app:layout_constraintEnd_toEndOf="@id/newWord"
+            app:layout_constraintLeft_toLeftOf="@+id/newWord"
+            app:layout_constraintRight_toRightOf="@+id/newWord"
+            app:layout_constraintStart_toStartOf="@id/newWord"
+            app:layout_constraintTop_toBottomOf="@+id/newWord"
+            tools:layout_constraintLeft_creator="1"
+            tools:layout_constraintRight_creator="1" />
+
+
+        <GridView
+            android:id="@+id/gridView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"
+            android:clipChildren="false"
+            android:gravity="center_vertical|center_horizontal"
+            android:horizontalSpacing="0dp"
+            android:numColumns="6"
+            android:verticalSpacing="0dp"
+            app:layout_constraintBottom_toTopOf="@+id/newGameIcon"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/view"
+            app:layout_constraintVertical_bias="0.25
+"
+            tools:listitem="@layout/scrabble_tile" />
+
+        <Button
+            android:id="@+id/submitWord"
+            style="@style/Widget.AppCompat.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-smallcaps"
+            android:text="@string/submit"
+            android:textAlignment="center"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toBottomOf="@+id/clearButton"
+            app:layout_constraintLeft_toRightOf="@+id/clearButton"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/clearButton"
+            app:layout_constraintVertical_bias="1.0" />
+
+        <Button
+            android:id="@+id/clearButton"
+            style="@style/Widget.AppCompat.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-smallcaps"
+            android:text="@string/clear"
+            android:textSize="18sp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/submitWord"
+            android:layout_marginBottom="40dp"
+            app:layout_constraintBottom_toTopOf="@+id/newGameIcon"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/gridView"
+            app:layout_constraintVertical_bias="0.20999998" />
+
+        <android.support.constraint.Guideline
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintGuide_begin="20dp"
+            android:orientation="horizontal"
+            tools:layout_editor_absoluteY="45dp"
+            tools:layout_editor_absoluteX="0dp" />
+
+        <ImageView
+            android:id="@+id/overFlowIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            app:layout_constraintBottom_toTopOf="@+id/moreText"
+            app:layout_constraintLeft_toLeftOf="@+id/moreText"
+            app:layout_constraintRight_toRightOf="@+id/moreText"
+            app:srcCompat="@drawable/ic_more" />
+
+        <TextView
+            android:id="@+id/moreText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-smallcaps"
+            android:text="@string/more"
+            app:layout_constraintBottom_toBottomOf="@+id/solutionsText"
+            app:layout_constraintLeft_toRightOf="@+id/solutionsText"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/solutionsText" />
+
+    </android.support.constraint.ConstraintLayout>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="@color/black_overlay">
+
+        <include
+            android:id="@+id/header"
+            layout="@layout/game_info_header_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <GridView
+            android:id="@+id/drawerList"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:headerDividersEnabled="true"
+            android:numColumns="3"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/header"
+            tools:layout_constraintLeft_creator="1"
+            tools:layout_constraintTop_creator="1" />
+    </android.support.constraint.ConstraintLayout>
+
+</android.support.v4.widget.DrawerLayout>

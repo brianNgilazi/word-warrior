@@ -20,7 +20,6 @@
             android:name="com.applications.brian.wordWarrior.Presentation.HelpActivity"
             android:label="@string/how_to"
             android:parentActivityName="com.applications.brian.wordWarrior.Presentation.MainActivity" />
-        <activity android:name="com.applications.brian.wordWarrior.Presentation.CanvasGameActivity"></activity>
     </application>
 
 </manifest>

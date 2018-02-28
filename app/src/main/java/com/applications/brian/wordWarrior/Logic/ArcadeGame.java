@@ -2,7 +2,10 @@ package com.applications.brian.wordWarrior.Logic;
 
 import android.content.Context;
 import android.graphics.Rect;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
+
+import com.applications.brian.wordWarrior.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,16 +16,17 @@ import java.util.Random;
  * class to represent a Game;
  */
 
-public class TestGame {
+public class ArcadeGame {
 
 
     private final Context context;
     private boolean gameOver;
     private boolean paused;
-    private Player player;
-    private ArrayList<BackgroundItem> backgroundItems =new ArrayList<>();
-    private ArrayList<Obstacle> obstacles=new ArrayList<>();
-    private ArrayList<Letter> letters =new ArrayList<>();
+    private final Player player;
+    private final ArrayList<BackgroundItem> backgroundItems =new ArrayList<>();
+    private final ArrayList<Obstacle> obstacles=new ArrayList<>();
+    private final ArrayList<Letter> letters =new ArrayList<>();
+    private final int lineColor;
 
     private static final int ITEM_COUNT=200;
 
@@ -37,21 +41,24 @@ public class TestGame {
 
     private static String currentWord;
 
-    public TestGame(Context context,int maxX, int maxY, List<String> allWords){
+    public ArcadeGame(Context context, int maxX, int maxY, List<String> allWords){
 
 
         Maximum_Y=maxY;
         Maximum_X=maxX;
         this.context=context;
+        lineColor = ContextCompat.getColor(context, R.color.colorPrimary);
 
+        int lines=maxY/200;
+        for(int i=1;i<lines+1;i++){
+            backgroundItems.add(new BackgroundItem(i*200));
+        }
         player =new Player(context,allWords);
         currentWord=player.getCurrentWord();
-        for(int i=0;i<ITEM_COUNT;i++){
-            backgroundItems.add(new BackgroundItem(maxX,maxY));
-        }
 
 
-        letters.add(new Letter(context,maxX,maxY));
+
+        letters.add(new Letter(context,maxX,maxY,64));
 
 
 
@@ -69,7 +76,7 @@ public class TestGame {
         letters.clear();
         obstacles.clear();
 
-        letters.add(new Letter(context, Maximum_X, Maximum_Y));
+        letters.add(new Letter(context, Maximum_X, Maximum_Y,64));
         obstacles.add(new Obstacle(context, Maximum_X, Maximum_Y));
     }
 
@@ -77,9 +84,7 @@ public class TestGame {
 
     public void update() {
         player.update();
-        for(BackgroundItem star: backgroundItems){
-            star.update();
-        }
+
         for(Letter letter:letters){
             letter.update();
             if(Rect.intersects(player.getCollisionBoundary(),letter.getCollisionBoundary())){
@@ -107,7 +112,7 @@ public class TestGame {
         Log.d("Level","level is:"+level);
             level++;
             currentWord=player.getCurrentWord();
-            letters.add(new Letter(context,Maximum_X,Maximum_Y));
+            letters.add(new Letter(context,Maximum_X,Maximum_Y,64));
 
             obstacles.add(new Obstacle(context,Maximum_X,Maximum_Y));
 
@@ -158,8 +163,15 @@ public class TestGame {
         paused=true;
     }
 
-    public List<String> getLexicon(){
-        return player.getAllWords();
+    public int getPoints(){
+        return player.getTotalScore();
+    }
 
+    public int getLineColor() {
+        return lineColor;
+    }
+
+    public void unPause() {
+        paused=false;
     }
 }

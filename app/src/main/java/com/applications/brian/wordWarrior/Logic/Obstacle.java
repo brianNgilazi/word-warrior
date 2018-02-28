@@ -14,26 +14,27 @@ import com.applications.brian.wordWarrior.R;
 
 public class Obstacle {
     private String penalty;
-    private Bitmap icon;
+    private final Bitmap icon;
     private int x,y;
-    private  int maxX,maxY;
+    private final int maxX;
+    private final int maxY;
     private int speed=10;
-    private Rect collisionBoundary;
-    private int[] penaltyArray={5,5,5,5,5,5,5,5,5,5,10,10,10,10,10,20,20,20,40,40,80};
+    private final Rect collisionBoundary;
+    private final int[] penaltyArray={5,5,5,5,5,5,5,5,5,5,10,10,10,10,10,20,20,20,40,40,80};
 
 
 
     Obstacle(Context context, int maxX, int maxY){
 
 
-        icon= BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_image);
-        penalty =String.valueOf(penaltyArray[TestGame.RANDOM_GENERATOR.nextInt(penaltyArray.length)]);
+        icon= BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle);
+        penalty =String.valueOf(penaltyArray[ArcadeGame.RANDOM_GENERATOR.nextInt(penaltyArray.length)]);
         this.maxX=maxX-icon.getWidth();
         this.maxY=maxY;
 
-        x=TestGame.RANDOM_GENERATOR.nextInt(this.maxX);
+        x= ArcadeGame.RANDOM_GENERATOR.nextInt(this.maxX);
         y=0;
-        speed=30+TestGame.RANDOM_GENERATOR.nextInt(5);
+        speed=15+ ArcadeGame.RANDOM_GENERATOR.nextInt(5);
 
         collisionBoundary =new Rect(x,y,x+icon.getWidth(),y+icon.getHeight());
     }
@@ -44,16 +45,16 @@ public class Obstacle {
         if(y>maxY){
             y=0;
 
-            x=TestGame.RANDOM_GENERATOR.nextInt(maxX);
-            speed=30+TestGame.RANDOM_GENERATOR.nextInt(5);
-            penalty =String.valueOf(penaltyArray[TestGame.RANDOM_GENERATOR.nextInt(penaltyArray.length)]);
+            x= ArcadeGame.RANDOM_GENERATOR.nextInt(maxX);
+            speed=15+ ArcadeGame.RANDOM_GENERATOR.nextInt(5);
+            penalty =String.valueOf(penaltyArray[ArcadeGame.RANDOM_GENERATOR.nextInt(penaltyArray.length)]);
 
         }
         collisionBoundary.set(x,y,x+icon.getWidth(),y+icon.getHeight());
 
     }
 
-  
+
     public String getPenalty() {
         return penalty;
     }
@@ -84,8 +85,8 @@ public class Obstacle {
 
     void reset() {
         y=0;
-        x=TestGame.RANDOM_GENERATOR.nextInt(maxX);
-        speed=30+TestGame.RANDOM_GENERATOR.nextInt(5);
+        x= ArcadeGame.RANDOM_GENERATOR.nextInt(maxX);
+        speed=15+ ArcadeGame.RANDOM_GENERATOR.nextInt(5);
         collisionBoundary.set(x,y,x+icon.getWidth(),y+icon.getHeight());
 
     }

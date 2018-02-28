@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.applications.brian.wordWarrior.Logic.Controller;
 import com.applications.brian.wordWarrior.R;
 
 
@@ -19,16 +20,17 @@ import com.applications.brian.wordWarrior.R;
  * Activities that contain this fragment must implement the
  * {@link OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link TestGameFragment#newInstance} factory method to
+ * Use the {@link ArcadeGameFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class TestGameFragment extends Fragment {
+public class ArcadeGameFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
-    GameView gameView;
+    private GameView gameView;
+    private Controller controller;
 
 
-    public TestGameFragment() {
+    public ArcadeGameFragment() {
         // Required empty public constructor
     }
 
@@ -36,18 +38,17 @@ public class TestGameFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @return A new instance of fragment TestGameFragment.
+     * @return A new instance of fragment ArcadeGameFragment.
      */
 
-    public static TestGameFragment newInstance() {
-        return new TestGameFragment();
+    public static ArcadeGameFragment newInstance() {
+        return new ArcadeGameFragment();
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
+        controller=((MainActivity) getActivity()).controller;
     }
 
     @Override
@@ -61,7 +62,7 @@ public class TestGameFragment extends Fragment {
         Display display=getActivity().getWindowManager().getDefaultDisplay();
         Point size= new Point();
         display.getSize(size);
-        gameView=new GameView(getContext(),size.x,size.y,((MainActivity)getActivity()).controller.getAllWords());
+        gameView=new GameView(getContext(),size.x,size.y,controller);
         ((ViewGroup)view.findViewById(R.id.mainArea)).addView(gameView);
 
     }

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context=".Presentation.MainActivity">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="0dp"
+        android:layout_height="116dp"
+        android:adjustViewBounds="true"
+        android:cropToPadding="false"
+        android:fitsSystemWindows="true"
+        android:scaleType="centerCrop"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/scrabble" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/scrabbleHelp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:onClick="onClick"
+        app:backgroundTint="@color/transparent"
+        app:fabSize="normal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/scrabbleLoadGame"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView"
+        app:srcCompat="@android:drawable/ic_menu_help" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/scrabbleLoadGame"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:onClick="onClick"
+        app:backgroundTint="@color/transparent"
+        app:fabSize="normal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView"
+        app:layout_constraintVertical_bias="0.501"
+        app:srcCompat="@android:drawable/ic_menu_upload" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/scrabbleNewGame"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:onClick="onClick"
+        app:backgroundTint="@color/transparent"
+        app:fabSize="normal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/scrabbleLoadGame"
+        app:layout_constraintTop_toBottomOf="@+id/imageView"
+        app:srcCompat="@android:drawable/ic_menu_add" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:onClick="onClick"
+        android:text="@string/new_game"
+        app:layout_constraintLeft_toLeftOf="@+id/scrabbleNewGame"
+        app:layout_constraintRight_toRightOf="@+id/scrabbleNewGame"
+        app:layout_constraintTop_toBottomOf="@+id/scrabbleNewGame" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:onClick="onClick"
+        android:text="@string/load_game"
+        app:layout_constraintLeft_toLeftOf="@+id/scrabbleLoadGame"
+        app:layout_constraintRight_toRightOf="@+id/scrabbleLoadGame"
+        app:layout_constraintTop_toBottomOf="@+id/scrabbleLoadGame" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:onClick="onClick"
+        android:text="@string/help"
+        app:layout_constraintLeft_toLeftOf="@+id/scrabbleHelp"
+        app:layout_constraintRight_toRightOf="@+id/scrabbleHelp"
+        app:layout_constraintTop_toBottomOf="@+id/scrabbleHelp" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="0dp"
+        android:layout_height="84dp"
+        android:background="@color/darkBlue"
+        android:fontFamily="casual"
+        android:text="@string/scrabble_info"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView" />
+</android.support.constraint.ConstraintLayout>

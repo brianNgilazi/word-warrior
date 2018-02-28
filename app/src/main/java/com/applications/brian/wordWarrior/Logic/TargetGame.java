@@ -1,5 +1,7 @@
 package com.applications.brian.wordWarrior.Logic;
 
+import android.support.annotation.NonNull;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,11 +15,15 @@ import java.util.Locale;
  */
 
 public class TargetGame {
+    public static final String SAVE_FILE_NAME="targetSavedGames";
     private GameWord currentGameWord;
     private int score;
     private List<String> foundWords;
     private final Controller controller;
     private boolean newGame=true;
+    private boolean gameWon=false;
+    private int nineLetterWords=0;
+
 
 
     /**
@@ -83,6 +89,10 @@ public class TargetGame {
     private void updateProgress(String word){
         foundWords.add(word);
         score++;
+        if(word.length()==9){
+            nineLetterWords+=1;
+            gameWon=true;
+        }
     }
 
     /**
@@ -139,6 +149,11 @@ public class TargetGame {
     }
 
 
+    public boolean isGameWon() {
+        return gameWon;
+    }
+
+
 
     /**
      * Method to reset game with new values
@@ -147,26 +162,26 @@ public class TargetGame {
         currentGameWord=controller.getWord(game_level);
         score=0;
         foundWords.clear();
+        nineLetterWords=0;
+        gameWon=false;
     }
 
-
-
     public void save(SAVING_STATUS saving_status){
-        List<SavedGame> savedGames=controller.savedGamesList();
-        SavedGame latestSavedGame=new SavedGame(getSaveGameData());
+        List<SavedGame> targetSavedGames =controller.savedGamesList(SAVE_FILE_NAME);
+        TargetSavedGame latestTargetSavedGame =new TargetSavedGame(getSaveGameData());
         if(saving_status==SAVING_STATUS.NEW_SAVE){
-            savedGames.add(latestSavedGame);
+            targetSavedGames.add(latestTargetSavedGame);
 
         }
         else if(saving_status==SAVING_STATUS.OVERRIDE){
-            for (SavedGame savedGame : savedGames) {
-                if (savedGame.compareTo(latestSavedGame) == 0) {
-                        savedGame.set(latestSavedGame);
+            for (SavedGame targetSavedGame : targetSavedGames) {
+                if (targetSavedGame.compareTo(latestTargetSavedGame) == 0) {
+                        targetSavedGame.set(latestTargetSavedGame);
                 }
             }
         }
 
-        controller.saveGame(savedGames);
+        controller.saveGame(SAVE_FILE_NAME,targetSavedGames);
     }
 
     private String getSaveGameData(){
@@ -207,6 +222,25 @@ public class TargetGame {
         return score==currentGameWord.getAnswers().size();
     }
 
+    public int getPoints(){
+        int points=score*5;
+        points+=nineLetterWords*250;
+        switch (target_status()){
+            case GOOD:
+                points+=50;
+                break;
+            case GREAT:
+                points+=100;
+                break;
+            case PERFECT:
+                points+=500;
+                break;
+        }
+
+        return points;
+
+    }
+
     public static List<String> Levels(){
         ArrayList<String> arrayList=new ArrayList<>();
         arrayList.add(GAME_LEVEL.QUICK.name());
@@ -218,6 +252,85 @@ public class TargetGame {
     }
 
 
+    /**
+     * Created by brian on 2018/02/09.
+     * Class to handle saved games in the form of strings
+     */
+
+    public static class TargetSavedGame implements SavedGame {
+
+        private int score;
+        private int total;
+        private String rawData;
+        private String name;
+        private String level;
+        private String gameAnagram;
+        private String[] foundWords;
 
 
+        public TargetSavedGame(String data){
+            rawData=data;
+            String[] dataArray=data.split(" ");
+            name=dataArray[0];
+            gameAnagram=dataArray[1];
+            total=Integer.parseInt(dataArray[3]);
+            level=dataArray[4];
+            score=dataArray.length-5;
+            foundWords= Arrays.copyOfRange(dataArray,5,dataArray.length);
+        }
+
+        public int getScore() {
+            return score;
+        }
+
+        public int getTotal() {
+            return total;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getLevel() {
+            return level;
+        }
+
+        public String getRow(int rowNumber){
+            switch (rowNumber){
+                case 1:
+                    return gameAnagram.substring(0,3);
+                case 2:
+                    return gameAnagram.substring(3,6);
+                case 3:
+                    return gameAnagram.substring(6,9);
+
+            }
+            return " ";
+        }
+
+        @Override
+        public String toString() {
+            return rawData;
+        }
+
+
+        @Override
+        public int compareTo(@NonNull SavedGame another) {
+            if(another instanceof TargetSavedGame){
+                return gameAnagram.compareTo(((TargetSavedGame)another).gameAnagram);
+            }
+            return 0;
+        }
+
+        public void set(SavedGame another) {
+            TargetSavedGame other=(TargetSavedGame)another; 
+            rawData=other.rawData;
+            name=other.name;
+            gameAnagram=other.gameAnagram;
+            total=other.total;
+            score=other.score;
+            level=other.level;
+            foundWords= other.foundWords;
+        }
+    }
 }
