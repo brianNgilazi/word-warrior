@@ -10,9 +10,9 @@
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="@+id/greatStar"
         app:layout_constraintLeft_toRightOf="@+id/greatStar"
+        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="@+id/greatStar"
-        app:srcCompat="@drawable/ic_star"
-        app:layout_constraintRight_toRightOf="parent" />
+        app:srcCompat="@drawable/ic_star" />
 
     <ImageView
         android:id="@+id/greatStar"
@@ -66,5 +66,19 @@
         app:layout_constraintHorizontal_bias="0.466"
         app:layout_constraintLeft_toLeftOf="@+id/perfectStar"
         app:layout_constraintRight_toRightOf="@+id/perfectStar" />
+
+    <TextView
+        android:id="@+id/timer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:fontFamily="monospace"
+        android:textColor="@color/cardview_light_background"
+        android:textSize="18sp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/greatStar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp" />
 
 </android.support.constraint.ConstraintLayout>

@@ -16,5 +16,7 @@ interface OnFragmentInteractionListener {
 
     void onLevelSelect(String mItem);
 
+    void onGameOptionSelect(int game,String mItem);
+
 
 }

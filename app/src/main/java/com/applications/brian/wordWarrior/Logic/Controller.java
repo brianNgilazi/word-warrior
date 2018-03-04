@@ -47,6 +47,10 @@ public class Controller {
         profile.incrementPoints(points);
     }
 
+    public void spendPoints(int points){
+        updatePoints(points*-1);
+    }
+
     public void updateGamesPlayed(){
         profile.incrementGamesPlayed();
     }
@@ -62,6 +66,8 @@ public class Controller {
     public String profileInfo(){
         return profile.profileInfo();
     }
+
+    public int getProfilePoints(){return profile.getPoints();}
 
     //Accessing Dictionary and Data
     /**
@@ -150,7 +156,7 @@ public class Controller {
         }
         catch (IOException e){
             e.printStackTrace();
-            saveGame(fileName,savedGames);
+
 
         }
     }
@@ -165,4 +171,31 @@ public class Controller {
         saveGame(fileName,savedGames);
     }
 
+    public List<Integer> getHighScores(String fileName) {
+        List<Integer> scores=new ArrayList<>();
+        try{
+            InputStream inputStream = context.openFileInput(fileName);
+            Scanner scanner = new Scanner(inputStream);
+            while (scanner.hasNextLine()) {scores.add(Integer.parseInt(scanner.nextLine()));}
+            scanner.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    return scores;
+    }
+
+    void saveHighScores(String fileName, List<Integer> highScores){
+        try {
+            PrintStream printStream = new PrintStream(context.openFileOutput(fileName, Context.MODE_PRIVATE));
+            for (Integer score : highScores) {
+                printStream.println(score);
+            }
+            printStream.close();
+        }
+        catch (IOException e){
+            e.printStackTrace();
+
+        }
+    }
 }

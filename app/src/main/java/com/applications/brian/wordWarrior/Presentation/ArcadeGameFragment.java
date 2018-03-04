@@ -62,9 +62,8 @@ public class ArcadeGameFragment extends Fragment {
         Display display=getActivity().getWindowManager().getDefaultDisplay();
         Point size= new Point();
         display.getSize(size);
-        gameView=new GameView(getContext(),size.x,size.y,controller);
+        gameView=new GameView(getContext(),size,controller);
         ((ViewGroup)view.findViewById(R.id.mainArea)).addView(gameView);
-
     }
 
     @Override

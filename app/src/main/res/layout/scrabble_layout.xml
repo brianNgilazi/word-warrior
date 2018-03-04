@@ -183,15 +183,19 @@
 
     </android.support.constraint.ConstraintLayout>
 
-    <android.support.constraint.ConstraintLayout
+    <android.support.design.widget.NavigationView
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start">
+        <android.support.constraint.ConstraintLayout
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@color/black_overlay">
+        android:background="@color/cardview_dark_background">
 
         <include
             android:id="@+id/header"
-            layout="@layout/game_info_header_layout"
+            layout="@layout/scrabble_header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
@@ -211,5 +215,6 @@
             tools:layout_constraintLeft_creator="1"
             tools:layout_constraintTop_creator="1" />
     </android.support.constraint.ConstraintLayout>
+    </android.support.design.widget.NavigationView>
 
 </android.support.v4.widget.DrawerLayout>

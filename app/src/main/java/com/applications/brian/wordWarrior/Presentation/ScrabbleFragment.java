@@ -1,12 +1,9 @@
 package com.applications.brian.wordWarrior.Presentation;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.media.MediaPlayer;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -37,6 +34,8 @@ import com.applications.brian.wordWarrior.Logic.ScrabbleLetter;
 import com.applications.brian.wordWarrior.R;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -69,7 +68,7 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
     private List<View> allModifiedViews;
 
     //Views
-    private TextView attemptTextView,foundTextView,currentScore;
+    private TextView attemptTextView,foundTextView,currentScore,totalScore;
     private GridView grid;
 
     boolean firstAttempt=true;
@@ -145,6 +144,7 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
 
         //Progress
         GridView foundGridView=(GridView)view.findViewById(R.id.drawerList);
+        totalScore=(TextView)view.findViewById(R.id.score);
         foundTextView=(TextView)view.findViewById(R.id.foundCountView);
         foundWordsAdapter=new ArrayAdapter<>(getContext(),android.R.layout.simple_list_item_1);
         foundGridView.setAdapter(foundWordsAdapter);
@@ -160,8 +160,9 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         firstAttempt=true;
         attemptTextView.setText("");
         currentScore.setText(String.valueOf(0));
-        foundTextView.setText(String.format(Locale.getDefault(),"Found Words: %d", scrabbleGame.getScore()));
+       totalScore.setText(String.format(Locale.getDefault(),"Score: %d", scrabbleGame.getScore()));
         if(loadGame)foundWordsAdapter.addAll(scrabbleGame.getFoundWords());
+        foundTextView.setText(String.format(Locale.getDefault(),"Found Words: %d", foundWordsAdapter.getCount()));
     }
 
     private void prepareGrid(View view){
@@ -246,9 +247,9 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         if(scrabbleGame.submitWord(potential)){
             adapter.setSelectionUsed();
             incrementProgress(potential);
-            Uri ringtone= RingtoneManager.getActualDefaultRingtoneUri(getContext(),RingtoneManager.TYPE_NOTIFICATION);
-            MediaPlayer mp=MediaPlayer.create(getContext(),ringtone);
+            MediaPlayer mp=MediaPlayer.create(getContext(),R.raw.success);
             mp.start();
+            return;
         }
         else if(scrabbleGame.checkPlayed(potential)){
             showAlreadyFoundMessage(potential.toLowerCase());
@@ -256,6 +257,8 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         }
         else showIncorrectMessage(potential.toLowerCase());
         clear();
+        MediaPlayer mp=MediaPlayer.create(getContext(),R.raw.fail);
+        mp.start();
     }
 
     private void clear(){
@@ -274,7 +277,8 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
 
     private void incrementProgress(String word){
         foundWordsAdapter.add(word);
-        foundTextView.setText(String.format(Locale.getDefault(),"Found Words: %d", scrabbleGame.getScore()));
+        foundTextView.setText(String.format(Locale.getDefault(),"Found Words: %d", foundWordsAdapter.getCount()));
+       totalScore.setText(String.format(Locale.getDefault(),"Score: %d", scrabbleGame.getScore()));
         for (View view:viewList){
             view.setBackgroundResource(0);
             view.setBackgroundColor(randomColour.getCurrentColor());
@@ -282,8 +286,9 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         allModifiedViews.addAll(viewList);
         randomColour.nextColor();
         if(scrabbleGame.gameOver()){
-            showVictoryMessage("No more words left in the grid");
+            victory("No more words left in the grid",scrabbleGame.newHighScore());
         }
+        clear();
 
     }
 
@@ -336,9 +341,10 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         dialog.show();
     }
 
-    private void showVictoryMessage(String message){
+    private void victory(String message,boolean highScore){
         AlertDialog.Builder aBuilder=new AlertDialog.Builder(getContext());
         controller.updateGamesWon();
+        if(highScore)message=String.format(Locale.getDefault(),"%s%n%s",message,"New High Score!");
         aBuilder.setMessage(message);
         aBuilder.setTitle("Victory");
         aBuilder.setPositiveButton("Next Game", new DialogInterface.OnClickListener() {
@@ -405,6 +411,7 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         ArrayList<String> menuItems=new ArrayList<>();
         menuItems.add("Save Game");
         menuItems.add("Load Game");
+        menuItems.add("High Scores");
         menuItems.add("Exit (without saving)");
         menuItems.add("Settings");
         menuItems.add("Help");
@@ -422,6 +429,9 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
                         ((MainActivity)getContext()).savedGamesDialog(ScrabbleGame.SAVE_FILE_NAME);
                         break;
                     case 2:
+                        ((MainActivity)getContext()).highScoresDialog(ScrabbleGame.SCORE_FILE_NAME);
+                        break;
+                    case 3:
                         ((MainActivity)getContext()).showHome();
                         break;
                     default:
@@ -449,6 +459,12 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         return aBuilder.create();
     }
 
+    public void searchForLongestWord(String option){
+        MyTask task=new MyTask(option);
+        //noinspection unchecked
+        task.execute();
+    }
+
     @Override
     public void onClick(View v) {
         int id=v.getId();
@@ -463,11 +479,10 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
             reset();
         }
 
-
         else if(id==R.id.solutionsIcon||id==R.id.solutionsText){
-            MyTask task=new MyTask();
-            //noinspection unchecked
-            task.execute();
+            PurchaseDialog dialogFragment=PurchaseDialog.newInstance(PurchaseDialog.SCRABBLE_GAME);
+            dialogFragment.setCallingFragment(this);
+            dialogFragment.show(getFragmentManager(),null);
         }
 
         else if(id==R.id.overFlowIcon||id==R.id.moreText){
@@ -630,36 +645,37 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
 
 
     private class MyTask extends AsyncTask{
-        final ProgressDialog progressDialog;
+        final ScrabbleSolverDialog progressDialog;
 
 
-        MyTask(){
-            progressDialog=new ProgressDialog(getContext());
+        MyTask(String purchasedOption){
+            progressDialog=ScrabbleSolverDialog.newInstance(purchasedOption);
         }
 
         @Override
-        protected void onPreExecute() {
-            progressDialog.setIndeterminate(true);
-            progressDialog.setMessage("Searching");
-            progressDialog.show();
+        protected void onPreExecute() {;
+            progressDialog.show(getFragmentManager(),null);
         }
 
         @Override
         protected Object doInBackground(Object[] params) {
-            scrabbleGame.checkForWords();
-            //noinspection StatementWithEmptyBody
-            while(scrabbleGame.solutionStatus.get()==ScrabbleGame.SEARCHING){
 
-            }
-            return null;
+            return scrabbleGame.longestWord();
         }
 
         @Override
         protected void onPostExecute(Object o) {
-            String message;
-            if(scrabbleGame.solutionStatus.get()==ScrabbleGame.FOUND)message="Word Found";
-            else message="No Word Found";
-            progressDialog.setMessage(message);
+            List<String> list=(List<String>)o;
+            Collections.sort(list,new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    return scrabbleGame.scoreForWord(o1)-scrabbleGame.scoreForWord(o2);
+                }
+            });
+            int listSize=list.size();
+            if(listSize!=0) progressDialog.setText(list.get(list.size()-1));
+            else progressDialog.setText("No Words Found.");
+
         }
     }
 

@@ -33,4 +33,12 @@
     <string name="scrabble_info">From a 6x6 grid of letters, the challenge is to form as many high scoring words as possible. Words may only be formed from sequences of adjacent tiles.Two tiles are adjacent if their edges or corners meet.A tile can only be used once.</string>
     <string name="arcade_info">I dont know fam. Just play the damn game to find out what it\'s about.</string>
     <string name="scrabble_row_sample">A B C D E F</string>
+    <string name="no_items_message">Nothing to see here. Press back to go to the game home screen.</string>
+    <string name="use_points">Use Points</string>
+    <string name="cancel_purchase">I\'m too cheap for this</string>
+    <string name="use_points_prompt">There\'s no such thing as a free lunch. Use your points to perform this action.</string>
+    <string name="insufficient_points">You\'re too broke for this.</string>
+    <string name="waiting_message">This might take a minute. Sit tight if you can\'t stand waiting.</string>
+    <string name="done">Done</string>
+    <string name="no_option_selected">No option Selected</string>
 </resources>

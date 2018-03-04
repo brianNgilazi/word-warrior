@@ -2,9 +2,12 @@ package com.applications.brian.wordWarrior.Logic;
 
 import android.support.annotation.NonNull;
 
+import com.applications.brian.wordWarrior.Utilities.Time;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -16,15 +19,15 @@ import java.util.Locale;
 
 public class TargetGame {
     public static final String SAVE_FILE_NAME="targetSavedGames";
+    public static final String SCORE_FILE_NAME="targetHighScores";
     private GameWord currentGameWord;
     private int score;
     private List<String> foundWords;
     private final Controller controller;
     private boolean newGame=true;
     private boolean gameWon=false;
+    private List<Integer> highScores;
     private int nineLetterWords=0;
-
-
 
     /**
      * enum representing progress towards targets
@@ -42,12 +45,15 @@ public class TargetGame {
     public  enum GAME_LEVEL {QUICK, AVERAGE, LONG, MARATHON, RANDOM}
     private GAME_LEVEL game_level;
 
+
+
     public TargetGame(Controller controller,GAME_LEVEL level){
         this.controller=controller;
         currentGameWord=controller.getWord(level);
         score=0;
         foundWords=new ArrayList<>();
         game_level=level;
+        highScores=controller.getHighScores(SCORE_FILE_NAME);
     }
 
     /**
@@ -59,6 +65,7 @@ public class TargetGame {
         this.controller=controller;
         load(data);
         newGame=false;
+        highScores=controller.getHighScores(SCORE_FILE_NAME);
     }
 
 
@@ -116,6 +123,28 @@ public class TargetGame {
         return TARGET_STATUS.NONE;
     }
 
+    public boolean newHighScore(String time) {
+        int timeInt= Time.timeinSeconds(time);
+        int size=highScores.size();
+        if(size<5){
+            highScores.add(timeInt);
+            Collections.sort(highScores);
+            controller.saveHighScores(SCORE_FILE_NAME,highScores);
+            return true;
+        }
+        int lowestScore=highScores.get(highScores.size()-1);
+        if(score>lowestScore)return false;
+        highScores.remove(4);
+        for(int i=0;i<size;i++){
+            if(timeInt<highScores.get(i)){
+                highScores.add(i,timeInt);
+                break;
+            }
+        }
+        controller.saveHighScores(SCORE_FILE_NAME,highScores);
+        return true;
+    }
+
     public boolean isNewGame() {
         return !newGame;
     }
@@ -147,13 +176,6 @@ public class TargetGame {
     private String getJumbledGameWord(){
         return currentGameWord.getGameAnagram();
     }
-
-
-    public boolean isGameWon() {
-        return gameWon;
-    }
-
-
 
     /**
      * Method to reset game with new values

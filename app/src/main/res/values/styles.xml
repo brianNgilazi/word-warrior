@@ -18,7 +18,10 @@
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
 
-    <style name="MyTheme" parent="AppTheme.NoActionBar" />
+    <style name="MyTheme" parent="AppTheme.NoActionBar" >
+        <item name="android:colorBackground">@color/black_overlay_darker</item>
+        <item name="colorAccent">@color/white</item>
+    </style>
 
     <style name="MyPopUp" parent="Theme.AppCompat.NoActionBar">
         <item name="android:popupBackground">@color/black_overlay</item>

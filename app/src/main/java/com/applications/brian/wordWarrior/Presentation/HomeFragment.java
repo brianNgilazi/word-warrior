@@ -1,6 +1,9 @@
 package com.applications.brian.wordWarrior.Presentation;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -14,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -108,7 +112,7 @@ public class HomeFragment extends Fragment {
         profileDetails=(TextView)view.findViewById(R.id.profileDetails);
         profileDetails.setText(controller.profileInfo());
         optionsList=(ListView)view.findViewById(R.id.drawer_list);
-        optionsList.setAdapter(new ArrayAdapter<String>(getContext(),android.R.layout.simple_list_item_1,optionsList()));
+        optionsList.setAdapter(new DrawerAdapter(getContext(),optionsList()));
         optionsList.setOnItemClickListener(new DrawerListClickListener());
 
 
@@ -128,15 +132,21 @@ public class HomeFragment extends Fragment {
                 switch (position){
                     case 0:
                         toolbar.setTitle("Target");
-                        toolbar.setBackgroundColor(ContextCompat.getColor(getContext(),R.color.dark_gray));
+                        toolbar.setBackgroundColor(ContextCompat.getColor(getContext(),R.color.white));
+                        toolbar.setTitleTextColor(ContextCompat.getColor(getContext(),R.color.black));
+                        toolbar.setNavigationIcon(R.drawable.ic_drawer_dark);
                         break;
                     case 1:
                         toolbar.setTitle("Scrabble");
                         toolbar.setBackgroundColor(ContextCompat.getColor(getContext(),R.color.darkBlue));
+                        toolbar.setTitleTextColor(ContextCompat.getColor(getContext(),R.color.white));
+                        toolbar.setNavigationIcon(R.drawable.ic_drawer);
                         break;
                     case 2:
                         toolbar.setTitle("Arcade");
                         toolbar.setBackgroundColor(ContextCompat.getColor(getContext(),android.R.color.holo_green_dark));
+                        toolbar.setTitleTextColor(ContextCompat.getColor(getContext(),R.color.white));
+                        toolbar.setNavigationIcon(R.drawable.ic_drawer);
                         break;
 
                 }
@@ -148,7 +158,7 @@ public class HomeFragment extends Fragment {
 
             }
         });
-
+        pager.setCurrentItem(1);
         pager.setCurrentItem(0);
         return view;
     }
@@ -156,7 +166,6 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        pager.setCurrentItem(0);
     }
 
     private List<String> optionsList(){
@@ -165,6 +174,30 @@ public class HomeFragment extends Fragment {
         return list;
     }
 
+
+    private class DrawerAdapter extends ArrayAdapter<String>{
+        DrawerAdapter(Context context,List<String> list) {
+            super(context, R.layout.drawer_list_item,list);
+        }
+
+        @NonNull
+        @Override
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+            View item=convertView;
+            if(item==null){
+                item=LayoutInflater.from(getContext()).inflate(R.layout.drawer_list_item,parent,false);
+            }
+            String itemName=""+getItem(position);
+            switch (itemName){
+                case "Exit":
+                    ((ImageView)item.findViewById(R.id.icon)).setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
+                    ((TextView)item.findViewById(R.id.text)).setText(getItem(position));
+                    break;
+            }
+            return item;
+        }
+
+    }
     private class DrawerListClickListener implements AdapterView.OnItemClickListener{
 
         @Override

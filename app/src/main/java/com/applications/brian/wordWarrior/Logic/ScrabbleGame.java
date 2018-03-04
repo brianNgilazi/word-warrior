@@ -8,6 +8,7 @@ import android.util.Log;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -23,19 +24,23 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ScrabbleGame {
     public static final String SAVE_FILE_NAME="scrabbleSavedGames";
+    public static final String SCORE_FILE_NAME="scrabbleHighScores";
     private ScrabbleLetterCollection collection;
     private int score;
     private List<String> foundWords;
     private List<String> allWords;
+    private List<Integer> highScores;
     private HashMap<Character,List<String>> indexedWords;
-    private final Controller controller;
-    private boolean newGame=true;
+    private Controller controller;
+    private boolean newGame;
     private List<ScrabbleLetter> scrabbleLetters;
-    public AtomicInteger solutionStatus;
+    private AtomicInteger solutionStatus;
 
-    public static final int SEARCHING=0;
-    public static final int FOUND=1;
+    private static final int SEARCHING=0;
+    private static final int FOUND=1;
     private static final int NOT_FOUND=-1;
+
+
 
 
     /**
@@ -45,12 +50,9 @@ public class ScrabbleGame {
 
 
     public ScrabbleGame(Controller controller){
-        this.controller=controller;
+        init(controller);
         score=0;
         foundWords=new ArrayList<>();
-        allWords=controller.getAllWords();
-        indexedWords=controller.getIndexedWords();
-        collection=new ScrabbleLetterCollection();
         scrabbleLetters=collection.getLetterCollection();
 
     }
@@ -61,13 +63,18 @@ public class ScrabbleGame {
      * @param data the data required for loading;
      */
     public ScrabbleGame(Controller controller, String data){
-        this.controller=controller;
-        indexedWords=controller.getIndexedWords();
-        collection=new ScrabbleLetterCollection();
-        scrabbleLetters=new ArrayList<>();
-        allWords=controller.getAllWords();
+        init(controller);
         load(data);
         newGame=false;
+    }
+
+    private void init(Controller controller){
+        this.controller=controller;
+        allWords=controller.getAllWords();
+        indexedWords=controller.getIndexedWords();
+        collection=new ScrabbleLetterCollection();
+        highScores=controller.getHighScores(SCORE_FILE_NAME);
+        newGame=true;
     }
 
     /**
@@ -99,11 +106,35 @@ public class ScrabbleGame {
     }
 
     public int getPoints() {
-        return score;
+        return score*5;
     }
 
     public int scoreForWord(String word){
         return collection.calculateScore(word);
+    }
+
+    public boolean newHighScore( ) {
+        int size=highScores.size();
+        if(size<5){
+            highScores.add(score);
+            Collections.sort(highScores);
+            controller.saveHighScores(SCORE_FILE_NAME,highScores);
+            return true;
+        }
+        int lowestScore=highScores.get(0);
+        Collections.reverse(highScores);
+        if(score<lowestScore)return false;
+        highScores.remove(4);
+        for(int i=0;i<size;i++){
+            if(score>highScores.get(i)){
+                highScores.add(i,score);
+                break;
+            }
+        }
+        Collections.reverse(highScores);
+        controller.saveHighScores(SCORE_FILE_NAME,highScores);
+        return true;
+
     }
 
     public boolean isNewGame() {
@@ -117,7 +148,6 @@ public class ScrabbleGame {
     public int getScore(){
         return score;
     }
-
 
     /**
      * Method to reset game with new values
@@ -177,6 +207,7 @@ public class ScrabbleGame {
         ScrabbleSavedGame savedGame=new ScrabbleSavedGame(line);
         boolean[] selected=savedGame.getSelectionArray();
         char[] letters=savedGame.gameLetters.toCharArray();
+        scrabbleLetters=new ArrayList<>();
         for(int i=0;i<letters.length;i++){
             ScrabbleLetter scrabbleLetter=new ScrabbleLetter(letters[i],collection.calculateScore(String.valueOf(letters[i])));
             scrabbleLetter.setUsed(selected[i]);
@@ -230,11 +261,10 @@ public class ScrabbleGame {
 
         }
 
-        if(solutionStatus.get()==FOUND)return false;
-        return true;
+        return solutionStatus.get() != FOUND;
     }
 
-    public void checkForWords() {
+    private void checkForWords() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             if (solutionStatus == null) solutionStatus= new AtomicInteger();
             solutionStatus.set(SEARCHING);
@@ -256,6 +286,30 @@ public class ScrabbleGame {
 
         }
         if(solutionStatus.get()==SEARCHING)solutionStatus.set(NOT_FOUND);
+    }
+
+    public List<String> longestWord(){
+        List<String> found=new ArrayList<>();
+        found= Collections.synchronizedList(found);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            ArrayList<RecursiveAction> solutionThreads = new ArrayList<>();
+            for (int i = 0; i < scrabbleLetters.size(); i++) {
+                ScrabbleLetter letter = scrabbleLetters.get(i);
+                if (!letter.isUsed()) {
+                    List<Integer> visited=new ArrayList<>();
+                    visited.add(i);
+                    RecursiveAction solutionFinder=new SolutionListThread(letter.toString(), getAdjacent(i, visited),visited,found);
+                    solutionThreads.add(solutionFinder);
+                    solutionFinder.fork();
+                }
+            }
+
+            for(RecursiveAction action:solutionThreads){
+                action.join();
+            }
+
+        }
+        return found;
     }
 
     //Helper Classes
@@ -282,7 +336,6 @@ public class ScrabbleGame {
 
             for(int i:adjacent){
                 String newWord=wordInProgress+scrabbleLetters.get(i).toString();
-                Log.i("Progress",newWord);
                 if(newWord.length()>2 && allWords.contains(newWord.toLowerCase())){
                     Log.i("Found",newWord);
                     solutionStatus.set(FOUND);
@@ -291,6 +344,52 @@ public class ScrabbleGame {
                 List<Integer> integers=new ArrayList<>(visited);
                 integers.add(i);
                 new SolutionFinder(newWord,getAdjacent(i,visited),integers).fork();
+            }
+        }
+
+        private boolean couldBeSolution(){
+            String word=wordInProgress.toLowerCase();
+            if(!EnglishChecker.couldBeEnglishWord(word))return false;
+            char letter=word.charAt(0);
+            List<String> list=indexedWords.get(letter);
+            for(String s:list){
+                if(s.startsWith(word))return true;
+            }
+
+            return false;
+        }
+
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private class SolutionListThread extends RecursiveAction{
+
+        final List<Integer> adjacent;
+        final String wordInProgress;
+        final List<Integer> visited;
+        final List<String> found;
+
+
+        SolutionListThread(String currentWord,List<Integer> adjacentPositions,List<Integer> visited,List<String> found){
+            wordInProgress=currentWord;
+            adjacent=adjacentPositions;
+            this.visited=visited;
+            this.found=found;
+        }
+
+        @Override
+        public void compute() {
+            if(!couldBeSolution())return;
+            for(int i:adjacent){
+                String newWord=wordInProgress+scrabbleLetters.get(i).toString();
+                Log.i("Search",newWord);
+                if(newWord.length()>2 && allWords.contains(newWord.toLowerCase()) &&!found.contains(newWord)){
+                    Log.i("Found",newWord);
+                    found.add(newWord);
+                }
+                List<Integer> integers=new ArrayList<>(visited);
+                integers.add(i);
+                new SolutionListThread(newWord,getAdjacent(i,visited),integers,found).fork();
             }
         }
 
@@ -396,7 +495,6 @@ public class ScrabbleGame {
      * Created by brian on 2018/02/09.
      * Class to handle saved games in the form of strings
      */
-
     public static class ScrabbleSavedGame implements SavedGame {
 
         private int score;
@@ -420,12 +518,9 @@ public class ScrabbleGame {
         }
 
         public int getScore() {
-            return score;
-        }
-
-        public int getTotal() {
             return total;
         }
+
 
         public String getName() {
             return name;

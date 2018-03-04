@@ -4,9 +4,9 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.media.MediaPlayer;
-import android.media.RingtoneManager;
-import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
@@ -33,6 +33,7 @@ import android.widget.Toast;
 import com.applications.brian.wordWarrior.Logic.Controller;
 import com.applications.brian.wordWarrior.Logic.TargetGame;
 import com.applications.brian.wordWarrior.R;
+import com.applications.brian.wordWarrior.Utilities.Time;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +74,10 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
     private ImageView perfectStar;
     private ProgressBar progressBar;
     private GridView grid;
+    private TextView timer;
     private boolean firstAttempt=true;
+    volatile boolean running;
+    boolean notDone=true;
 
     public TargetFragment() {
         // Required empty public constructor
@@ -137,6 +141,20 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
         initialise(view);
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        running=false;
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        running=true;
+
+    }
+
     //  Initialisation Methods
     private void initialise(View view){
         //targets
@@ -160,6 +178,10 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
         greatStar=(ImageView) (view.findViewById(R.id.greatStar));
         perfectStar=(ImageView) (view.findViewById(R.id.perfectStar));
 
+        //Time
+        timer=(TextView)view.findViewById(R.id.timer);
+
+
         initialiseViewValues();
         prepareButtons(view);
         prepareGrid(view);
@@ -167,6 +189,10 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
     }
 
     private void initialiseViewValues(){
+        notDone=true;
+        running=true;
+        ClockTask clock=new ClockTask(timer);
+        clock.execute();
         goodStar.setVisibility(View.INVISIBLE);
         greatStar.setVisibility(View.INVISIBLE);
         perfectStar.setVisibility(View.INVISIBLE);
@@ -249,15 +275,17 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
         String potential=attemptTextView.getText().toString();
         if(!targetGame.checkPlayed(potential) && targetGame.submitWord(potential)){
             incrementProgress(potential);
-            clear();
-            Uri ringtone= RingtoneManager.getActualDefaultRingtoneUri(getContext(),RingtoneManager.TYPE_NOTIFICATION);
-            MediaPlayer mp=MediaPlayer.create(getContext(),ringtone);
+            MediaPlayer mp=MediaPlayer.create(getContext(),R.raw.success);
             mp.start();
+            return;
         }
         else if(targetGame.checkPlayed(potential)){
             showAlreadyFoundMessage(potential.toLowerCase());
         }
         else showIncorrectMessage(potential.toLowerCase());
+        clear();
+        MediaPlayer mp=MediaPlayer.create(getContext(),R.raw.fail);
+        mp.start();
     }
 
     private void clear(){
@@ -272,9 +300,10 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
         progressBar.incrementProgressBy(1);
         checkLevel();
         if(word.length()== targetGame.targetWordLength() &&targetGame.target_status()!= TargetGame.TARGET_STATUS.PERFECT){
-            showVictoryMessage("Congratulations! You got the 9 Letter word.");
+            victory("Congratulations! You got the 9 Letter word.",targetGame.newHighScore(timer.getText().toString()));
             controller.updateGamesWon();
         }
+        clear();
 
     }
 
@@ -297,7 +326,7 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
                 goodStar.setVisibility(View.VISIBLE);
                 greatStar.setVisibility(View.VISIBLE);
                 perfectStar.setVisibility(View.VISIBLE);
-                showVictoryMessage("You found all the words.Congratulations on being adequate.");
+                victory("You found all the words.Congratulations on being adequate.",false);
                 break;
         }
     }
@@ -333,8 +362,10 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
         dialog.show();
     }
 
-    private void showVictoryMessage(String message){
+    private void victory(String message, boolean highScore){
+        running=false;
         AlertDialog.Builder aBuilder=new AlertDialog.Builder(getContext());
+        if(highScore)message=String.format(Locale.getDefault(),"%s%n%s",message,"[New High Score!]");
         aBuilder.setMessage(message);
         aBuilder.setTitle("Victory");
         aBuilder.setIcon(R.drawable.ic_target);
@@ -349,6 +380,7 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
+                    running=true;
                 }
             });
         }
@@ -359,6 +391,7 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
 
     private void reset(){
         AlertDialog dialog=loadDialog();
+        notDone=false;
         updatePoints();
         clear();
         adapter.clear();
@@ -434,6 +467,7 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
         menuItems.add("Save Game");
         menuItems.add("Load Game");
         menuItems.add("Change Level");
+        menuItems.add("High Scores");
         menuItems.add("Exit (without saving)");
         menuItems.add("Settings");
         menuItems.add("Help");
@@ -443,18 +477,22 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
         builder.setItems(menuItems.toArray(m), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                MainActivity mainActivity=((MainActivity)getContext());
                 switch (which){
                     case 0:
                         saveGameDialog();
                         break;
                     case 1:
-                        ((MainActivity)getContext()).savedGamesDialog(TargetGame.SAVE_FILE_NAME);
+                        mainActivity.savedGamesDialog(TargetGame.SAVE_FILE_NAME);
                         break;
                     case 2:
-                        ((MainActivity)getContext()).selectLevel();
+                        mainActivity.selectLevel();
                         break;
                     case 3:
-                        ((MainActivity)getContext()).onBackPressed();
+                        mainActivity.highScoresDialog(TargetGame.SCORE_FILE_NAME);
+                        break;
+                    case 4:
+                        mainActivity.onBackPressed();
                         break;
                     default:
                         Toast.makeText(getContext(),"Item not yet Available",Toast.LENGTH_SHORT).show();
@@ -487,6 +525,8 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
         }
         if(id==R.id.clearButton){
             clear();
+
+
         }
 
         else if(id==R.id.newGameIcon||id==R.id.newGameText){
@@ -495,7 +535,7 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
 
 
         else if(id==R.id.solutionsIcon||id==R.id.solutionsText){
-            DialogFragment dialogFragment=new SolverDialog();
+            DialogFragment dialogFragment=PurchaseDialog.newInstance(PurchaseDialog.TARGET_GAME);
             dialogFragment.show(getFragmentManager(),null);
         }
 
@@ -582,6 +622,38 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
         public void onDestroyActionMode(ActionMode mode) {
 
         }
+    }
+
+    private class ClockTask extends AsyncTask<Void,Void,Void>{
+        private TextView timeTextView;
+        private Time time;
+
+
+        ClockTask(TextView textView){
+            timeTextView=textView;
+            time=new Time();
+            textView.setText(time.stringValue());
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            while (notDone) {
+                while (running) {
+                    time.tick();
+                    SystemClock.sleep(1000);
+                    publishProgress();
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            timeTextView.setText(time.stringValue());
+        }
+
+
     }
 
 

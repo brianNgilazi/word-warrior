@@ -7,9 +7,9 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 import android.view.WindowManager;
 
+import com.applications.brian.wordWarrior.Logic.ArcadeGame;
 import com.applications.brian.wordWarrior.Logic.Controller;
 import com.applications.brian.wordWarrior.Logic.ScrabbleGame;
 import com.applications.brian.wordWarrior.Logic.TargetGame;
@@ -17,7 +17,7 @@ import com.applications.brian.wordWarrior.R;
 
 
 
-public class MainActivity extends AppCompatActivity implements OnFragmentInteractionListener,View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements OnFragmentInteractionListener {
 
 
     Controller controller;
@@ -146,6 +146,10 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         transaction.commit();
     }
 
+    void highScoresDialog(String fileName){
+        HighScoreDialog  dialog = HighScoreDialog.newInstance(fileName);
+        dialog.show(getSupportFragmentManager(),null);
+    }
 
     void showHome(){
         HomeFragment  homeFragment = HomeFragment.newInstance();
@@ -176,29 +180,53 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         startTarget(false,null,mItem);
     }
 
-
     @Override
-    public void onClick(View v) {
-        int id=v.getId();
-        switch (id){
-            case R.id.targetNewGame:
-                selectLevel();
-                break;
-            case R.id.targetLoadGame:
-                savedGamesDialog(TargetGame.SAVE_FILE_NAME);
-                break;
-            case R.id.scrabbleNewGame:
-                startScrabble(false,null);
-                break;
-            case R.id.scrabbleLoadGame:
-                savedGamesDialog(ScrabbleGame.SAVE_FILE_NAME);
-                break;
-            case R.id.arcadeNewGame:
-                startArcadeGame();
+    public void onGameOptionSelect(int game, String mItem) {
+        switch (game){
+
+            case GameHomeFragment.TARGET:
+                if(mItem.equals(GameHomeFragment.NEW_GAME)){
+                    selectLevel();
+                    return;
+                }
+                if(mItem.equals(GameHomeFragment.LOAD_GAME)){
+                    savedGamesDialog(TargetGame.SAVE_FILE_NAME);
+                    return;
+                }
+                if(mItem.equals(GameHomeFragment.HIGH_SCORE)){
+                    highScoresDialog(TargetGame.SCORE_FILE_NAME);
+                    return;
+                }
                 break;
 
+            case GameHomeFragment.SCRABBLE:
+                if(mItem.equals(GameHomeFragment.NEW_GAME)){
+                    startScrabble(false,null);
+                    return;
+                }
+                if(mItem.equals(GameHomeFragment.LOAD_GAME)){
+                    savedGamesDialog(ScrabbleGame.SAVE_FILE_NAME);
+                    return;
+                }
+                if(mItem.equals(GameHomeFragment.HIGH_SCORE)){
+                    highScoresDialog(ScrabbleGame.SCORE_FILE_NAME);
+                    return;
+                }
+                break;
+
+            case GameHomeFragment.ARCADE:
+                if(mItem.equals(GameHomeFragment.NEW_GAME)){
+                    startArcadeGame();
+                    return;
+                }
+                if(mItem.equals(GameHomeFragment.HIGH_SCORE)){
+                    highScoresDialog(ArcadeGame.SCORE_FILE_NAME);
+                    return;
+                }
 
         }
-
     }
+
+
+
 }

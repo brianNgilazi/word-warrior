@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/black_overlay"
     android:fitsSystemWindows="true"
     tools:context=".Presentation.MainActivity">
 
@@ -20,84 +21,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/arcade" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/arcadeHelp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        android:onClick="onClick"
-        app:backgroundTint="@color/transparent"
-        app:fabSize="normal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toRightOf="@+id/arcadeLoadGame"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView"
-        app:srcCompat="@android:drawable/ic_menu_help" />
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/arcadeLoadGame"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@color/transparent"
-        android:clickable="true"
-        android:onClick="onClick"
-        app:backgroundTint="@color/transparent"
-        app:fabSize="normal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView"
-        app:layout_constraintVertical_bias="0.501"
-        app:srcCompat="@android:drawable/ic_menu_upload" />
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/arcadeNewGame"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@color/transparent"
-        android:clickable="true"
-        android:onClick="onClick"
-        app:backgroundTint="@color/transparent"
-        app:fabSize="normal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/arcadeLoadGame"
-        app:layout_constraintTop_toBottomOf="@+id/imageView"
-        app:srcCompat="@android:drawable/ic_menu_add" />
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:onClick="onClick"
-        android:text="@string/new_game"
-        app:layout_constraintLeft_toLeftOf="@+id/arcadeNewGame"
-        app:layout_constraintRight_toRightOf="@+id/arcadeNewGame"
-        app:layout_constraintTop_toBottomOf="@+id/arcadeNewGame" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:onClick="onClick"
-        android:text="@string/load_game"
-        app:layout_constraintLeft_toLeftOf="@+id/arcadeLoadGame"
-        app:layout_constraintRight_toRightOf="@+id/arcadeLoadGame"
-        app:layout_constraintTop_toBottomOf="@+id/arcadeLoadGame" />
-
-    <TextView
-        android:id="@+id/textView3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:onClick="onClick"
-        android:text="@string/help"
-        app:layout_constraintLeft_toLeftOf="@+id/arcadeHelp"
-        app:layout_constraintRight_toRightOf="@+id/arcadeHelp"
-        app:layout_constraintTop_toBottomOf="@+id/arcadeHelp" />
-
     <TextView
         android:id="@+id/textView4"
         android:layout_width="0dp"
@@ -112,4 +35,17 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView4"
+        tools:listitem="@layout/options_item" />
+
 </android.support.constraint.ConstraintLayout>

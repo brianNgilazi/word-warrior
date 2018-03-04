@@ -37,18 +37,20 @@ public class SavedGamesDialog extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
+        List<String> savedGames=getArguments().getStringArrayList("LIST");
+        if(savedGames==null || savedGames.size()==0)return inflater.inflate(R.layout.no_items_layout,container,false);
         View layout=inflater.inflate(R.layout.saved_games_layout,container,false);
+
         RecyclerView recyclerView =(RecyclerView)layout.findViewById(R.id.savedGameRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         String fileName=getArguments().getString("FILENAME","");
         if(fileName.equals(TargetGame.SAVE_FILE_NAME)){
-            TargetSavedGameAdapter adapter = new TargetSavedGameAdapter(getArguments().getStringArrayList("LIST"), (MainActivity) getActivity(), (((MainActivity) getActivity()).controller));
+            TargetSavedGameAdapter adapter = new TargetSavedGameAdapter(savedGames, (MainActivity) getActivity(), (((MainActivity) getActivity()).controller));
             recyclerView.setAdapter(adapter);
         }
         else if(fileName.equals(ScrabbleGame.SAVE_FILE_NAME)){
-            ScrabbleSavedGameAdapter adapter = new ScrabbleSavedGameAdapter(getArguments().getStringArrayList("LIST"), (MainActivity) getActivity(), (((MainActivity) getActivity()).controller));
+            ScrabbleSavedGameAdapter adapter = new ScrabbleSavedGameAdapter(savedGames, (MainActivity) getActivity(), (((MainActivity) getActivity()).controller));
             recyclerView.setAdapter(adapter);
         }
 
@@ -211,7 +213,7 @@ public class SavedGamesDialog extends Fragment {
         public void onBindViewHolder(final ScrabbleSavedGameHolder holder, final int position) {
             holder.scrabbleSavedGame = scrabbleSavedGames.get(position);
 
-            //TODO: set Views
+
             holder.row1.setText(holder.scrabbleSavedGame.getRow(1));
             holder.row2.setText(holder.scrabbleSavedGame.getRow(2));
             holder.row3.setText(holder.scrabbleSavedGame.getRow(3));
