@@ -13,13 +13,13 @@ public class Time {
 
 
 
-    public Time(){
+    Time(){
         hours=0;
         minutes=0;
         seconds=0;
     }
 
-    public void tick(){
+    void tick(){
         seconds++;
         if(seconds>MAXIMUM_MINUTES_SECONDS){
             seconds=0;
@@ -29,17 +29,22 @@ public class Time {
             minutes=0;
             hours++;
         }
-
     }
 
-    public String stringValue(){
+    void reset(){
+        hours=0;
+        minutes=0;
+        seconds=0;
+    }
+
+    String stringValue(){
         if(hours==0){
             return String.format(Locale.getDefault(),"%02d:%02d",minutes,seconds);
         }
         return this.toString();
     }
 
-    public static int timeinSeconds(String time){
+    public static int timeInSeconds(String time){
         String[] data=time.split(":");
         int total=Integer.parseInt(data[data.length-1]);
         total+=Integer.parseInt(data[data.length-2])*60;

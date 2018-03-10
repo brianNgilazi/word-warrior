@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -25,9 +26,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         LoadingParallelTask task=new LoadingParallelTask(this);
         task.execute();
@@ -44,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
     public void onBackPressed() {
         FragmentManager manager=getSupportFragmentManager();
         int stackCount=manager.getBackStackEntryCount();
-        if(stackCount>1) showHome();
+        if(stackCount>1) dashboard();
         else{
             exitDialog();
         }
@@ -72,8 +71,6 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         AlertDialog dialog= aBuilder.create();
         dialog.show();
     }
-
-
 
    /* private void solver(String anagramWord){
         SolverFragment solverFragment = SolverFragment.newInstance(anagramWord);
@@ -111,7 +108,6 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
 
     }
 
-
     private void startArcadeGame(){
         ArcadeGameFragment arcadeGameFragment= ArcadeGameFragment.newInstance();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -122,16 +118,6 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
 
     }
 
-
-
-    /*private void loadPickerDialog(){
-        SavedGamesDialog savedGamesDialog=SavedGamesDialog.newInstance(controller.savedGamesData(TargetGame.SAVE_FILE_NAME));
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer,savedGamesDialog);
-        if(getSupportFragmentManager().getBackStackEntryCount()>0)getSupportFragmentManager().popBackStack();
-        transaction.addToBackStack(null);
-        transaction.commit();
-    }*/
 
     void selectLevel(){
         DialogFragment dialogFragment=new LevelPickerDialog();
@@ -146,15 +132,26 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         transaction.commit();
     }
 
+    void aboutPage(){
+        Fragment about=AboutFragment.newInstance();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragmentContainer, about);
+        transaction.addToBackStack(null);
+
+        transaction.commit();
+    }
+
     void highScoresDialog(String fileName){
         HighScoreDialog  dialog = HighScoreDialog.newInstance(fileName);
         dialog.show(getSupportFragmentManager(),null);
     }
 
-    void showHome(){
-        HomeFragment  homeFragment = HomeFragment.newInstance();
+
+
+    void dashboard(){
+        Dashboard  dashboard = Dashboard.newInstance();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer, homeFragment);
+        transaction.replace(R.id.fragmentContainer, dashboard);
         transaction.addToBackStack(null);
         transaction.commit();
     }
@@ -221,12 +218,26 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
                 }
                 if(mItem.equals(GameHomeFragment.HIGH_SCORE)){
                     highScoresDialog(ArcadeGame.SCORE_FILE_NAME);
-                    return;
+                    //return;
                 }
 
         }
     }
 
+    @Override
+    public void startGame(String string) {
+        switch (string){
+            case Dashboard.Target:
+                selectLevel();
+                break;
+            case Dashboard.Scrabble:
+                startScrabble(false,null);
+                break;
+            case Dashboard.ArcadeGame:
+                startArcadeGame();
+                break;
+        }
+    }
 
 
 }

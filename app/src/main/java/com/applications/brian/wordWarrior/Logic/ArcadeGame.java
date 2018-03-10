@@ -4,11 +4,13 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
+import android.media.AudioManager;
+import android.media.SoundPool;
 
 import com.applications.brian.wordWarrior.R;
+import com.applications.brian.wordWarrior.Utilities.Util;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -30,52 +32,87 @@ public class ArcadeGame {
     private int gamePoints=0;
     private final ArrayList<BackgroundItem> backgroundItems =new ArrayList<>();
     private final ArrayList<Obstacle> obstacles=new ArrayList<>();
+    private List<Bitmap> obstacleImages=new ArrayList<>();
     private final ArrayList<Letter> letters =new ArrayList<>();
-    private List<Integer> highScores;
+    private Bitmap letterImage;
+    public Bitmap gameOverImage,pauseImage;
 
    // private static final int ITEM_COUNT=200;
 
 
     private static final Random RANDOM_GENERATOR=new Random();
     private static final int MINIMUM_X = 0;
-    private static final int MINIMUM_Y = 0;
+    private static int MINIMUM_Y = 0;
     private static int Maximum_Y;
     private static int Maximum_X;
-    private int minimumSpeed=15;
+    private int minimumSpeed;
+
+    private SoundPool soundPool;
+    private int explodeSoundID;
+    private int upgradeLevelID;
+    private int penaliseSoundID;
+    private int collideSoundID;
+
+
 
     private static int level=1;
 
     private static String currentWord;
 
+
     public ArcadeGame(Context context, int maxX, int maxY,Controller controller){
         Maximum_Y=maxY;
         Maximum_X=maxX;
+        MINIMUM_Y=Math.round(Util.convertDpToPx(56,context));
         this.context=context;
         this.controller=controller;
+        minimumSpeed= Math.round(Util.convertDpToPx(8,context));
         player =new Player(context,controller.getAllWords());
         int columns=maxX/50;
         int rows=maxY/100;
-        for(int r=0;r<rows+1;r++){
+        for(int r=1;r<rows+1;r++){
+            if((r*100)<=MINIMUM_Y)continue;
             for(int c=1;c<columns+1;c++) {
                 backgroundItems.add(new BackgroundItem(c*50, r*100));
             }
         }
-        highScores=controller.getHighScores(SCORE_FILE_NAME);
+
+        setUpImages();
         init();
+        sounds();
 
     }
+
 
     private void init(){
         gameOver=false;
         paused=false;
         level=1;
+        gamePoints=0;
         currentWord=player.getCurrentWord();
-        letters.add(new Letter(context,Maximum_X,Maximum_Y));
-        for(int i=0;i<2;i++) {obstacles.add(new Obstacle(context, Maximum_X, Maximum_Y));}
+        letters.add(new Letter(Maximum_X,Maximum_Y));
+        for(int i=0;i<2;i++) {obstacles.add(new Obstacle( Maximum_X, Maximum_Y));}
     }
 
+    private void sounds(){
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            SoundPool.Builder builder=new SoundPool.Builder();
+            builder.setMaxStreams(3);
+            soundPool=builder.build();
+        }
+        else{
+            //noinspection deprecation
+            soundPool=new SoundPool(3, AudioManager.STREAM_MUSIC,0);
+        }
+        explodeSoundID = soundPool.load(context, R.raw.game_over, 1);
+        upgradeLevelID = soundPool.load(context, R.raw.level_up, 1);
+        penaliseSoundID =soundPool.load(context,R.raw.needed_letter_collide,2);
+        collideSoundID =soundPool.load(context,R.raw.bug_collide,2);
+    }
+
+
     public void reset() {
-        minimumSpeed=15;
+        minimumSpeed= Math.round(Util.convertDpToPx(8,context));
         player.reset();
         letters.clear();
         obstacles.clear();
@@ -88,6 +125,7 @@ public class ArcadeGame {
             for (Letter letter : letters) {
                 letter.update();
                 if (Rect.intersects(player.getCollisionBoundary(), letter.getCollisionBoundary())) {
+                    if(player.penalise(letter.getText()))soundPool.play(penaliseSoundID,0.25f,0.25f,2,0,1.0f);
                     letter.reset();
                 }
             }
@@ -95,54 +133,67 @@ public class ArcadeGame {
             for (Obstacle obstacle : obstacles) {
                 obstacle.update();
                 if (Rect.intersects(player.getCollisionBoundary(), obstacle.getCollisionBoundary())) {
+                    soundPool.play(collideSoundID,0.75f,0.75f,2,0,1.0f);
                     obstacle.reset();
+
+
                 }
             }
 
             if (player.getLevel() > level) {
                 nextLevel();
             }
-            if (player.getTotalScore() < 0) {
+            if (player.getHealthPoints() < 0) {
                 gameOver = true;
-
+                soundPool.play(explodeSoundID,1.0f,1.0f,1,1,1.0f);
             }
         }
+
     }
 
     private void nextLevel(){
-        gamePoints+=(player.getTotalScore()*level);
+        soundPool.play(upgradeLevelID,1.0f,1.0f,1,0,1.0f);
+        gamePoints+=(player.getHealthPoints()*level);
         level++;
         if(level>2 && level%3==0){
-            obstacles.add(new Obstacle(context, Maximum_X, Maximum_Y));
+            obstacles.add(new Obstacle(Maximum_X, Maximum_Y));
         }
-        else minimumSpeed+=5;
+        else {
+            increaseSpeed();
+
+        }
         currentWord=player.getCurrentWord();
 
     }
 
+    private void increaseSpeed(){
+        minimumSpeed+=minimumSpeed/5;
+
+    }
+
+    private int objectSpeed(){
+        return minimumSpeed+RANDOM_GENERATOR.nextInt(minimumSpeed/5);
+    }
+
     public boolean newHighScore( ) {
+        List<Integer> highScores=controller.getHighScores(SCORE_FILE_NAME);
         int size=highScores.size();
         if(size<5){
             highScores.add(gamePoints);
-            Collections.sort(highScores);
             controller.saveHighScores(SCORE_FILE_NAME,highScores);
             return true;
         }
-        int lowestScore=highScores.get(0);
-        Collections.reverse(highScores);
+        int lowestScore=highScores.get(4);
         if(gamePoints<lowestScore)return false;
-        highScores.remove(4);
         for(int i=0;i<size;i++){
             if(gamePoints>highScores.get(i)){
                 highScores.add(i,gamePoints);
                 break;
             }
         }
-        Collections.reverse(highScores);
-        controller.saveHighScores(SCORE_FILE_NAME,highScores);
+        controller.saveHighScores(SCORE_FILE_NAME,highScores.subList(0,5));
         return true;
     }
-
 
     //Getters
     public Player getPlayer() {
@@ -199,9 +250,178 @@ public class ArcadeGame {
         paused=false;
     }
 
+    private void setUpImages(){
+
+        //game Objects
+        int newSide=Maximum_Y/15;
+        letterImage=Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.letter),newSide,newSide);
+
+        obstacleImages = new ArrayList<>();
+        obstacleImages.add(Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_yellow),newSide,newSide));
+        obstacleImages.add(Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_light_orange),newSide,newSide));
+        obstacleImages.add(Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_dark_orange),newSide,newSide));
+        obstacleImages.add(Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_red),newSide,newSide));
+        obstacleImages.add(Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_lava),newSide,newSide));
+
+        //game info
+        gameOverImage=Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.game_over),Maximum_X,Maximum_Y/2);
+        pauseImage=Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.paused),Maximum_X,Maximum_Y/2);
+    }
 
 
   //Game Object Classes
+
+    /**
+     * Created by brian on 2018/02/15.
+     * Class to represent the player;
+     *
+     */
+    public class Player {
+        private Rect collisionBoundary;
+        private String currentWord;
+        private List<String> neededLetters;
+
+        private Bitmap icon;
+
+
+        private int x, y;
+        private int maxX;
+        private int maxY;
+        private int totalScore = 0;
+        private int level =1;
+        private boolean moving;
+        private int direction;
+
+
+        private final List<String> allWords;
+
+
+        Player(Context context,List<String> allWords) {
+
+            icon =Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shield),Maximum_X/6,Maximum_Y/10);
+            this.allWords = allWords;
+            wordSetUp();
+            coordinatesSetUp();
+        }
+
+        //Init methods
+        private void wordSetUp(){
+            if(neededLetters==null)neededLetters=new ArrayList<>();
+            else neededLetters.clear();
+            currentWord = allWords.get(RANDOM_GENERATOR.nextInt(allWords.size())).toUpperCase();
+            while (currentWord.length()>10 ||currentWord.length()<5) {
+                currentWord = allWords.get(RANDOM_GENERATOR.nextInt(allWords.size())).toUpperCase();
+            }
+            for(char c:currentWord.toCharArray())neededLetters.add(String.valueOf(c));
+        }
+
+        private void coordinatesSetUp(){
+            this.maxX = Maximum_X - icon.getWidth();
+            this.maxY = Maximum_Y;
+            x = maxX / 2;
+            y = maxY - (icon.getHeight()+Math.round(Util.convertDpToPx(4,context)));//a little padding
+            collisionBoundary = new Rect(x, y, x + icon.getWidth(), maxY);
+        }
+
+        void reset(){
+            wordSetUp();
+            x=maxX/2;
+            collisionBoundary = new Rect(x, y, x + icon.getWidth(), maxY);
+            level=1;
+            totalScore=0;
+        }
+
+        void update() {
+            if (moving) {
+                x += ( minimumSpeed* direction);
+                if (x > maxX) {
+                    x = MINIMUM_X;
+                }
+                if (x < MINIMUM_X) {
+                    x = maxX;
+                }
+                collisionBoundary.set(x, y, x + icon.getWidth(), maxY);
+            }
+
+        }
+
+        void move(int touchCoordinate) {
+            moving = true;
+            this.direction = (touchCoordinate-x < 0 ? -1 : 1);
+
+        }
+
+        void stopMoving() {
+            moving = false;
+        }
+
+        void losePoints(int i) {
+            totalScore-=i;
+        }
+
+        void updateWordInProgress(String letter) {
+            boolean removed=neededLetters.remove(letter);
+            if(removed)totalScore+=5;
+            if (neededLetters.size()==0) complete();
+
+        }
+
+        boolean penalise(String letter){
+            if(neededLetters.contains(letter)){
+                totalScore-=2;
+                return true;
+            }
+            return false;
+        }
+
+        private void complete() {
+            level++;
+            totalScore += currentWord.length()*level;
+            wordSetUp();
+        }
+
+        //Getters
+        public String getHealth() {
+            return String.format(Locale.getDefault(), "HP: %d",totalScore);
+        }
+
+        public String getPoints() {
+            return String.format(Locale.getDefault(), "Pts: %d    Lvl: %d",ArcadeGame.this.gamePoints,level);
+        }
+
+        public String getCurrentWordProgress(){
+            return String.format(Locale.getDefault(), "%s",neededLetters.toString().replace(", "," "));
+        }
+
+        int getLevel() {
+            return level;
+        }
+
+        int getHealthPoints() {
+            return totalScore;
+        }
+
+        public Bitmap getIcon() {
+            return icon;
+        }
+
+        public int getX() {
+            return x;
+        }
+
+        public int getY() {
+            return y;
+        }
+
+        String getCurrentWord() {
+            return currentWord;
+        }
+
+        Rect getCollisionBoundary() {
+            return collisionBoundary;
+        }
+
+    }
 
     /**
      * Created by brian on 2018/02/16.
@@ -221,17 +441,17 @@ public class ArcadeGame {
 
 
 
-        Letter(Context context, int maxX, int maxY){
+        Letter(int maxX, int maxY){
 
-            icon= BitmapFactory.decodeResource(context.getResources(), R.drawable.letter);
+            icon=ArcadeGame.this.letterImage;
             currentAlphabet=getCurrentWord();
             text=String.valueOf(currentAlphabet.charAt(RANDOM_GENERATOR.nextInt(currentAlphabet.length())));
             this.maxX=maxX-icon.getWidth();
             this.maxY=maxY;
 
             x= RANDOM_GENERATOR.nextInt(this.maxX);
-            y=0;
-            speed=minimumSpeed+ RANDOM_GENERATOR.nextInt(5);
+            y=MINIMUM_Y;
+            speed=ArcadeGame.this.objectSpeed();
 
             collisionBoundary =new Rect(x,y,x+icon.getWidth(),y+icon.getHeight());
         }
@@ -278,23 +498,20 @@ public class ArcadeGame {
             return collisionBoundary.centerX();
         }
 
-
-
         public int getTextY() {
-            return collisionBoundary.centerY()+16;
+            return collisionBoundary.centerY()+Math.round(Util.convertDpToPx(32,context))/2;
         }
 
 
 
         void reset() {
-            y=0;
+            y=MINIMUM_Y;
             x= RANDOM_GENERATOR.nextInt(maxX);
-            speed=minimumSpeed+ RANDOM_GENERATOR.nextInt(5);
+            speed=ArcadeGame.this.objectSpeed();
             currentAlphabet=
                     getCurrentWord();
             text=String.valueOf(currentAlphabet.charAt(RANDOM_GENERATOR.nextInt(currentAlphabet.length())));
             updateCollisionBoundary();
-
         }
 
         Rect getCollisionBoundary() {
@@ -334,145 +551,6 @@ public class ArcadeGame {
     }
 
     /**
-     * Created by brian on 2018/02/15.
-     * Class to represent the player;
-     *
-     */
-    public class Player {
-        private Rect collisionBoundary;
-        private String currentWord;
-        private List<String> neededLetters;
-
-        private Bitmap icon;
-
-
-        private int x, y;
-        private int maxX;
-        private int maxY;
-        private int totalScore = 0;
-        private int level =1;
-        private boolean moving;
-        private int direction;
-
-
-        private final List<String> allWords;
-
-
-        Player(Context context,List<String> allWords) {
-
-            icon =BitmapFactory.decodeResource(context.getResources(), R.drawable.mouse);
-            this.allWords = allWords;
-            wordSetUp();
-            coordinatesSetUp();
-        }
-
-        //Init methods
-        private void wordSetUp(){
-            if(neededLetters==null)neededLetters=new ArrayList<>();
-            else neededLetters.clear();
-            currentWord = allWords.get(RANDOM_GENERATOR.nextInt(allWords.size())).toUpperCase();
-            for(char c:currentWord.toCharArray())neededLetters.add(String.valueOf(c));
-        }
-
-        private void coordinatesSetUp(){
-            this.maxX = Maximum_X - icon.getWidth();
-            this.maxY = Maximum_Y;
-            x = maxX / 2;
-            y = maxY - icon.getHeight()+20;//a little padding
-            collisionBoundary = new Rect(x, y, x + icon.getWidth(), maxY);
-        }
-
-        void reset(){
-            wordSetUp();
-            x=maxX/2;
-            collisionBoundary = new Rect(x, y, x + icon.getWidth(), maxY);
-            level=1;
-            totalScore=0;
-
-        }
-
-        void update() {
-            if (moving) {
-                x += ( minimumSpeed* direction);
-                if (x > maxX) {
-                    x = MINIMUM_X;
-                }
-                if (x < MINIMUM_X) {
-                    x = maxX;
-                }
-                collisionBoundary.set(x, y, x + icon.getWidth(), maxY);
-            }
-
-        }
-
-        void move(int touchCoordinate) {
-            moving = true;
-            this.direction = (touchCoordinate-x < 0 ? -1 : 1);
-
-        }
-
-        void stopMoving() {
-            moving = false;
-        }
-
-        void losePoints(int i) {
-            totalScore-=i;
-        }
-
-        void updateWordInProgress(String letter) {
-            boolean removed=neededLetters.remove(letter);
-            if(removed)totalScore+=5;
-            else{
-                totalScore-=1;
-            }
-            if (neededLetters.size()==0) complete();
-
-        }
-
-        private void complete() {
-            level++;
-            totalScore += currentWord.length()*level;
-            wordSetUp();
-        }
-
-        //Getters
-        public String getProgressDetails() {
-            return String.format(Locale.getDefault(), "%s", neededLetters.toString());
-        }
-
-        int getLevel() {
-            return level;
-        }
-
-        public int getTotalScore() {
-            return totalScore;
-        }
-
-        public Bitmap getIcon() {
-            return icon;
-        }
-
-        public int getX() {
-            return x;
-        }
-
-        public int getY() {
-            return y;
-        }
-
-        String getCurrentWord() {
-            return currentWord;
-        }
-
-        Rect getCollisionBoundary() {
-            return collisionBoundary;
-        }
-
-
-
-    }
-
-    /**
      * Created by brian on 2018/02/16.
      *
      */
@@ -480,7 +558,6 @@ public class ArcadeGame {
         private String penalty;
 
         private Bitmap icon;
-        private ArrayList<Bitmap> bitmaps;
         private final int LOW_PENALTY = 0;
         private final int MEDIUM_PENALTY = 1;
         private final int HIGH_PENALTY = 2;
@@ -494,47 +571,37 @@ public class ArcadeGame {
         private final int[] penaltyArray={5,5,5,5,5,5,5,5,5,5,10,10,10,10,10,20,20,20,40,40,80};
 
 
-        Obstacle(Context context, int maxX, int maxY){
+        Obstacle(int maxX, int maxY){
 
-
-            imagesSetUp(context);
+            
             penalty =String.valueOf(penaltyArray[RANDOM_GENERATOR.nextInt(penaltyArray.length)]);
             setIcon(Integer.parseInt(penalty));
             this.maxX=maxX-icon.getWidth();
             this.maxY=maxY;
 
             x= RANDOM_GENERATOR.nextInt(this.maxX);
-            y=0;
-            speed=15+ RANDOM_GENERATOR.nextInt(5);
+            y=MINIMUM_Y;
+            speed=ArcadeGame.this.objectSpeed();
 
             collisionBoundary =new Rect(x,y,x+icon.getWidth(),y+icon.getHeight());
-        }
-
-        private void imagesSetUp(Context context) {
-            bitmaps = new ArrayList<>();
-            bitmaps.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_yellow));
-            bitmaps.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_light_orange));
-            bitmaps.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_dark_orange));
-            bitmaps.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_red));
-            bitmaps.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_lava));
         }
 
         private void setIcon(int penaltyValue){
             switch (penaltyValue){
                 case 5:
-                    icon=bitmaps.get(LOW_PENALTY);
+                    icon=ArcadeGame.this.obstacleImages.get(LOW_PENALTY);
                     break;
                 case 10:
-                    icon=bitmaps.get(MEDIUM_PENALTY);
+                    icon=ArcadeGame.this.obstacleImages.get(MEDIUM_PENALTY);
                     break;
                 case 20:
-                    icon=bitmaps.get(HIGH_PENALTY);
+                    icon=ArcadeGame.this.obstacleImages.get(HIGH_PENALTY);
                     break;
                 case 40:
-                    icon=bitmaps.get(VERY_HIGH_PENALTY);
+                    icon=ArcadeGame.this.obstacleImages.get(VERY_HIGH_PENALTY);
                     break;
                 case 80:
-                    icon=bitmaps.get(EXTREME_PENALTY);
+                    icon=ArcadeGame.this.obstacleImages.get(EXTREME_PENALTY);
                     break;
             }
         }
@@ -544,7 +611,7 @@ public class ArcadeGame {
             y+=speed;
             if(y>maxY){
                 ArcadeGame.this.player.losePoints(Integer.parseInt(penalty));
-                y=0;
+                y=MINIMUM_Y;
                 x= RANDOM_GENERATOR.nextInt(maxX);
                 speed=minimumSpeed+ RANDOM_GENERATOR.nextInt(5);
                 penalty =String.valueOf(penaltyArray[RANDOM_GENERATOR.nextInt(penaltyArray.length)]);
@@ -571,9 +638,9 @@ public class ArcadeGame {
 
 
         void reset() {
-            y=0;
+            y=MINIMUM_Y;
             x= RANDOM_GENERATOR.nextInt(maxX);
-            speed=minimumSpeed+ RANDOM_GENERATOR.nextInt(5);
+            speed=ArcadeGame.this.objectSpeed();
             collisionBoundary.set(x,y,x+icon.getWidth(),y+icon.getHeight());
             penalty =String.valueOf(penaltyArray[RANDOM_GENERATOR.nextInt(penaltyArray.length)]);
             setIcon(Integer.parseInt(penalty));

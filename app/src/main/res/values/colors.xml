@@ -3,16 +3,20 @@
     <color name="colorPrimary">#3f51b5</color>
     <color name="colorPrimaryDark">#303f9f</color>
     <color name="colorAccent">#ff4081</color>
-    <color name="white">#ffffff</color>
+    <color name="white">#eeeeee</color>
     <color name="black_overlay">#66000000</color>
     <color name="light_gray">#9b9a9a</color>
-    <color name="dark_gray">#5c5c5c</color>
+    <color name="dark_gray">#292727</color>
     <color name="black">#000000</color>
     <color name="transparent">#00000000</color>
     <color name="blue">#c8000e87</color>
-    <color name="darkBlue">#303f9f</color>
+    <color name="darkBlue">#1976D2</color>
     <color name="white_semi">#c8ffffff</color>
-    <color name="green_semi">#c8669900</color>
+    <color name="green_semi">#4caf50</color>
     <color name="black_overlay_darker">#c8000000</color>
     <color name="warning_red">#ff0008</color>
+    <color name="black_overlay_light">#37000000</color>
+    <color name="material_blue">#2196f3</color>
+    <color name="material_purple">#673ab7</color>
+    <color name="material_yellow">#ffeb3b</color>
 </resources>

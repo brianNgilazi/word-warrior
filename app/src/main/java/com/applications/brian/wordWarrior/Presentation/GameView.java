@@ -1,6 +1,5 @@
 package com.applications.brian.wordWarrior.Presentation;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,22 +8,24 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.media.MediaPlayer;
+import android.support.annotation.ColorInt;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 
 import com.applications.brian.wordWarrior.Logic.ArcadeGame;
 import com.applications.brian.wordWarrior.Logic.Controller;
 import com.applications.brian.wordWarrior.R;
+import com.applications.brian.wordWarrior.Utilities.Util;
 
 /**
  * Created by brian on 2018/02/13.
  *
  */
 
-public class GameView extends SurfaceView implements Runnable,View.OnClickListener{
+public class GameView extends SurfaceView implements Runnable{
     private SurfaceHolder surfaceHolder;
     private volatile boolean playing;
     private Thread gameThread=null;
@@ -36,8 +37,12 @@ public class GameView extends SurfaceView implements Runnable,View.OnClickListen
     private Bitmap pauseIcon;
     private Rect pauseButtonRect;
     private Rect resumeTextRect;
-    private MediaPlayer mediaPlayer;
+    private Rect progressRect;
+    int currentTrack=0;
+    int[] tracks={R.raw.music,R.raw.music2,R.raw.music3};
+    @ColorInt private static final int THEME_COLOR=Color.argb(255,0,100,0);
 
+    MediaPlayer mediaPlayer;
     private Controller controller;
 
 
@@ -51,19 +56,35 @@ public class GameView extends SurfaceView implements Runnable,View.OnClickListen
         game=new ArcadeGame(context,maxX, maxY, controller);
         surfaceHolder = getHolder();
         paint=new Paint();
+        paint.setTypeface(Typeface.MONOSPACE);
         pauseIcon= BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_pause_game);
         pauseButtonRect=new Rect(maxX-pauseIcon.getWidth()-50,0,maxX,pauseIcon.getHeight()+50);
-        resumeTextRect=new Rect(0,(maxY/2),maxX,(maxY/2)+64);
+        resumeTextRect=new Rect(0,maxY-((2*maxY)/3),maxX,maxY-(maxY/3));
+        progressRect=new Rect(0,0,maxX,Math.round(Util.convertDpToPx(56,context)));
         mediaPlayer=MediaPlayer.create(context,R.raw.music);
-        mediaPlayer.setLooping(true);
-
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mp.release();
+                currentTrack++;
+                if(currentTrack==tracks.length)currentTrack=0;
+                mp=MediaPlayer.create(getContext(),tracks[currentTrack]);
+                mediaPlayer=mp;
+                mp.setOnCompletionListener(this);
+                mp.start();
+            }
+        });
     }
+
 
    private void draw(){
        if(surfaceHolder.getSurface().isValid()){
            ArcadeGame.Player player=game.getPlayer();
            canvas=surfaceHolder.lockCanvas();
            canvas.drawColor(Color.BLACK);
+           paint.setStyle(Paint.Style.FILL);
+           paint.setColor(THEME_COLOR);
+           canvas.drawRect(progressRect,paint);
            canvas.drawBitmap(pauseIcon,maxX-pauseIcon.getWidth(),0,paint);
 
            paint.setStyle(Paint.Style.FILL);
@@ -71,18 +92,19 @@ public class GameView extends SurfaceView implements Runnable,View.OnClickListen
            paint.setFakeBoldText(true);
 
            //progress
-           paint.setTextSize(32);//Util.dpAspx(32.0f,getContext()));
+           paint.setColor(Color.WHITE);
+           paint.setTextSize(Util.convertDpToPx(14,getContext()));
+           paint.setTextAlign(Paint.Align.LEFT);
+           canvas.drawText(player.getHealth(),paint.getTextSize(),paint.getTextSize(),paint);
            paint.setTextAlign(Paint.Align.CENTER);
-           canvas.drawText(player.getTotalScore()+"",paint.getTextSize(),paint.getTextSize(),paint);
-           canvas.drawText(player.getProgressDetails(),maxX/2,paint.getTextSize(),paint);
+           canvas.drawText(player.getPoints(),maxX/2,paint.getTextSize(),paint);
+           paint.setTextSize(Util.convertDpToPx(16,getContext()));
+           canvas.drawText(player.getCurrentWordProgress(),maxX/2,progressRect.bottom-paint.getTextSize()/2,paint);
 
            //backgroundItems
-           paint.setStyle(Paint.Style.STROKE);
-           paint.setColor(Color.GREEN);
-           paint.setFakeBoldText(false);
-           paint.setTextSize(20);
+           paint.setColor(THEME_COLOR);
+           paint.setTextSize(Util.convertDpToPx(12,getContext()));
            for(ArcadeGame.BackgroundItem item: game.getBackgroundItems()){
-               paint.setColor(Color.argb(255,0,139,0));
                canvas.drawText(item.getText(),item.getX(),item.getY(),paint);
            }
 
@@ -94,7 +116,7 @@ public class GameView extends SurfaceView implements Runnable,View.OnClickListen
            paint.setStyle(Paint.Style.STROKE);
            paint.setFakeBoldText(true);
            paint.setStrokeWidth(2);
-           paint.setTextSize(64);
+           paint.setTextSize(Util.convertDpToPx(32,getContext()));
            for(ArcadeGame.Letter letter:game.getLetters()){
                canvas.drawBitmap(letter.getIcon(),letter.getX(),letter.getY(),paint);
                canvas.drawText(letter.getText(),letter.getTextX(),letter.getTextY(),paint);
@@ -109,31 +131,30 @@ public class GameView extends SurfaceView implements Runnable,View.OnClickListen
            if(game.isGameOver()){
                playing=false;
                controller.updatePoints(game.getGamePoints());
-               paint.setStyle(Paint.Style.STROKE);
-               paint.setTextSize(88);
-               paint.setColor(Color.RED);
-               canvas.drawText("GAME OVER",(maxX/2),maxY/2,paint);
-               if(game.newHighScore()){
-                   paint.setStyle(Paint.Style.STROKE);
-                   paint.setTextSize(72);
-                   paint.setColor(Color.YELLOW);
-                   canvas.drawText("New High Score",(maxX/2),maxY/2+100,paint);
-               }
+               canvas.drawColor(Color.argb(125,0,0,0));
                paint.setColor(Color.WHITE);
-               paint.setTextSize(64);
-               canvas.drawText("Touch to restart. Press back to exit.",(maxX/2),(maxY/2)+paint.getTextSize()+100,paint);
-               paint.setTextSize(48);
-               canvas.drawText(game.getGamePoints()+" point earned",(maxX/2),maxY-150,paint);
+               paint.setTextSize(Util.convertDpToPx(12,getContext()));
+               paint.setTextAlign(Paint.Align.LEFT);
+               canvas.drawText("Press Here To Restart",maxX/2,(maxY/2),paint);
+               canvas.drawBitmap(game.gameOverImage,0,maxY/2,paint);
+               paint.setStyle(Paint.Style.FILL);
+               paint.setTextAlign(Paint.Align.CENTER);
+               paint.setTextSize(Util.convertDpToPx(20,getContext()));
+               canvas.drawText(game.getGamePoints()+" Points",maxX/2,(maxY/2)+game.gameOverImage.getHeight()+Util.convertDpToPx(20,getContext()),paint);
+               if(game.newHighScore()){
+                   paint.setColor(Color.argb(255,255,215,0));
+                   canvas.drawText("(New High Score)",maxX/2,(maxY/2)+game.gameOverImage.getHeight()+paint.getTextSize()+Util.convertDpToPx(20,getContext()),paint);
+               }
            }
 
-           if(game.isPaused()){
+           else if(game.isPaused()){
                playing=false;
-               paint.setStyle(Paint.Style.STROKE);
-               paint.setTextSize(88);
+               canvas.drawColor(Color.argb(125,0,0,0));
                paint.setColor(Color.WHITE);
-               canvas.drawText("Paused",(maxX/2),maxY/2,paint);
-               paint.setTextSize(64);
-               canvas.drawText("Touch to resume. Press back to exit.",(maxX/2),(maxY/2)+paint.getTextSize()+10,paint);
+               paint.setTextSize(Util.convertDpToPx(12,getContext()));
+               paint.setTextAlign(Paint.Align.LEFT);
+               canvas.drawText("Press Here To Restart",maxX/2,(maxY/2),paint);
+               canvas.drawBitmap(game.pauseImage,0,maxY/2,paint);
            }
 
            surfaceHolder.unlockCanvasAndPost(canvas);
@@ -161,12 +182,12 @@ public class GameView extends SurfaceView implements Runnable,View.OnClickListen
 
     void pause(){
         game.pause();
-        mediaPlayer.pause();
         try {
             gameThread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        mediaPlayer.pause();
     }
 
     public  void resume(){
@@ -174,14 +195,23 @@ public class GameView extends SurfaceView implements Runnable,View.OnClickListen
         gameThread=new Thread(this);
         gameThread.start();
         if(mediaPlayer.isPlaying()){
-            mediaPlayer.stop();
-            mediaPlayer.reset();
-            mediaPlayer.release();
-            mediaPlayer=MediaPlayer.create(getContext(),R.raw.music);
-            mediaPlayer.setLooping(true);
-
+            mediaPlayer.seekTo(0);
         }
         mediaPlayer.start();
+
+
+    }
+
+    public void stopGame(){
+        playing=false;
+        try {
+            gameThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        if(mediaPlayer.isPlaying())mediaPlayer.stop();
+        mediaPlayer.reset();
+        mediaPlayer.release();
     }
 
 
@@ -221,19 +251,6 @@ public class GameView extends SurfaceView implements Runnable,View.OnClickListen
         return true;
     }
 
-    @Override
-    public void onClick(View v) {
-            switch(v.getId()){
-                case R.id.quitButton:
-                    ((Activity)getContext()).onBackPressed();
-                    break;
-                case R.id.newGameButton:
-                    game.reset();
-                    resume();
-                    break;
-            }
-
-    }
 
 
 }

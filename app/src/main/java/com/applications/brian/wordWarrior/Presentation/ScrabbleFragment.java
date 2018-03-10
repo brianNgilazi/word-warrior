@@ -34,8 +34,6 @@ import com.applications.brian.wordWarrior.Logic.ScrabbleLetter;
 import com.applications.brian.wordWarrior.R;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -432,7 +430,7 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
                         ((MainActivity)getContext()).highScoresDialog(ScrabbleGame.SCORE_FILE_NAME);
                         break;
                     case 3:
-                        ((MainActivity)getContext()).showHome();
+                       // ((MainActivity)getContext()).showHome();
                         break;
                     default:
                         Toast.makeText(getContext(),"Item not yet Available",Toast.LENGTH_SHORT).show();
@@ -666,12 +664,12 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         @Override
         protected void onPostExecute(Object o) {
             List<String> list=(List<String>)o;
-            Collections.sort(list,new Comparator<String>() {
+           /* Collections.sort(list,new Comparator<String>() {
                 @Override
                 public int compare(String o1, String o2) {
                     return scrabbleGame.scoreForWord(o1)-scrabbleGame.scoreForWord(o2);
                 }
-            });
+            });*/
             int listSize=list.size();
             if(listSize!=0) progressDialog.setText(list.get(list.size()-1));
             else progressDialog.setText("No Words Found.");

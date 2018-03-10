@@ -70,7 +70,6 @@ public class HighScoreDialog extends DialogFragment {
         List<Integer> list=controller.getHighScores(fileName);
         List<String> stringList = new ArrayList<>();
         if(!fileName.equals(TargetGame.SCORE_FILE_NAME)) {
-            Collections.reverse(list);
             int position = 1;
             for (int score : list) {
                 stringList.add(String.format(Locale.getDefault(), "%d. %d", position, score));
@@ -78,6 +77,7 @@ public class HighScoreDialog extends DialogFragment {
             }
         }
         else{
+            Collections.reverse(list);
             int position = 1;
             for (int score : list) {
                 stringList.add(String.format(Locale.getDefault(),"%d. %s",position, Time.secondsToTimerString(score)));
@@ -88,6 +88,34 @@ public class HighScoreDialog extends DialogFragment {
 
         adapter=new ArrayAdapter<>(getContext(),android.R.layout.simple_list_item_1,stringList);
         listView.setAdapter(adapter);
+
+    }
+
+    public static ArrayAdapter<String> scoresListDetail(List<Integer> list,int game, Context context){
+
+
+        List<String> stringList = new ArrayList<>();
+        int position = 1;
+        if(game!=(GameHomeFragment.TARGET)) {
+            for (int score : list) {
+                stringList.add(String.format(Locale.getDefault(), "%d. %d", position, score));
+                position++;
+            }
+
+        }
+        else{
+            Collections.reverse(list);
+            for (int score : list) {
+                stringList.add(String.format(Locale.getDefault(),"%d. %s",position, Time.secondsToTimerString(score)));
+                position++;
+            }
+        }
+        while (position<6){
+            stringList.add(String.format(Locale.getDefault(), "%d. %s", position, "-"));
+            position++;
+        }
+
+        return new ArrayAdapter<>(context,android.R.layout.simple_list_item_1,stringList);
 
     }
 }

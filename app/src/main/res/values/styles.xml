@@ -19,7 +19,7 @@
 
 
     <style name="MyTheme" parent="AppTheme.NoActionBar" >
-        <item name="android:colorBackground">@color/black_overlay_darker</item>
+        <item name="android:colorBackground">@color/primary_material_dark</item>
         <item name="colorAccent">@color/white</item>
     </style>
 

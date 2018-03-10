@@ -17,6 +17,8 @@ import com.applications.brian.wordWarrior.Logic.Controller;
 import com.applications.brian.wordWarrior.R;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -101,6 +103,12 @@ public class PurchaseDialog extends DialogFragment implements View.OnClickListen
         }
         List<String> list=new ArrayList<>();
         list.addAll(costMap.keySet());
+        Collections.sort(list, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return Integer.parseInt(o1.substring(o1.lastIndexOf(" ")+1))-Integer.parseInt(o2.substring(o2.lastIndexOf(" ")+1));
+            }
+        });
         adapter=new ArrayAdapter<>(getContext(),android.R.layout.simple_list_item_single_choice,list);
         listView.setAdapter(adapter);
 
@@ -133,6 +141,7 @@ public class PurchaseDialog extends DialogFragment implements View.OnClickListen
             switch (id){
                 case TARGET_GAME:
                     TargetSolverDialog.newInstance(item).show(getFragmentManager(), null);
+                    ((TargetFragment)callingFragment).purchaseMade();
                     break;
                 case SCRABBLE_GAME:
                     if(callingFragment!=null){

@@ -1,31 +1,18 @@
 package com.applications.brian.wordWarrior.Presentation;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.TextView;
 
 import com.applications.brian.wordWarrior.Logic.Controller;
 import com.applications.brian.wordWarrior.R;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.applications.brian.wordWarrior.Utilities.Util;
 
 
 /**
@@ -39,12 +26,14 @@ import java.util.List;
 public class HomeFragment extends Fragment {
 
 
-
-    private ViewPager pager;
+    private static final String GAME_ARG ="NAME ARG";
+    private int game;
     private FragmentStatePagerAdapter adapter;
-    private ListView optionsList;
-    private TextView profileDetails;
+    private Toolbar toolbar;
     Controller controller;
+
+
+
 
 
     public HomeFragment() {
@@ -57,15 +46,20 @@ public class HomeFragment extends Fragment {
      * @return A new instance of fragment HomeFragment.
      */
 
-    public static HomeFragment newInstance() {
-        return new HomeFragment();
+    public static HomeFragment newInstance(int game,Toolbar toolbar) {
+        Bundle bundle=new Bundle();
+        bundle.putInt(GAME_ARG,game);
+        HomeFragment fragment= new HomeFragment();
+        fragment.setArguments(bundle);
+        fragment.toolbar=toolbar;
+        return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         controller=((MainActivity)getActivity()).controller;
-
+        game=getArguments().getInt(GAME_ARG,0);
         adapter=new FragmentStatePagerAdapter(getActivity().getSupportFragmentManager()) {
             @Override
             public Fragment getItem(int position) {
@@ -92,32 +86,12 @@ public class HomeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view= inflater.inflate(R.layout.fragment_home, container, false);
+        final View view= inflater.inflate(R.layout.fragment_home, container,false);
 
         final TabLayout scrollIndicator=(TabLayout) view.findViewById(R.id.scrollIndicator);
-        final Toolbar toolbar=(Toolbar)view.findViewById(R.id.toolbar);
-
-        //Navigation Drawer
-        final DrawerLayout drawerLayout=(DrawerLayout)view.findViewById(R.id.drawer_layout);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(drawerLayout.isDrawerOpen(Gravity.START)){
-                    drawerLayout.closeDrawers();
-                }
-                drawerLayout.openDrawer(Gravity.START);
-            }
-        });
-
-        profileDetails=(TextView)view.findViewById(R.id.profileDetails);
-        profileDetails.setText(controller.profileInfo());
-        optionsList=(ListView)view.findViewById(R.id.drawer_list);
-        optionsList.setAdapter(new DrawerAdapter(getContext(),optionsList()));
-        optionsList.setOnItemClickListener(new DrawerListClickListener());
-
 
         //Pager
-        pager=(ViewPager)view.findViewById(R.id.pager);
+        ViewPager pager = (ViewPager) view.findViewById(R.id.pager);
         pager.setAdapter(adapter);
         scrollIndicator.setupWithViewPager(pager,true);
         pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -128,29 +102,20 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void onPageSelected(int position) {
-
                 switch (position){
-                    case 0:
-                        toolbar.setTitle("Target");
-                        toolbar.setBackgroundColor(ContextCompat.getColor(getContext(),R.color.white));
-                        toolbar.setTitleTextColor(ContextCompat.getColor(getContext(),R.color.black));
-                        toolbar.setNavigationIcon(R.drawable.ic_drawer_dark);
+                    case GameHomeFragment.TARGET:
+                        toolbar.setTitle("Target Home");
+                        toolbar.setBackgroundColor(Util.TOOLBAR_COLOR);
                         break;
-                    case 1:
-                        toolbar.setTitle("Scrabble");
-                        toolbar.setBackgroundColor(ContextCompat.getColor(getContext(),R.color.darkBlue));
-                        toolbar.setTitleTextColor(ContextCompat.getColor(getContext(),R.color.white));
-                        toolbar.setNavigationIcon(R.drawable.ic_drawer);
+                    case GameHomeFragment.SCRABBLE:
+                        toolbar.setTitle("Scrabble Home");
+                        toolbar.setBackgroundColor(Util.SCRABBLE_COLOR);
                         break;
-                    case 2:
-                        toolbar.setTitle("Arcade");
-                        toolbar.setBackgroundColor(ContextCompat.getColor(getContext(),android.R.color.holo_green_dark));
-                        toolbar.setTitleTextColor(ContextCompat.getColor(getContext(),R.color.white));
-                        toolbar.setNavigationIcon(R.drawable.ic_drawer);
+                    case GameHomeFragment.ARCADE:
+                        toolbar.setTitle("Arcade Home");
+                        toolbar.setBackgroundColor(Util.ARCADE_COLOR);
                         break;
-
                 }
-
             }
 
             @Override
@@ -158,55 +123,11 @@ public class HomeFragment extends Fragment {
 
             }
         });
-        pager.setCurrentItem(1);
-        pager.setCurrentItem(0);
+        toolbar.setTitle("Target Home");
+        toolbar.setBackgroundColor(Util.TOOLBAR_COLOR);
+        pager.setCurrentItem(game);
         return view;
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-    }
 
-    private List<String> optionsList(){
-        List<String> list=new ArrayList<>();
-        list.add("Exit");
-        return list;
-    }
-
-
-    private class DrawerAdapter extends ArrayAdapter<String>{
-        DrawerAdapter(Context context,List<String> list) {
-            super(context, R.layout.drawer_list_item,list);
-        }
-
-        @NonNull
-        @Override
-        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-            View item=convertView;
-            if(item==null){
-                item=LayoutInflater.from(getContext()).inflate(R.layout.drawer_list_item,parent,false);
-            }
-            String itemName=""+getItem(position);
-            switch (itemName){
-                case "Exit":
-                    ((ImageView)item.findViewById(R.id.icon)).setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
-                    ((TextView)item.findViewById(R.id.text)).setText(getItem(position));
-                    break;
-            }
-            return item;
-        }
-
-    }
-    private class DrawerListClickListener implements AdapterView.OnItemClickListener{
-
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            String option=optionsList.getAdapter().getItem(position).toString();
-            switch (option){
-                case "Exit":
-                    ((MainActivity)getActivity()).exitDialog();
-            }
-        }
-    }
 }

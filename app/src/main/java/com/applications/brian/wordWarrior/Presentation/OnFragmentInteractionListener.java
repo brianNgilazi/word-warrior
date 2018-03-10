@@ -19,4 +19,5 @@ interface OnFragmentInteractionListener {
     void onGameOptionSelect(int game,String mItem);
 
 
+    void startGame(String string);
 }

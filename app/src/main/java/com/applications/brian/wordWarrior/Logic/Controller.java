@@ -5,13 +5,16 @@ import android.content.SharedPreferences;
 
 import com.applications.brian.wordWarrior.Presentation.MainActivity;
 import com.applications.brian.wordWarrior.R;
+import com.applications.brian.wordWarrior.Utilities.Time;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 
 /**
@@ -69,6 +72,15 @@ public class Controller {
 
     public int getProfilePoints(){return profile.getPoints();}
 
+    public void resetProfile(){
+        profile.reset();
+        saveProfile();
+        context.deleteFile(TargetGame.SAVE_FILE_NAME);
+        for(String fileName:context.fileList()){
+            context.deleteFile(fileName);
+        }
+    }
+
     //Accessing Dictionary and Data
     /**
      *
@@ -115,14 +127,14 @@ public class Controller {
             scanner.close();
             inputStream.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
 
         }
 
         return data;
     }
 
-    List<SavedGame> savedGamesList(String fileName) {
+    public List<SavedGame> savedGamesList(String fileName) {
 
         List<SavedGame> savedGames = new ArrayList<>();
         try {
@@ -141,8 +153,9 @@ public class Controller {
             scanner.close();
         }
         catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
+
         return savedGames;
     }
 
@@ -155,7 +168,7 @@ public class Controller {
             printStream.close();
         }
         catch (IOException e){
-            e.printStackTrace();
+            //e.printStackTrace();
 
 
         }
@@ -171,6 +184,15 @@ public class Controller {
         saveGame(fileName,savedGames);
     }
 
+    public String getLastSavedGame(String fileName){
+        List<SavedGame> list=savedGamesList(fileName);
+        if(list.size()==0)return "-";
+        return list.get(list.size()-1).getName();
+
+    }
+
+
+    //High Scores
     public List<Integer> getHighScores(String fileName) {
         List<Integer> scores=new ArrayList<>();
         try{
@@ -180,12 +202,16 @@ public class Controller {
             scanner.close();
         }
         catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
-    return scores;
+        Collections.sort(scores);
+        Collections.reverse(scores);
+        return scores;
     }
 
     void saveHighScores(String fileName, List<Integer> highScores){
+        Collections.sort(highScores);
+        Collections.reverse(highScores);
         try {
             PrintStream printStream = new PrintStream(context.openFileOutput(fileName, Context.MODE_PRIVATE));
             for (Integer score : highScores) {
@@ -194,8 +220,21 @@ public class Controller {
             printStream.close();
         }
         catch (IOException e){
-            e.printStackTrace();
+            //e.printStackTrace();
 
         }
     }
+
+    public String getHighScoreString(String fileName) {
+        List<Integer> scores=getHighScores(fileName);
+        int score;
+        if(scores.size()==0)return "-";
+        if(fileName.equals(TargetGame.SCORE_FILE_NAME)){
+            score=scores.get(scores.size()-1);
+            return String.format(Locale.getDefault(),"Best Time: %s", Time.secondsToTimerString(score));
+        }
+        else return String.format(Locale.getDefault(),"High Score: %s", scores.get(0));
+    }
+
+
 }

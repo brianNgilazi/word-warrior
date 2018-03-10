@@ -29,7 +29,6 @@ public class ScrabbleGame {
     private int score;
     private List<String> foundWords;
     private List<String> allWords;
-    private List<Integer> highScores;
     private HashMap<Character,List<String>> indexedWords;
     private Controller controller;
     private boolean newGame;
@@ -73,7 +72,6 @@ public class ScrabbleGame {
         allWords=controller.getAllWords();
         indexedWords=controller.getIndexedWords();
         collection=new ScrabbleLetterCollection();
-        highScores=controller.getHighScores(SCORE_FILE_NAME);
         newGame=true;
     }
 
@@ -114,25 +112,23 @@ public class ScrabbleGame {
     }
 
     public boolean newHighScore( ) {
+        List<Integer> highScores=controller.getHighScores(SCORE_FILE_NAME);
         int size=highScores.size();
         if(size<5){
             highScores.add(score);
-            Collections.sort(highScores);
             controller.saveHighScores(SCORE_FILE_NAME,highScores);
             return true;
         }
-        int lowestScore=highScores.get(0);
-        Collections.reverse(highScores);
+        int lowestScore=highScores.get(4);
         if(score<lowestScore)return false;
-        highScores.remove(4);
+
         for(int i=0;i<size;i++){
             if(score>highScores.get(i)){
                 highScores.add(i,score);
                 break;
             }
         }
-        Collections.reverse(highScores);
-        controller.saveHighScores(SCORE_FILE_NAME,highScores);
+        controller.saveHighScores(SCORE_FILE_NAME,highScores.subList(0,5));
         return true;
 
     }
@@ -379,10 +375,9 @@ public class ScrabbleGame {
 
         @Override
         public void compute() {
-            if(!couldBeSolution())return;
+            if(!couldBeSolution() ||found.size()>=1)return;
             for(int i:adjacent){
                 String newWord=wordInProgress+scrabbleLetters.get(i).toString();
-                Log.i("Search",newWord);
                 if(newWord.length()>2 && allWords.contains(newWord.toLowerCase()) &&!found.contains(newWord)){
                     Log.i("Found",newWord);
                     found.add(newWord);

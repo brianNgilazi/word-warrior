@@ -11,13 +11,8 @@ public class Profile {
     private int points;
     private int gamesPlayed;
     private int gamesWon;
-    public static final String PREFERENCE_KEY="PROFILE";
+    static final String PREFERENCE_KEY="PROFILE";
 
-    Profile(){
-        points=0;
-        gamesPlayed=0;
-        gamesWon=0;
-    }
 
     Profile(String data){
         String[] dataArray = data.split(" ");
@@ -55,13 +50,19 @@ public class Profile {
         return (gamesWon/(gamesPlayed*1.0))*100;
     }
 
+    void reset(){
+        gamesPlayed=0;
+        gamesWon=0;
+        points=0;
+    }
+
     @Override
     public String toString() {
         return String.format(Locale.getDefault(),"%d %d %d",points,gamesPlayed,gamesWon);
     }
 
     String profileInfo(){
-        return String.format(Locale.getDefault(),"Points: %d%nGames Played: %d%nWin Percentage: %.1f%%",
-                points,gamesPlayed,getWinPercentage());
+        return String.format(Locale.getDefault(),"Games Played: %d%nWin Percentage: %.1f%%",
+                gamesPlayed,getWinPercentage());
     }
 }

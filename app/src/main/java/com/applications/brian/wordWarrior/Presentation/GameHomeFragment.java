@@ -1,17 +1,24 @@
 package com.applications.brian.wordWarrior.Presentation;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
+import com.applications.brian.wordWarrior.Logic.ArcadeGame;
+import com.applications.brian.wordWarrior.Logic.Controller;
+import com.applications.brian.wordWarrior.Logic.SavedGame;
+import com.applications.brian.wordWarrior.Logic.ScrabbleGame;
+import com.applications.brian.wordWarrior.Logic.TargetGame;
 import com.applications.brian.wordWarrior.R;
+import com.applications.brian.wordWarrior.Utilities.Util;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,13 +43,18 @@ public class GameHomeFragment extends Fragment {
     public static final int  SCRABBLE=1;
     public static final int  ARCADE=2;
 
-    //Game Type
+    //Game Title
     public static final String NEW_GAME="New Game";
     public static final String LOAD_GAME="Load Game";
     public static final String HELP="Help/Info";
     public static final String HIGH_SCORE="High Scores";
 
+    //sample data
+    private List<SavedGame> savedGames;
+    private List<Integer> highScores;
+    private Controller controller;
 
+    private int color;
 
     public GameHomeFragment() {
         // Required empty public constructor
@@ -69,95 +81,68 @@ public class GameHomeFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             game = getArguments().getInt(GAME_PARAM);
+           switch (game){
+               case TARGET:
+                   highScores =controller.getHighScores(TargetGame.SCORE_FILE_NAME);
+                   savedGames =controller.savedGamesList(TargetGame.SAVE_FILE_NAME);
+                   color=Util.TARGET_COLOR;
+                   break;
+               case SCRABBLE:
+                   highScores =controller.getHighScores(ScrabbleGame.SCORE_FILE_NAME);
+                   savedGames =controller.savedGamesList(ScrabbleGame.SAVE_FILE_NAME);
+                   color= Util.SCRABBLE_COLOR;
+                   break;
+               case ARCADE:
+                   highScores =controller.getHighScores(ArcadeGame.SCORE_FILE_NAME);
+                   color=Util.ARCADE_COLOR;
+                   break;
+            }
         }
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        controller=((MainActivity)getActivity()).controller;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view;
-       switch (game){
+        View view= inflater.inflate(R.layout.fragment_game_home,container,false);
+
+        ImageView imageView=(ImageView)view.findViewById(R.id.imageView);
+        TextView info=(TextView)view.findViewById(R.id.game_info);
+        ListView listView=(ListView)view.findViewById(R.id.scores_list);
+        listView.setAdapter(HighScoreDialog.scoresListDetail(highScores,game,getContext()));
+        SavedGamesDialog  dialog;
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        switch (game){
            case TARGET:
-               view= inflater.inflate(R.layout.target_home,container,false);
+               imageView.setImageResource(R.drawable.target);
+               info.setText(R.string.target_info);
+               dialog = SavedGamesDialog.newInstance(TargetGame.SAVE_FILE_NAME,controller.savedGamesData(TargetGame.SAVE_FILE_NAME));
+               transaction.add(R.id.saved_games_list, dialog).commit();
                break;
-
            case SCRABBLE:
-               view= inflater.inflate(R.layout.scrabble_home,container,false);
+               imageView.setImageResource(R.drawable.scrabble);
+               info.setText(R.string.scrabble_info);
+               dialog = SavedGamesDialog.newInstance(ScrabbleGame.SAVE_FILE_NAME,controller.savedGamesData(ScrabbleGame.SAVE_FILE_NAME));
+               transaction.add(R.id.saved_games_list, dialog).commit();
                break;
-
            case ARCADE:
-               view= inflater.inflate(R.layout.arcade_home,container,false);
+               imageView.setImageResource(R.drawable.arcade);
+               info.setText(R.string.arcade_info);
                break;
            default:
                view=inflater.inflate(R.layout.no_items_layout,container,false);
        }
 
-        RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new GridLayoutManager(getContext(),2));
-        recyclerView.setAdapter(new GameOptionRecyclerViewAdapter(getItems(),(OnFragmentInteractionListener)getContext()));
 
        return view;
     }
 
-    private List<String> getItems(){
-        List<String> list=new ArrayList<>();
-        list.add(NEW_GAME);
-        if(game!=ARCADE) list.add(LOAD_GAME);
-        list.add(HIGH_SCORE);
-        list.add(HELP);
-        return list;
-    }
 
-    class GameOptionRecyclerViewAdapter extends RecyclerView.Adapter<GameOptionRecyclerViewAdapter.ViewHolder> {
-
-        private final List<String> options;
-        private final OnFragmentInteractionListener mListener;
-
-        GameOptionRecyclerViewAdapter(List<String> options, OnFragmentInteractionListener listener) {
-            this.options = options;
-            mListener = listener;
-        }
-
-        @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.options_item, parent, false);
-            return new ViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(final ViewHolder holder, int position) {
-            String optionName=options.get(position);
-            holder.title.setText(optionName);
-            holder.mView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (mListener!=null) {
-                        mListener.onGameOptionSelect(game,holder.title.getText().toString());
-
-                    }
-                }
-            });
-        }
-
-        @Override
-        public int getItemCount() {
-            return options.size();
-        }
-
-        class ViewHolder extends RecyclerView.ViewHolder {
-            private final View mView;
-            private final TextView title;
-
-            private ViewHolder(View view) {
-                super(view);
-                mView = view;
-                title = (TextView) view.findViewById(R.id.title);
-
-            }
-
-        }
-    }
 
 
 

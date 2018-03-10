@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class ScrabbleSolverDialog extends DialogFragment {
 
-    private static final String LONGEST_ANSWER="1000 Longest Possible Word";
+    private static final String LONGEST_ANSWER="One Word - 250";
 
     private static final String PURCHASED_ARG="OPTION";
 
@@ -50,7 +50,7 @@ public class ScrabbleSolverDialog extends DialogFragment {
 
     public static Map<String,Integer> getPurchaseOptionsCost(){
         Map<String,Integer> map=new HashMap<>();
-        map.put(LONGEST_ANSWER,1000);
+        map.put(LONGEST_ANSWER,250);
         return map;
     }
 

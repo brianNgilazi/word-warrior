@@ -25,10 +25,10 @@ import java.util.Map;
 
 public class TargetSolverDialog extends DialogFragment {
 
-    private static final String ALL_ANSWERS="1000 Unlock all answers";
-    private static final String GREAT_ANSWERS="750 Unlock answers to reach 'GREAT' status";
-    private static final String GOOD_ANSWERS="500 Unlock answers to reach 'GOOD' status";
-    private static final String NINE_LETTER_ANSWERS="500 View the 9 letter word(s)";
+    private static final String ALL_ANSWERS="All Answers - 1000";
+    private static final String GREAT_ANSWERS="Great - 750";
+    private static final String GOOD_ANSWERS="Good - 500";
+    private static final String NINE_LETTER_ANSWERS="9 Letter Word(s) - 500";
 
 
     private static final String PURCHASED_ARG="OPTION";
