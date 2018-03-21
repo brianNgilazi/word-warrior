@@ -39,7 +39,7 @@ public class GameView extends SurfaceView implements Runnable{
     private Rect resumeTextRect;
     private Rect progressRect;
     int currentTrack=0;
-    int[] tracks={R.raw.music,R.raw.music2,R.raw.music3};
+    int[] tracks={R.raw.music,R.raw.music3,R.raw.music2};
     @ColorInt private static final int THEME_COLOR=Color.argb(255,0,100,0);
 
     MediaPlayer mediaPlayer;
@@ -113,12 +113,12 @@ public class GameView extends SurfaceView implements Runnable{
 
            //Letters
            paint.setColor(Color.WHITE);
-           paint.setStyle(Paint.Style.STROKE);
+           paint.setStyle(Paint.Style.FILL);
            paint.setFakeBoldText(true);
-           paint.setStrokeWidth(2);
-           paint.setTextSize(Util.convertDpToPx(32,getContext()));
+           //paint.setStrokeWidth(2);
+           paint.setTextSize(Util.convertDpToPx(36,getContext()));
            for(ArcadeGame.Letter letter:game.getLetters()){
-               canvas.drawBitmap(letter.getIcon(),letter.getX(),letter.getY(),paint);
+               //canvas.drawBitmap(letter.getIcon(),letter.getX(),letter.getY(),paint);
                canvas.drawText(letter.getText(),letter.getTextX(),letter.getTextY(),paint);
            }
 
@@ -140,10 +140,9 @@ public class GameView extends SurfaceView implements Runnable{
                paint.setStyle(Paint.Style.FILL);
                paint.setTextAlign(Paint.Align.CENTER);
                paint.setTextSize(Util.convertDpToPx(20,getContext()));
-               canvas.drawText(game.getGamePoints()+" Points",maxX/2,(maxY/2)+game.gameOverImage.getHeight()+Util.convertDpToPx(20,getContext()),paint);
+               canvas.drawText(game.getGamePoints()+" Points",maxX/2,(maxY/2)+game.gameOverImage.getHeight()+Util.convertDpToPx(40,getContext()),paint);
                if(game.newHighScore()){
-                   paint.setColor(Color.argb(255,255,215,0));
-                   canvas.drawText("(New High Score)",maxX/2,(maxY/2)+game.gameOverImage.getHeight()+paint.getTextSize()+Util.convertDpToPx(20,getContext()),paint);
+                   canvas.drawText("(New High Score)",maxX/2,(maxY/2)+game.gameOverImage.getHeight()+paint.getTextSize()+Util.convertDpToPx(60,getContext()),paint);
                }
            }
 

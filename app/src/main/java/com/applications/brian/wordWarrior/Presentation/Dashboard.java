@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.applications.brian.wordWarrior.Logic.Controller;
 import com.applications.brian.wordWarrior.R;
@@ -97,14 +98,14 @@ public class Dashboard extends Fragment implements NavigationView.OnNavigationIt
     }
 
     void dashboard(){
-        DashboardHome  dashboard = DashboardHome.newInstance(toolbar);
+        Home dashboard = Home.newInstance(toolbar);
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
         transaction.replace(R.id.container, dashboard);
         transaction.commit();
     }
 
     void gameHome(int game){
-        GameHomeFragment  home = GameHomeFragment.newInstance(game);
+        GameHomeFragment  home = GameHomeFragment.newInstance(game,toolbar);
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
         transaction.replace(R.id.container, home);
         transaction.addToBackStack(null);
@@ -138,13 +139,19 @@ public class Dashboard extends Fragment implements NavigationView.OnNavigationIt
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.dashboard:
+                ((MainActivity)getActivity()).dashboard();
+                break;
             case R.id.target:
+                toolbar.setTitle("Target");
                 gameHome(GameHomeFragment.TARGET);
                 break;
             case R.id.scrabble:
+                toolbar.setTitle("Scrabble");
                 gameHome(GameHomeFragment.SCRABBLE);
                 break;
             case R.id.arcade:
+                toolbar.setTitle("Arcade");
                 gameHome(GameHomeFragment.ARCADE);
                 break;
             case R.id.nav_exit:
@@ -156,6 +163,8 @@ public class Dashboard extends Fragment implements NavigationView.OnNavigationIt
             case R.id.reset_profile:
                 resetDialog();
                 break;
+            default:
+                Toast.makeText(getContext(),"Item not available",Toast.LENGTH_SHORT).show();
         }
         return true;
     }

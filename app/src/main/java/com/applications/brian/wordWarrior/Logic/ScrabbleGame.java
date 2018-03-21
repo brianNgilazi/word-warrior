@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -19,17 +18,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by brian on 2018/02/06.
- * Class to represent a Scrabble GameWord ScrabbleGame
+ * Class to represent a Scrabble TargetGameWord ScrabbleGame
  */
 
 public class ScrabbleGame {
     public static final String SAVE_FILE_NAME="scrabbleSavedGames";
     public static final String SCORE_FILE_NAME="scrabbleHighScores";
+    private GameDictionary gameDictionary;
     private ScrabbleLetterCollection collection;
     private int score;
     private List<String> foundWords;
-    private List<String> allWords;
-    private HashMap<Character,List<String>> indexedWords;
     private Controller controller;
     private boolean newGame;
     private List<ScrabbleLetter> scrabbleLetters;
@@ -69,8 +67,7 @@ public class ScrabbleGame {
 
     private void init(Controller controller){
         this.controller=controller;
-        allWords=controller.getAllWords();
-        indexedWords=controller.getIndexedWords();
+        gameDictionary=controller.getLexicon();
         collection=new ScrabbleLetterCollection();
         newGame=true;
     }
@@ -90,7 +87,7 @@ public class ScrabbleGame {
      * @return true if the word is part of the solutions; false if otherwise
      */
     public boolean submitWord(String attempt){
-        if(allWords.contains(attempt.toLowerCase())){
+        if(gameDictionary.hasWord(attempt)){
             updateProgress(attempt);
             return true;
         }
@@ -328,11 +325,11 @@ public class ScrabbleGame {
             //return if a solution has been found
             if(solutionStatus.get()==FOUND)return;
 
-            if(!couldBeSolution())return;
+            if(!gameDictionary.couldBeWord(wordInProgress))return;
 
             for(int i:adjacent){
                 String newWord=wordInProgress+scrabbleLetters.get(i).toString();
-                if(newWord.length()>2 && allWords.contains(newWord.toLowerCase())){
+                if(newWord.length()>2 && gameDictionary.hasWord(newWord.toLowerCase())){
                     Log.i("Found",newWord);
                     solutionStatus.set(FOUND);
                     return;
@@ -343,17 +340,7 @@ public class ScrabbleGame {
             }
         }
 
-        private boolean couldBeSolution(){
-            String word=wordInProgress.toLowerCase();
-            if(!EnglishChecker.couldBeEnglishWord(word))return false;
-            char letter=word.charAt(0);
-            List<String> list=indexedWords.get(letter);
-            for(String s:list){
-                if(s.startsWith(word))return true;
-            }
 
-            return false;
-        }
 
     }
 
@@ -375,10 +362,10 @@ public class ScrabbleGame {
 
         @Override
         public void compute() {
-            if(!couldBeSolution() ||found.size()>=1)return;
+            if(!gameDictionary.couldBeWord(wordInProgress) ||found.size()>=1)return;
             for(int i:adjacent){
                 String newWord=wordInProgress+scrabbleLetters.get(i).toString();
-                if(newWord.length()>2 && allWords.contains(newWord.toLowerCase()) &&!found.contains(newWord)){
+                if(newWord.length()>2 && gameDictionary.hasWord(newWord) &&!found.contains(newWord)){
                     Log.i("Found",newWord);
                     found.add(newWord);
                 }
@@ -388,17 +375,7 @@ public class ScrabbleGame {
             }
         }
 
-        private boolean couldBeSolution(){
-            String word=wordInProgress.toLowerCase();
-            if(!EnglishChecker.couldBeEnglishWord(word))return false;
-            char letter=word.charAt(0);
-            List<String> list=indexedWords.get(letter);
-            for(String s:list){
-                if(s.startsWith(word))return true;
-            }
 
-            return false;
-        }
 
     }
     

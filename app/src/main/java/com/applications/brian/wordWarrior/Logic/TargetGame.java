@@ -15,13 +15,13 @@ import java.util.Locale;
 
 /**
  * Created by brian on 2018/02/06.
- * Class to represent a Target GameWord TargetGame
+ * Class to represent a Target TargetGameWord TargetGame
  */
 
 public class TargetGame {
     public static final String SAVE_FILE_NAME="targetSavedGames";
     public static final String SCORE_FILE_NAME="targetHighScores";
-    private GameWord currentGameWord;
+    private TargetGameWord currentTargetGameWord;
     private int score;
     private List<String> foundWords;
     private final Controller controller;
@@ -41,14 +41,14 @@ public class TargetGame {
     /**
      * enum representing status of save
      */
-    public  enum GAME_LEVEL {QUICK, AVERAGE, LONG, MARATHON, RANDOM}
+    public  enum GAME_LEVEL {QUICK, AVERAGE, LONG, MARATHON}
     private GAME_LEVEL game_level;
 
 
 
     public TargetGame(Controller controller,GAME_LEVEL level){
         this.controller=controller;
-        currentGameWord=controller.getWord(level);
+        currentTargetGameWord =new TargetGameWord(controller.getLexicon(),level);
         score=0;
         foundWords=new ArrayList<>();
         game_level=level;
@@ -84,7 +84,7 @@ public class TargetGame {
      * @return true if the word is part of the solutions; false if otherwise
      */
     public boolean submitWord(String attempt){
-         if(currentGameWord.getAnswers().contains(attempt.toLowerCase())){
+         if(currentTargetGameWord.getAnswers().contains(attempt.toLowerCase())){
                 updateProgress(attempt);
              return true;
          }
@@ -106,15 +106,15 @@ public class TargetGame {
      *          NONE if no target met etc.
      */
     public TARGET_STATUS target_status(){
-        if(score==currentGameWord.getTargets()[0]){
+        if(score== currentTargetGameWord.getTargets()[0]){
             return TARGET_STATUS.GOOD;
         }
 
-        if(score==currentGameWord.getTargets()[1]){
+        if(score== currentTargetGameWord.getTargets()[1]){
             return TARGET_STATUS.GREAT;
         }
 
-        if(score==currentGameWord.getTargets()[2]){
+        if(score== currentTargetGameWord.getTargets()[2]){
             return TARGET_STATUS.PERFECT;
         }
 
@@ -151,15 +151,15 @@ public class TargetGame {
     }
 
     public int getGoodTarget(){
-        return currentGameWord.getTargets()[0];
+        return currentTargetGameWord.getTargets()[0];
     }
 
     public int getGreatTarget(){
-        return currentGameWord.getTargets()[1];
+        return currentTargetGameWord.getTargets()[1];
     }
 
     public int getPerfectTarget(){
-        return currentGameWord.getTargets()[2];
+        return currentTargetGameWord.getTargets()[2];
     }
 
     public List<String> getFoundWords(){
@@ -171,18 +171,18 @@ public class TargetGame {
     }
 
     private String getGameWord(){
-        return currentGameWord.toString();
+        return currentTargetGameWord.toString();
     }
 
     private String getJumbledGameWord(){
-        return currentGameWord.getGameAnagram();
+        return currentTargetGameWord.getGameAnagram();
     }
 
     /**
      * Method to reset game with new values
      */
     public void resetGame(){
-        currentGameWord=controller.getWord(game_level);
+        currentTargetGameWord =new TargetGameWord(controller.getLexicon(),game_level);
         score=0;
         foundWords.clear();
         nineLetterWords=0;
@@ -226,7 +226,7 @@ public class TargetGame {
     private void load(String line){
 
         String[] data=line.split(" ");
-        currentGameWord=controller.getWord(data[2],data[1]);
+        currentTargetGameWord =new TargetGameWord(data[2],data[1],controller.getLexicon());
         game_level=GAME_LEVEL.valueOf(data[4]);
         foundWords=new ArrayList<>();
         foundWords.addAll(Arrays.asList(Arrays.copyOfRange(data,5,data.length)));
@@ -235,15 +235,15 @@ public class TargetGame {
     }
 
     public char[] getGameLetters(){
-        return currentGameWord.getGameLetters();
+        return currentTargetGameWord.getGameLetters();
     }
 
     public int targetWordLength(){
-        return currentGameWord.toString().length();
+        return currentTargetGameWord.toString().length();
     }
 
     public  boolean allSolutionsFound(){
-        return score==currentGameWord.getAnswers().size();
+        return score== currentTargetGameWord.getAnswers().size();
     }
 
     public int getPoints(){
@@ -263,6 +263,10 @@ public class TargetGame {
 
         return points;
 
+    }
+
+    public List<String> solutions(){
+        return currentTargetGameWord.getAnswers();
     }
 
     public static List<String> Levels(){

@@ -32,15 +32,16 @@ public class TargetSolverDialog extends DialogFragment {
 
 
     private static final String PURCHASED_ARG="OPTION";
+    private TargetFragment targetFragment;
 
 
-
-    public static TargetSolverDialog newInstance(String purchasedOption) {
+    public static TargetSolverDialog newInstance(String purchasedOption,TargetFragment targetFragment) {
 
         Bundle args = new Bundle();
         args.putString(PURCHASED_ARG,purchasedOption);
         TargetSolverDialog fragment = new TargetSolverDialog();
         fragment.setArguments(args);
+        fragment.targetFragment=targetFragment;
         return fragment;
     }
     @Nullable
@@ -67,18 +68,20 @@ public class TargetSolverDialog extends DialogFragment {
 
 
     private List<String> getList(){
-        List<String> wordSolutions = ((MainActivity) getActivity()).controller.getCurrentWordSolutions();
+        List<String> wordSolutions = targetFragment.currentGameSolutions();
         List<String> displaySolutions = new ArrayList<>();
+        int[] targets=getTargets(wordSolutions);
         switch (getArguments().getString(PURCHASED_ARG,ALL_ANSWERS)){
             case ALL_ANSWERS:
                 displaySolutions.addAll(wordSolutions);
                 break;
             case GOOD_ANSWERS:
-                for(int i=0;i<(wordSolutions.size()/3);i++){
+                for(int i=0;i<targets[0];i++){
                     displaySolutions.add(wordSolutions.get(i));
                 }
+                break;
             case GREAT_ANSWERS:
-                for(int i=0;i<(wordSolutions.size()/3)*2;i++){
+                for(int i=0;i<targets[1];i++){
                     displaySolutions.add(wordSolutions.get(i));
                 }
                 break;
@@ -99,6 +102,15 @@ public class TargetSolverDialog extends DialogFragment {
         map.put(NINE_LETTER_ANSWERS,500);
         return map;
     }
+
+    private  int[] getTargets(List<String> answers){
+        int[] targets=new int[3];
+        targets[0]= (int) Math.round((0.33)*answers.size());
+        targets[1]=(int) Math.round((0.67)*answers.size());
+        targets[2]=answers.size();
+        return targets;
+    }
+
 
 
 

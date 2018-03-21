@@ -19,4 +19,11 @@
     <color name="material_blue">#2196f3</color>
     <color name="material_purple">#673ab7</color>
     <color name="material_yellow">#ffeb3b</color>
+    <color name="material_brown">#795548</color>
+    <color name="material_red_900">#b71c1c</color>
+    <color name="material_teal">#009688</color>
+    <color name="material_green">#4caf50</color>
+    <color name="material_blue_grey">#607d8b</color>
+    <color name="material_blue_grey_900">#263238</color>
+    <color name="material_teal_900">#004d40</color>
 </resources>

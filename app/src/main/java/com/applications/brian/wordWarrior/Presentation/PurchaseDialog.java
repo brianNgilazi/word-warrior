@@ -70,7 +70,7 @@ public class PurchaseDialog extends DialogFragment implements View.OnClickListen
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view=inflater.inflate(R.layout.purchase_dialog,container,false);
-        insufficientText=(TextView)view.findViewById(R.id.insufficentPoints);
+        insufficientText=(TextView)view.findViewById(R.id.insufficientPoints);
         ((TextView)view.findViewById(R.id.currentBalance)).setText(String.format(Locale.getDefault(),"Current points: %d",controller.getProfilePoints()));
         (view.findViewById(R.id.purchaseButton)).setOnClickListener(this);
         (view.findViewById(R.id.cancelButton)).setOnClickListener(this);
@@ -87,7 +87,7 @@ public class PurchaseDialog extends DialogFragment implements View.OnClickListen
                 else insufficientText.setVisibility(View.INVISIBLE);
             }
         });
-
+        getDialog().setTitle("Shop");
         return view;
 
     }
@@ -140,7 +140,7 @@ public class PurchaseDialog extends DialogFragment implements View.OnClickListen
             getDialog().cancel();
             switch (id){
                 case TARGET_GAME:
-                    TargetSolverDialog.newInstance(item).show(getFragmentManager(), null);
+                    TargetSolverDialog.newInstance(item, ((TargetFragment)callingFragment)).show(getFragmentManager(), null);
                     ((TargetFragment)callingFragment).purchaseMade();
                     break;
                 case SCRABBLE_GAME:

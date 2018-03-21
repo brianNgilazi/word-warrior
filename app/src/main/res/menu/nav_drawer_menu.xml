@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <group android:checkableBehavior="none">
-
+        <item
+            android:id="@+id/dashboard"
+            android:icon="@drawable/ic_home"
+            android:title="@string/dashboard" />
         <item
             android:icon="@drawable/ic_game"
             android:title="@string/games">
@@ -11,20 +13,21 @@
                 <item
                     android:id="@+id/target"
                     android:icon="@drawable/ic_target"
-                    android:title="@string/target"
-                    app:showAsAction="collapseActionView" />
+                    android:title="@string/target" />
                 <item
                     android:id="@+id/scrabble"
                     android:icon="@drawable/ic_scrabble"
-                    android:title="@string/scrabble"
-                    app:showAsAction="collapseActionView" />
+                    android:title="@string/scrabble" />
                 <item
                     android:id="@+id/arcade"
                     android:icon="@drawable/ic_game"
-                    android:title="@string/arcade"
-                    app:showAsAction="collapseActionView" />
+                    android:title="@string/arcade" />
             </menu>
         </item>
+
+    </group>
+
+    <group android:id="@+id/group_about">
         <item
             android:id="@+id/reset_profile"
             android:icon="@drawable/ic_reset"
@@ -33,9 +36,6 @@
             android:id="@+id/nav_settings"
             android:icon="@drawable/ic_settings"
             android:title="@string/settings" />
-    </group>
-
-    <group android:id="@+id/group_about">
         <item
             android:id="@+id/nav_about"
             android:icon="@drawable/ic_about"

@@ -1,9 +1,12 @@
 package com.applications.brian.wordWarrior.Presentation;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +16,6 @@ import android.widget.TextView;
 
 import com.applications.brian.wordWarrior.Logic.ArcadeGame;
 import com.applications.brian.wordWarrior.Logic.Controller;
-import com.applications.brian.wordWarrior.Logic.SavedGame;
 import com.applications.brian.wordWarrior.Logic.ScrabbleGame;
 import com.applications.brian.wordWarrior.Logic.TargetGame;
 import com.applications.brian.wordWarrior.R;
@@ -38,21 +40,17 @@ public class GameHomeFragment extends Fragment {
     private int game;
 
     //Game Type
-    public static final int GAME_COUNT=3;
     public static final int  TARGET=0;
     public static final int  SCRABBLE=1;
     public static final int  ARCADE=2;
 
-    //Game Title
-    public static final String NEW_GAME="New Game";
-    public static final String LOAD_GAME="Load Game";
-    public static final String HELP="Help/Info";
-    public static final String HIGH_SCORE="High Scores";
+
 
     //sample data
-    private List<SavedGame> savedGames;
+    private List<String> savedGames;
     private List<Integer> highScores;
     private Controller controller;
+    private Toolbar toolbar;
 
     private int color;
 
@@ -68,11 +66,12 @@ public class GameHomeFragment extends Fragment {
      * @return A new instance of fragment GameHomeFragment.
      */
 
-    public static GameHomeFragment newInstance(int game) {
+    public static GameHomeFragment newInstance(int game, Toolbar toolbar) {
         GameHomeFragment fragment = new GameHomeFragment();
         Bundle args = new Bundle();
         args.putInt(GAME_PARAM, game);
         fragment.setArguments(args);
+        fragment.toolbar=toolbar;
         return fragment;
     }
 
@@ -84,19 +83,29 @@ public class GameHomeFragment extends Fragment {
            switch (game){
                case TARGET:
                    highScores =controller.getHighScores(TargetGame.SCORE_FILE_NAME);
-                   savedGames =controller.savedGamesList(TargetGame.SAVE_FILE_NAME);
+                   savedGames =controller.savedGamesData(TargetGame.SAVE_FILE_NAME);
                    color=Util.TARGET_COLOR;
+                   toolbar.setTitle(Home.Target);
+                   toolbar.setTitleTextColor(Util.TOOLBAR_COLOR);
+                   toolbar.setNavigationIcon(R.drawable.ic_drawer_dark);
                    break;
                case SCRABBLE:
                    highScores =controller.getHighScores(ScrabbleGame.SCORE_FILE_NAME);
-                   savedGames =controller.savedGamesList(ScrabbleGame.SAVE_FILE_NAME);
+                   savedGames =controller.savedGamesData(ScrabbleGame.SAVE_FILE_NAME);
                    color= Util.SCRABBLE_COLOR;
+                   toolbar.setTitle(Home.Scrabble);
+                   toolbar.setTitleTextColor(Color.WHITE);
+                   toolbar.setNavigationIcon(R.drawable.ic_drawer);
                    break;
                case ARCADE:
                    highScores =controller.getHighScores(ArcadeGame.SCORE_FILE_NAME);
                    color=Util.ARCADE_COLOR;
+                   toolbar.setTitle(Home.ArcadeGame);
+                   toolbar.setTitleTextColor(Color.WHITE);
+                   toolbar.setNavigationIcon(R.drawable.ic_drawer);
                    break;
             }
+            toolbar.setBackgroundColor(color);
         }
     }
 
@@ -104,15 +113,32 @@ public class GameHomeFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         controller=((MainActivity)getActivity()).controller;
+
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        toolbar.setTitle("Home");
+        toolbar.setNavigationIcon(R.drawable.ic_drawer);
+        toolbar.setBackgroundColor(Util.TOOLBAR_COLOR);
+        toolbar.setTitleTextColor(Color.WHITE);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view= inflater.inflate(R.layout.fragment_game_home,container,false);
+        View view= inflater.inflate(R.layout.home_experiment,container,false);
 
         ImageView imageView=(ImageView)view.findViewById(R.id.imageView);
         TextView info=(TextView)view.findViewById(R.id.game_info);
+        FloatingActionButton floatingActionButton=(FloatingActionButton)view.findViewById(R.id.fab_scrolling);
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((MainActivity)getActivity()).onGameOptionSelect(game,null);
+            }
+        });
         ListView listView=(ListView)view.findViewById(R.id.scores_list);
         listView.setAdapter(HighScoreDialog.scoresListDetail(highScores,game,getContext()));
         SavedGamesDialog  dialog;
@@ -121,18 +147,19 @@ public class GameHomeFragment extends Fragment {
            case TARGET:
                imageView.setImageResource(R.drawable.target);
                info.setText(R.string.target_info);
-               dialog = SavedGamesDialog.newInstance(TargetGame.SAVE_FILE_NAME,controller.savedGamesData(TargetGame.SAVE_FILE_NAME));
+               dialog = SavedGamesDialog.newInstance(TargetGame.SAVE_FILE_NAME,savedGames);
                transaction.add(R.id.saved_games_list, dialog).commit();
                break;
            case SCRABBLE:
                imageView.setImageResource(R.drawable.scrabble);
                info.setText(R.string.scrabble_info);
-               dialog = SavedGamesDialog.newInstance(ScrabbleGame.SAVE_FILE_NAME,controller.savedGamesData(ScrabbleGame.SAVE_FILE_NAME));
+               dialog = SavedGamesDialog.newInstance(ScrabbleGame.SAVE_FILE_NAME,savedGames);
                transaction.add(R.id.saved_games_list, dialog).commit();
                break;
            case ARCADE:
                imageView.setImageResource(R.drawable.arcade);
                info.setText(R.string.arcade_info);
+               view.findViewById(R.id.games_card).setVisibility(View.GONE);
                break;
            default:
                view=inflater.inflate(R.layout.no_items_layout,container,false);

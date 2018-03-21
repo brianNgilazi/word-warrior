@@ -23,10 +23,10 @@
         <ImageView
             android:id="@+id/imageView"
             android:layout_width="match_parent"
-            android:layout_height="78dp"
+            android:layout_height="64dp"
             android:layout_alignParentTop="true"
             android:adjustViewBounds="true"
-            android:background="@color/material_yellow"
+            android:background="@color/material_green"
             android:scaleType="fitCenter"
             card_view:srcCompat="@drawable/high_score_image" />
 
@@ -37,7 +37,6 @@
             android:layout_height="wrap_content"
             android:layout_alignBottom="@id/imageView"
             android:layout_marginBottom="0dp"
-            android:background="@color/black_overlay"
             android:text="@string/high_scores"
             android:textColor="@color/white" />
 

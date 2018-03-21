@@ -133,14 +133,14 @@
 
         <Button
             android:id="@+id/submitWord"
-            style="@style/Widget.AppCompat.Button"
+            style="@style/Widget.AppCompat.Button.Borderless"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@color/black_overlay"
             android:elevation="4dp"
             android:fontFamily="sans-serif-smallcaps"
             android:text="@string/submit"
             android:textAlignment="center"
+            android:textColor="@color/black"
             android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="@+id/clearButton"
             app:layout_constraintLeft_toRightOf="@+id/clearButton"
@@ -150,14 +150,14 @@
 
         <Button
             android:id="@+id/clearButton"
-            style="@style/Widget.AppCompat.Button"
+            style="@style/Widget.AppCompat.Button.Borderless"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="40dp"
             android:layout_marginTop="8dp"
-            android:background="@color/black_overlay"
             android:fontFamily="sans-serif-smallcaps"
             android:text="@string/clear"
+            android:textColor="@color/black"
             android:textSize="18sp"
             app:layout_constraintBottom_toTopOf="@+id/newGameIcon"
             app:layout_constraintLeft_toLeftOf="parent"

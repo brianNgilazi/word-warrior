@@ -6,6 +6,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.applications.brian.wordWarrior.R;
 
@@ -49,7 +50,7 @@ public class AboutFragment extends Fragment implements View.OnClickListener {
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((MainActivity)getActivity()).onBackPressed();
+                getActivity().onBackPressed();
             }
         });
         return view;
@@ -59,6 +60,7 @@ public class AboutFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         int id=v.getId();
+        Toast.makeText(getContext(),"Item not yet Available",Toast.LENGTH_SHORT).show();
         switch(id){
             case R.id.eulaButton:
                 // TODO: 2018/03/07 Add eula stuff

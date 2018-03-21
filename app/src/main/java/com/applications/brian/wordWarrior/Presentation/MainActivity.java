@@ -8,9 +8,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.WindowManager;
 
-import com.applications.brian.wordWarrior.Logic.ArcadeGame;
 import com.applications.brian.wordWarrior.Logic.Controller;
 import com.applications.brian.wordWarrior.Logic.ScrabbleGame;
 import com.applications.brian.wordWarrior.Logic.TargetGame;
@@ -27,7 +27,8 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        //getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         LoadingParallelTask task=new LoadingParallelTask(this);
         task.execute();
     }
@@ -43,10 +44,20 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
     public void onBackPressed() {
         FragmentManager manager=getSupportFragmentManager();
         int stackCount=manager.getBackStackEntryCount();
-        if(stackCount>1) dashboard();
+        Log.d("Backstack",""+stackCount);
+        if(stackCount>1) super.onBackPressed();
         else{
             exitDialog();
         }
+    }
+
+    private void fragmentTransaction(Fragment fragment){
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragmentContainer,fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
+        Log.d("Backstack",""+getSupportFragmentManager().getBackStackEntryCount());
+
     }
 
     void exitDialog(){
@@ -72,57 +83,27 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         dialog.show();
     }
 
-   /* private void solver(String anagramWord){
-        SolverFragment solverFragment = SolverFragment.newInstance(anagramWord);
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer, solverFragment);
-        if(getSupportFragmentManager().getBackStackEntryCount()>0)getSupportFragmentManager().popBackStack();
-        transaction.addToBackStack(null);
-        transaction.commit();
 
-    }
-
-    private void viewHelp(){
-        Intent intent=new Intent(this,HelpActivity.class);
-        startActivity(intent);
-
-    }*/
 
     private void startTarget(boolean load, String loadData, String level){
-       TargetFragment targetFragment=TargetFragment.newInstance(load,loadData,level);
-       FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-       transaction.replace(R.id.fragmentContainer,targetFragment);
-        //if(getSupportFragmentManager().getBackStackEntryCount()>0)getSupportFragmentManager().popBackStack();
-       transaction.addToBackStack(null);
-       transaction.commit();
-
+       fragmentTransaction(TargetFragment.newInstance(load,loadData,level));
    }
 
     private void startScrabble(boolean load, String loadData){
-        ScrabbleFragment scrabbleFragment=ScrabbleFragment.newInstance(load,loadData);
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer,scrabbleFragment);
-        //if(getSupportFragmentManager().getBackStackEntryCount()>0)getSupportFragmentManager().popBackStack();
-        transaction.addToBackStack(null);
-        transaction.commit();
-
+        fragmentTransaction(ScrabbleFragment.newInstance(load,loadData));
     }
 
     private void startArcadeGame(){
-        ArcadeGameFragment arcadeGameFragment= ArcadeGameFragment.newInstance();
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer,arcadeGameFragment);
-        //if(getSupportFragmentManager().getBackStackEntryCount()>0)getSupportFragmentManager().popBackStack();
-        transaction.addToBackStack(null);
-        transaction.commit();
-
+        fragmentTransaction(ArcadeGameFragment.newInstance());
     }
+
 
 
     void selectLevel(){
         DialogFragment dialogFragment=new LevelPickerDialog();
         dialogFragment.show(getSupportFragmentManager(),null);
     }
+
 
     void savedGamesDialog(String fileName){
         SavedGamesDialog  dialog = SavedGamesDialog.newInstance(fileName,controller.savedGamesData(fileName));
@@ -133,12 +114,8 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
     }
 
     void aboutPage(){
-        Fragment about=AboutFragment.newInstance();
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer, about);
-        transaction.addToBackStack(null);
+        fragmentTransaction(AboutFragment.newInstance());
 
-        transaction.commit();
     }
 
     void highScoresDialog(String fileName){
@@ -152,6 +129,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         Dashboard  dashboard = Dashboard.newInstance();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragmentContainer, dashboard);
+        if(getSupportFragmentManager().getBackStackEntryCount()>1)getSupportFragmentManager().popBackStack();
         transaction.addToBackStack(null);
         transaction.commit();
     }
@@ -182,45 +160,16 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         switch (game){
 
             case GameHomeFragment.TARGET:
-                if(mItem.equals(GameHomeFragment.NEW_GAME)){
-                    selectLevel();
-                    return;
-                }
-                if(mItem.equals(GameHomeFragment.LOAD_GAME)){
-                    savedGamesDialog(TargetGame.SAVE_FILE_NAME);
-                    return;
-                }
-                if(mItem.equals(GameHomeFragment.HIGH_SCORE)){
-                    highScoresDialog(TargetGame.SCORE_FILE_NAME);
-                    return;
-                }
+                selectLevel();
                 break;
 
             case GameHomeFragment.SCRABBLE:
-                if(mItem.equals(GameHomeFragment.NEW_GAME)){
-                    startScrabble(false,null);
-                    return;
-                }
-                if(mItem.equals(GameHomeFragment.LOAD_GAME)){
-                    savedGamesDialog(ScrabbleGame.SAVE_FILE_NAME);
-                    return;
-                }
-                if(mItem.equals(GameHomeFragment.HIGH_SCORE)){
-                    highScoresDialog(ScrabbleGame.SCORE_FILE_NAME);
-                    return;
-                }
+                startScrabble(false,null);
                 break;
 
             case GameHomeFragment.ARCADE:
-                if(mItem.equals(GameHomeFragment.NEW_GAME)){
-                    startArcadeGame();
-                    return;
-                }
-                if(mItem.equals(GameHomeFragment.HIGH_SCORE)){
-                    highScoresDialog(ArcadeGame.SCORE_FILE_NAME);
-                    //return;
-                }
-
+                startArcadeGame();
+                break;
         }
     }
 

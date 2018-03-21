@@ -31,7 +31,7 @@ class LoadingParallelTask extends AsyncTask<Void,Void, Void> {
     @Override
     protected void onPostExecute(Void v) {
         super.onPostExecute(v);
-        ((MainActivity)context).dashboard();;
+        ((MainActivity)context).dashboard();
 
     }
 

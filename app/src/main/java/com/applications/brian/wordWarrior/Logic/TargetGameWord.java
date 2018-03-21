@@ -10,7 +10,7 @@ import java.util.Random;
 
 
 
-public class GameWord {
+public class TargetGameWord {
     private ArrayList<String> answers;
     private final String word;
     private String gameAnagram;
@@ -19,15 +19,6 @@ public class GameWord {
     private int[] targets;
 
 
-
-    public GameWord(GameDictionary dict){
-        gameDictionary =dict;
-        word= gameDictionary.gameWord(TargetGame.GAME_LEVEL.RANDOM);
-        populateList();
-        setTargets();
-
-    }
-
     /**
      * Constructor to get a word from a saved game
      * @param actualWord- the n letter word
@@ -35,7 +26,7 @@ public class GameWord {
      * @param dict- the gameDictionary
      *
      */
-    GameWord(String actualWord, String anagram, GameDictionary dict){
+    TargetGameWord(String actualWord, String anagram, GameDictionary dict){
         center=anagram.charAt(4);
         gameAnagram=anagram;
         word=actualWord;
@@ -46,7 +37,7 @@ public class GameWord {
     }
 
 
-    GameWord(GameDictionary dictionary, TargetGame.GAME_LEVEL game_level){
+    TargetGameWord(GameDictionary dictionary, TargetGame.GAME_LEVEL game_level){
 
         String[] dataArray=dictionary.gameWord(game_level).split(";");
         word=dataArray[0];
@@ -70,7 +61,7 @@ public class GameWord {
         for (String word:gameDictionary.allWords()) {
             if (word.length() > 3
                     && (word.contains(String.valueOf(center)))
-                    && GameWord.isAnagram(word,this.word))
+                    && TargetGameWord.isAnagram(word,this.word))
                 answers.add(word);
         }
     }
@@ -93,7 +84,7 @@ public class GameWord {
     public static boolean isAnagram(String potential, String word){
 
         for(char character:potential.toCharArray()) {
-            if(GameWord.instances0f(character,potential)>GameWord.instances0f(character,word))return false;
+            if(TargetGameWord.instances0f(character,potential)> TargetGameWord.instances0f(character,word))return false;
         }
         return true;
     }

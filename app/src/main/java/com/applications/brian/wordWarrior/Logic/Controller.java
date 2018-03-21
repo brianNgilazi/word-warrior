@@ -5,16 +5,13 @@ import android.content.SharedPreferences;
 
 import com.applications.brian.wordWarrior.Presentation.MainActivity;
 import com.applications.brian.wordWarrior.R;
-import com.applications.brian.wordWarrior.Utilities.Time;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Scanner;
 
 /**
@@ -24,10 +21,10 @@ import java.util.Scanner;
 
 public class Controller {
     private final GameDictionary gameDictionary;
-    private GameWord word;
     private final Context context;
     private SharedPreferences preferences;
     private Profile profile;
+
 
 
     public Controller(Context context){
@@ -44,6 +41,7 @@ public class Controller {
     private void openProfile(){
         preferences = ((MainActivity) context).getPreferences(Context.MODE_PRIVATE);
         profile=new Profile(preferences.getString(Profile.PREFERENCE_KEY,"0 0 0"));
+
     }
 
     public void updatePoints(int points){
@@ -86,33 +84,10 @@ public class Controller {
      *
      * @return a List containing all the words in the 'dictionary'
      */
-    public List<String> getAllWords(){
-        return gameDictionary.allWords();
+    GameDictionary getLexicon(){
+        return gameDictionary;
     }
 
-    /**
-     *
-     * @return a HashMap where each key is a letter of the alphabet and
-     * the value corresponding to each key is a list of letters starting with the key letter
-     */
-    HashMap<Character,List<String>> getIndexedWords() {
-        return gameDictionary.indexedWords();
-    }
-
-    GameWord getWord(String actualWord, String anagram){
-        word=new GameWord(actualWord,anagram, gameDictionary);
-        return  word;
-
-    }
-
-    GameWord getWord(TargetGame.GAME_LEVEL game_level){
-        word= new GameWord(gameDictionary,game_level);
-        return word;
-    }
-
-    public List<String> getCurrentWordSolutions(){
-        return word.getAnswers();
-    }
 
 
     //Save and Delete Methods
@@ -134,7 +109,7 @@ public class Controller {
         return data;
     }
 
-    public List<SavedGame> savedGamesList(String fileName) {
+    List<SavedGame> savedGamesList(String fileName) {
 
         List<SavedGame> savedGames = new ArrayList<>();
         try {
@@ -184,14 +159,6 @@ public class Controller {
         saveGame(fileName,savedGames);
     }
 
-    public String getLastSavedGame(String fileName){
-        List<SavedGame> list=savedGamesList(fileName);
-        if(list.size()==0)return "-";
-        return list.get(list.size()-1).getName();
-
-    }
-
-
     //High Scores
     public List<Integer> getHighScores(String fileName) {
         List<Integer> scores=new ArrayList<>();
@@ -225,16 +192,6 @@ public class Controller {
         }
     }
 
-    public String getHighScoreString(String fileName) {
-        List<Integer> scores=getHighScores(fileName);
-        int score;
-        if(scores.size()==0)return "-";
-        if(fileName.equals(TargetGame.SCORE_FILE_NAME)){
-            score=scores.get(scores.size()-1);
-            return String.format(Locale.getDefault(),"Best Time: %s", Time.secondsToTimerString(score));
-        }
-        else return String.format(Locale.getDefault(),"High Score: %s", scores.get(0));
-    }
 
 
 }

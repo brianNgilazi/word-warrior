@@ -2,15 +2,12 @@ package com.applications.brian.wordWarrior.Presentation;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.graphics.Color;
-import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.view.ActionMode;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -29,14 +26,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.applications.brian.wordWarrior.Logic.Controller;
+import com.applications.brian.wordWarrior.Logic.GenericGameSounds;
 import com.applications.brian.wordWarrior.Logic.ScrabbleGame;
 import com.applications.brian.wordWarrior.Logic.ScrabbleLetter;
 import com.applications.brian.wordWarrior.R;
+import com.applications.brian.wordWarrior.Utilities.RandomColour;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 
 
 /**
@@ -64,6 +62,7 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
     private StringBuilder stringBuilder;
     private List<View> viewList;
     private List<View> allModifiedViews;
+    private GenericGameSounds gameSounds;
 
     //Views
     private TextView attemptTextView,foundTextView,currentScore,totalScore;
@@ -110,6 +109,7 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
             scrabbleGame =new ScrabbleGame(controller);
 
         }
+        gameSounds=new GenericGameSounds(getContext());
         dialog.dismiss();
 
     }
@@ -176,6 +176,7 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 //Check if tile used
+                gameSounds.click();
                 if(!adapter.isUsed(position)) {
                   //check if item clicked is either the first item in a new attempt word or is adjacent to the last clicked item.
                     boolean adjacent= adapter.selectedItems.size()==0 || ScrabbleGame.isAdjacent(position+1,adapter.selectedItems.get(adapter.selectedItems.size()-1 )+1);
@@ -245,8 +246,7 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         if(scrabbleGame.submitWord(potential)){
             adapter.setSelectionUsed();
             incrementProgress(potential);
-            MediaPlayer mp=MediaPlayer.create(getContext(),R.raw.success);
-            mp.start();
+            gameSounds.success();
             return;
         }
         else if(scrabbleGame.checkPlayed(potential)){
@@ -255,8 +255,7 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         }
         else showIncorrectMessage(potential.toLowerCase());
         clear();
-        MediaPlayer mp=MediaPlayer.create(getContext(),R.raw.fail);
-        mp.start();
+        gameSounds.fail();
     }
 
     private void clear(){
@@ -285,6 +284,7 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         randomColour.nextColor();
         if(scrabbleGame.gameOver()){
             victory("No more words left in the grid",scrabbleGame.newHighScore());
+            gameSounds.victory();
         }
         clear();
 
@@ -297,7 +297,7 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         clear();
         foundWordsAdapter.clear();
         for(View view:allModifiedViews){
-            view.setBackground(ContextCompat.getDrawable(getContext(),R.drawable.grid_selector));
+            view.setBackground(ContextCompat.getDrawable(getContext(),R.drawable.tile_selector));
         }
         allModifiedViews.clear();
         updatePoints();
@@ -312,7 +312,7 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
     //Dialogs
     private  void showIncorrectMessage(String s){
         AlertDialog.Builder aBuilder=new AlertDialog.Builder(getContext());
-        aBuilder.setMessage("Sorry, \""+s+ "\" is an invalid word.");
+        aBuilder.setMessage("Sorry, \""+s+ "\" is an invalid word.").setIcon(R.drawable.ic_scrabble);
         aBuilder.setTitle("Invalid Word");
         aBuilder.setNeutralButton("Ok", new DialogInterface.OnClickListener() {
             @Override
@@ -327,8 +327,8 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
 
     private void showAlreadyFoundMessage(String s){
         AlertDialog.Builder aBuilder=new AlertDialog.Builder(getContext());
-        aBuilder.setMessage("\""+s+"\" has already been found");
-        aBuilder.setTitle("GameWord Already Found");
+        aBuilder.setMessage("\""+s+"\" has already been found").setIcon(R.drawable.ic_scrabble);
+        aBuilder.setTitle("TargetGameWord Already Found");
         aBuilder.setNeutralButton("Ok", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -342,9 +342,10 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
     private void victory(String message,boolean highScore){
         AlertDialog.Builder aBuilder=new AlertDialog.Builder(getContext());
         controller.updateGamesWon();
-        if(highScore)message=String.format(Locale.getDefault(),"%s%n%s",message,"New High Score!");
+        message=String.format(Locale.getDefault(),"%s%nScore: %d",message,scrabbleGame.getScore());
+        if(highScore)message=String.format(Locale.getDefault(),"%s%n%s",message,"(New High Score)");
         aBuilder.setMessage(message);
-        aBuilder.setTitle("Victory");
+        aBuilder.setTitle("Victory").setIcon(R.drawable.ic_scrabble);
         aBuilder.setPositiveButton("Next Game", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -378,7 +379,7 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
             }
         });
 
-
+        aBuilder.setIcon(R.drawable.ic_scrabble);
         AlertDialog dialog= aBuilder.create();
         dialog.show();
     }
@@ -410,9 +411,7 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         menuItems.add("Save Game");
         menuItems.add("Load Game");
         menuItems.add("High Scores");
-        menuItems.add("Exit (without saving)");
-        menuItems.add("Settings");
-        menuItems.add("Help");
+        menuItems.add("Exit Game(without saving)");
         String[] m=new String[menuItems.size()];
         AlertDialog.Builder builder=new  AlertDialog.Builder(getContext());
         builder.setTitle("Select An Option");
@@ -430,7 +429,7 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
                         ((MainActivity)getContext()).highScoresDialog(ScrabbleGame.SCORE_FILE_NAME);
                         break;
                     case 3:
-                       // ((MainActivity)getContext()).showHome();
+                        ((MainActivity)getContext()).onBackPressed();
                         break;
                     default:
                         Toast.makeText(getContext(),"Item not yet Available",Toast.LENGTH_SHORT).show();
@@ -651,7 +650,7 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         }
 
         @Override
-        protected void onPreExecute() {;
+        protected void onPreExecute() {
             progressDialog.show(getFragmentManager(),null);
         }
 
@@ -676,36 +675,6 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
 
         }
     }
-
-
-    private class RandomColour{
-
-        private final int colors[]={Color.BLUE,Color.CYAN,Color.GREEN,Color.MAGENTA,Color.RED,Color.YELLOW};
-        private List<Integer> used;
-        private int currentColorIndex =-1;
-
-        RandomColour(){
-            used=new ArrayList<>();
-            nextColor();
-        }
-
-        int getCurrentColor(){
-            return colors[currentColorIndex];
-        }
-
-        void nextColor(){
-            if(currentColorIndex >=0)used.add(currentColorIndex);
-            if(used.size()>=colors.length)used.clear();
-            Random random=new Random();
-            int nextIndex=random.nextInt(colors.length);
-            while(used.contains(nextIndex))nextIndex=random.nextInt(colors.length);
-            Log.i("Color",nextIndex+"");
-            currentColorIndex= nextIndex;
-        }
-
-    }
-
-
 
 
 }

@@ -13,7 +13,7 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.TextView;
 
-import com.applications.brian.wordWarrior.Logic.GameWord;
+import com.applications.brian.wordWarrior.Logic.TargetGameWord;
 import com.applications.brian.wordWarrior.R;
 
 import java.util.Comparator;
@@ -73,7 +73,7 @@ public class SolverFragment extends Fragment {
             unsolved = getArguments().getString(WORD_TO_SOLVE_ARG,null);
         }
         adapter= new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1);
-        lexiconList =((MainActivity)getActivity()).controller.getAllWords();
+        //lexiconList =((MainActivity)getActivity()).controller.;
     }
 
     @Override
@@ -136,14 +136,14 @@ public class SolverFragment extends Fragment {
 
             case TARGET:
                 for (String word:lexiconList) {
-                    if(GameWord.isAnagram(word,pattern) && word.contains(String.valueOf(pattern.charAt(4)))) adapter.add(word);
+                    if(TargetGameWord.isAnagram(word,pattern) && word.contains(String.valueOf(pattern.charAt(4)))) adapter.add(word);
                 }
                 break;
             case CROSSWORD:
                 break;
             case ANAGRAM:
                 for (String word:lexiconList) {
-                    if(GameWord.isAnagram(word,pattern)) adapter.add(word);
+                    if(TargetGameWord.isAnagram(word,pattern)) adapter.add(word);
                 }
                 break;
         }

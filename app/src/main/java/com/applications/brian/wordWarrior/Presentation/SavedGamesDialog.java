@@ -206,7 +206,7 @@ public class SavedGamesDialog extends Fragment {
         public ScrabbleSavedGameHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             final Context context=parent.getContext();
             LayoutInflater inflater = LayoutInflater.from(context);
-            View card = inflater.inflate(R.layout.scraable_saved_item, parent, false);
+            View card = inflater.inflate(R.layout.scrabble_saved_item, parent, false);
             return new ScrabbleSavedGameHolder(card);
 
         }
@@ -215,13 +215,11 @@ public class SavedGamesDialog extends Fragment {
         public void onBindViewHolder(final ScrabbleSavedGameHolder holder, final int position) {
             holder.scrabbleSavedGame = scrabbleSavedGames.get(position);
 
-
-            holder.row1.setText(holder.scrabbleSavedGame.getRow(1));
-            holder.row2.setText(holder.scrabbleSavedGame.getRow(2));
-            holder.row3.setText(holder.scrabbleSavedGame.getRow(3));
-            holder.row4.setText(holder.scrabbleSavedGame.getRow(4));
-            holder.row5.setText(holder.scrabbleSavedGame.getRow(5));
-            holder.row6.setText(holder.scrabbleSavedGame.getRow(6));
+            String details=String.format("%s%n%s%n%s%n%s%n%s%n%s",holder.scrabbleSavedGame.getRow(1),
+                    holder.scrabbleSavedGame.getRow(2),holder.scrabbleSavedGame.getRow(3),
+                    holder.scrabbleSavedGame.getRow(4),holder.scrabbleSavedGame.getRow(5),
+                    holder.scrabbleSavedGame.getRow(6));
+            holder.gameLetters.setText(details);
             holder.date.setText(holder.scrabbleSavedGame.getName());
             holder.score.setText(String.valueOf(holder.scrabbleSavedGame.getScore()));
 
@@ -272,7 +270,7 @@ public class SavedGamesDialog extends Fragment {
 
 
         static class ScrabbleSavedGameHolder extends RecyclerView.ViewHolder {
-            final TextView row1,row2,row3,row4,row5,row6;
+            final TextView gameLetters;
             final TextView date;
             final TextView score;
             final View card;
@@ -284,12 +282,7 @@ public class SavedGamesDialog extends Fragment {
             ScrabbleSavedGameHolder(View card) {
                 super(card);
                 this.card=card;
-                row1= (TextView) card.findViewById(R.id.row1);
-                row2= (TextView) card.findViewById(R.id.row2);
-                row3= (TextView) card.findViewById(R.id.row3);
-                row4= (TextView) card.findViewById(R.id.row4);
-                row5= (TextView) card.findViewById(R.id.row5);
-                row6= (TextView) card.findViewById(R.id.row6);
+                gameLetters= (TextView) card.findViewById(R.id.game_letters);
                 date = (TextView) card.findViewById(R.id.date);
                 score =(TextView)card.findViewById(R.id.score);
                 deleteButton =(ImageView)card.findViewById(R.id.deleteImageView);

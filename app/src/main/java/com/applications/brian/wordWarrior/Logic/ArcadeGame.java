@@ -67,7 +67,7 @@ public class ArcadeGame {
         this.context=context;
         this.controller=controller;
         minimumSpeed= Math.round(Util.convertDpToPx(8,context));
-        player =new Player(context,controller.getAllWords());
+        player =new Player(context,controller.getLexicon());
         int columns=maxX/50;
         int rows=maxY/100;
         for(int r=1;r<rows+1;r++){
@@ -97,19 +97,18 @@ public class ArcadeGame {
     private void sounds(){
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             SoundPool.Builder builder=new SoundPool.Builder();
-            builder.setMaxStreams(3);
+            builder.setMaxStreams(4);
             soundPool=builder.build();
         }
         else{
             //noinspection deprecation
-            soundPool=new SoundPool(3, AudioManager.STREAM_MUSIC,0);
+            soundPool=new SoundPool(4, AudioManager.STREAM_MUSIC,0);
         }
         explodeSoundID = soundPool.load(context, R.raw.game_over, 1);
         upgradeLevelID = soundPool.load(context, R.raw.level_up, 1);
-        penaliseSoundID =soundPool.load(context,R.raw.needed_letter_collide,2);
-        collideSoundID =soundPool.load(context,R.raw.bug_collide,2);
+        penaliseSoundID =soundPool.load(context,R.raw.needed_letter_collide,1);
+        collideSoundID =soundPool.load(context,R.raw.bug_collide,1);
     }
-
 
     public void reset() {
         minimumSpeed= Math.round(Util.convertDpToPx(8,context));
@@ -133,7 +132,7 @@ public class ArcadeGame {
             for (Obstacle obstacle : obstacles) {
                 obstacle.update();
                 if (Rect.intersects(player.getCollisionBoundary(), obstacle.getCollisionBoundary())) {
-                    soundPool.play(collideSoundID,0.75f,0.75f,2,0,1.0f);
+                    soundPool.play(collideSoundID,1.0f,1.0f,2,0,1.0f);
                     obstacle.reset();
 
 
@@ -145,7 +144,7 @@ public class ArcadeGame {
             }
             if (player.getHealthPoints() < 0) {
                 gameOver = true;
-                soundPool.play(explodeSoundID,1.0f,1.0f,1,1,1.0f);
+                soundPool.play(explodeSoundID,0.8f,0.8f,1,1,1.0f);
             }
         }
 
@@ -287,19 +286,19 @@ public class ArcadeGame {
         private int x, y;
         private int maxX;
         private int maxY;
-        private int totalScore = 0;
+        private int totalScore = 50;
         private int level =1;
         private boolean moving;
         private int direction;
 
 
-        private final List<String> allWords;
+        private GameDictionary gameDictionary;
 
 
-        Player(Context context,List<String> allWords) {
+        Player(Context context,GameDictionary gameDictionary) {
 
             icon =Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shield),Maximum_X/6,Maximum_Y/10);
-            this.allWords = allWords;
+            this.gameDictionary = gameDictionary;
             wordSetUp();
             coordinatesSetUp();
         }
@@ -308,9 +307,9 @@ public class ArcadeGame {
         private void wordSetUp(){
             if(neededLetters==null)neededLetters=new ArrayList<>();
             else neededLetters.clear();
-            currentWord = allWords.get(RANDOM_GENERATOR.nextInt(allWords.size())).toUpperCase();
+            currentWord = gameDictionary.getRandomWord();
             while (currentWord.length()>10 ||currentWord.length()<5) {
-                currentWord = allWords.get(RANDOM_GENERATOR.nextInt(allWords.size())).toUpperCase();
+                currentWord = gameDictionary.getRandomWord();
             }
             for(char c:currentWord.toCharArray())neededLetters.add(String.valueOf(c));
         }
@@ -328,7 +327,7 @@ public class ArcadeGame {
             x=maxX/2;
             collisionBoundary = new Rect(x, y, x + icon.getWidth(), maxY);
             level=1;
-            totalScore=0;
+            totalScore=50;
         }
 
         void update() {
@@ -436,7 +435,7 @@ public class ArcadeGame {
         private final int maxY;
         private int speed=ArcadeGame.this.minimumSpeed;
         private final Rect collisionBoundary;
-        private String currentAlphabet;
+
 
 
 
@@ -444,8 +443,7 @@ public class ArcadeGame {
         Letter(int maxX, int maxY){
 
             icon=ArcadeGame.this.letterImage;
-            currentAlphabet=getCurrentWord();
-            text=String.valueOf(currentAlphabet.charAt(RANDOM_GENERATOR.nextInt(currentAlphabet.length())));
+            text=String.valueOf(getCurrentWord().charAt(RANDOM_GENERATOR.nextInt(getCurrentWord().length())));
             this.maxX=maxX-icon.getWidth();
             this.maxY=maxY;
 
@@ -464,7 +462,7 @@ public class ArcadeGame {
                 y= MINIMUM_Y;
                 x= RANDOM_GENERATOR.nextInt(maxX);
                 speed=minimumSpeed+ RANDOM_GENERATOR.nextInt(5);
-                text=String.valueOf(currentAlphabet.charAt(RANDOM_GENERATOR.nextInt(currentAlphabet.length())));
+                text=String.valueOf(getCurrentWord().charAt(RANDOM_GENERATOR.nextInt(getCurrentWord().length())));
 
             }
             updateCollisionBoundary();
@@ -476,23 +474,11 @@ public class ArcadeGame {
         }
 
 
-        public Bitmap getIcon() {
-            return icon;
-        }
 
         public String getText() {
             return text;
         }
 
-
-        public int getX() {
-            return x;
-        }
-
-
-        public int getY() {
-            return y;
-        }
 
         public int getTextX() {
             return collisionBoundary.centerX();
@@ -508,9 +494,7 @@ public class ArcadeGame {
             y=MINIMUM_Y;
             x= RANDOM_GENERATOR.nextInt(maxX);
             speed=ArcadeGame.this.objectSpeed();
-            currentAlphabet=
-                    getCurrentWord();
-            text=String.valueOf(currentAlphabet.charAt(RANDOM_GENERATOR.nextInt(currentAlphabet.length())));
+            text=String.valueOf(getCurrentWord().charAt(RANDOM_GENERATOR.nextInt(getCurrentWord().length())));
             updateCollisionBoundary();
         }
 

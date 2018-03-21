@@ -28,7 +28,7 @@ import java.util.List;
  * Use the {@link Dashboard#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class DashboardHome extends Fragment {
+public class Home extends Fragment {
 
 
     Controller controller;
@@ -39,7 +39,7 @@ public class DashboardHome extends Fragment {
     public static final String ArcadeGame="Arcade Game";
 
 
-    public DashboardHome() {
+    public Home() {
         // Required empty public constructor
     }
 
@@ -49,10 +49,10 @@ public class DashboardHome extends Fragment {
      * @return A new instance of fragment Dashboard.
      */
 
-    public static DashboardHome newInstance(Toolbar toolbar) {
-        DashboardHome dashboardHome= new DashboardHome();
-        dashboardHome.toolbar=toolbar;
-        return dashboardHome;
+    public static Home newInstance(Toolbar toolbar) {
+        Home home = new Home();
+        home.toolbar=toolbar;
+        return home;
     }
 
     @Override
@@ -72,7 +72,7 @@ public class DashboardHome extends Fragment {
     }
 
     void showHome(int game){
-        GameHomeFragment  home = GameHomeFragment.newInstance(game);
+        GameHomeFragment  home = GameHomeFragment.newInstance(game,toolbar);
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
         transaction.replace(R.id.container, home);
         transaction.addToBackStack(null);
@@ -117,7 +117,7 @@ public class DashboardHome extends Fragment {
                     mListener.startGame(gameItem.getTitle());
                 }
             });
-            holder.home.setOnClickListener(new View.OnClickListener() {
+            holder.imageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     showHome(gameItem.getGame());
@@ -134,7 +134,7 @@ public class DashboardHome extends Fragment {
             private final TextView title;
             private final ImageView imageView;
             private final ImageView play;
-            private final ImageView home;
+
 
 
 
@@ -142,7 +142,6 @@ public class DashboardHome extends Fragment {
                 super(view);
 
                 play=(ImageView)view.findViewById(R.id.play_game);
-                home=(ImageView)view.findViewById(R.id.game_home);
                 title = (TextView) view.findViewById(R.id.title);
                 imageView =(ImageView)view.findViewById(R.id.imageView);
             }

@@ -10,7 +10,7 @@
     android:layout_marginTop="@dimen/main_card_margin_vertical"
     android:background="?attr/selectableItemBackground"
     android:foreground="?attr/selectableItemBackground"
-    card_view:cardBackgroundColor="@color/black_overlay"
+    card_view:cardBackgroundColor="@color/material_teal_900"
     card_view:cardCornerRadius="@dimen/card_recycler_corner_radius"
     card_view:cardElevation="@dimen/card_recycler_elevation"
     card_view:cardUseCompatPadding="true">
@@ -19,41 +19,51 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="match_parent"
-            android:layout_height="104dp"
-            android:layout_alignParentTop="true"
-            android:adjustViewBounds="true"
-            android:background="@color/black_overlay_darker"
-            android:scaleType="centerCrop" />
-
         <TextView
-            android:id="@+id/title"
+            android:id="@+id/game_letters"
             style="@style/TextAppearance.AppCompat.Large"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@id/imageView"
-            android:layout_marginBottom="0dp"
-            android:background="@color/black_overlay"
+            android:layout_alignParentTop="true"
+            android:background="@color/black_overlay_darker"
             android:text="@android:string/untitled"
+            android:textAlignment="center"
             android:textColor="@color/white" />
+
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/imageView"
+            android:layout_below="@id/game_letters"
             android:padding="4dp">
-            <ImageView
-                android:id="@+id/play_game"
+
+            <TextView
+                android:id="@+id/score"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_centerHorizontal="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:padding="8dp"
-                android:src="@drawable/ic_play" />
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/date"
+                android:text="TextView" />
+
+            <ImageView
+                android:id="@+id/deleteImageView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                card_view:srcCompat="@android:drawable/ic_menu_close_clear_cancel" />
+
+            <TextView
+                android:id="@+id/date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="false"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/deleteImageView"
+                android:layout_marginStart="0dp"
+                android:text="TextView"
+                android:textColor="@color/white"
+                android:textSize="18sp" />
         </RelativeLayout>
 
 

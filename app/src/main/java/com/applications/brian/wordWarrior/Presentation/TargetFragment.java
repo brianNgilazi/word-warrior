@@ -3,7 +3,6 @@ package com.applications.brian.wordWarrior.Presentation;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -28,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.applications.brian.wordWarrior.Logic.Controller;
+import com.applications.brian.wordWarrior.Logic.GenericGameSounds;
 import com.applications.brian.wordWarrior.Logic.TargetGame;
 import com.applications.brian.wordWarrior.R;
 import com.applications.brian.wordWarrior.Utilities.ClockTask;
@@ -59,6 +59,7 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
     private LetterAdapter adapter;
     private ArrayAdapter<String> foundWordsAdapter;
     private StringBuilder stringBuilder;
+    private GenericGameSounds gameSounds;
     
     //Controller
     private  Controller controller;
@@ -135,6 +136,7 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        gameSounds=new GenericGameSounds(getActivity());
         initialise(view);
     }
 
@@ -220,6 +222,7 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
         grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                gameSounds.click();
                 boolean b= adapter.isSelected(position);
                 if(b)
                 {
@@ -271,14 +274,13 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
         String potential=attemptTextView.getText().toString();
         if(!targetGame.checkPlayed(potential) && targetGame.submitWord(potential)){
             incrementProgress(potential);
-            MediaPlayer mp=MediaPlayer.create(getContext(),R.raw.success);
-            mp.start();
             return;
         }
         else if(targetGame.checkPlayed(potential)){
             showAlreadyFoundMessage(potential.toLowerCase());
         }
         else showIncorrectMessage(potential.toLowerCase());
+        gameSounds.fail();
         clear();
 
     }
@@ -293,6 +295,7 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
         foundWordsAdapter.add(word);
         foundTextView.setText(String.format(Locale.getDefault(),"Found Words: %d", targetGame.getScore()));
         progressBar.incrementProgressBy(1);
+        gameSounds.success();
         checkLevel();
         if(word.length()== targetGame.targetWordLength() &&targetGame.target_status()!= TargetGame.TARGET_STATUS.PERFECT){
             boolean highScore=targetGame.newHighScore(timer.getText().toString())&&!viewedSolutions;
@@ -313,18 +316,23 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
         switch (targetGame.target_status()){
             case GOOD:
                 goodStar.setActivated(true);
+                gameSounds.targetReached();
                 break;
             case GREAT:
                 goodStar.setActivated(true);
                 greatStar.setActivated(true);
+                gameSounds.targetReached();
                 break;
             case PERFECT:
                 goodStar.setActivated(true);
                 greatStar.setActivated(true);
                 perfectStar.setActivated(true);
+                gameSounds.targetReached();
                 victory("You found all the words.Congratulations on being adequate.",false);
                 break;
+
         }
+
     }
 
     private void updatePoints(){
@@ -335,6 +343,10 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
 
     void purchaseMade(){
         viewedSolutions=true;
+    }
+
+    List<String> currentGameSolutions(){
+        return targetGame.solutions();
     }
 
     private void reset(){
@@ -438,9 +450,8 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
         menuItems.add("Load Game");
         menuItems.add("Change Level");
         menuItems.add("High Scores");
-        menuItems.add("Exit (without saving)");
-        menuItems.add("Settings");
-        menuItems.add("Help");
+        menuItems.add("Exit Game(without saving)");
+
         String[] m=new String[menuItems.size()];
         AlertDialog.Builder builder=new  AlertDialog.Builder(getContext());
         builder.setTitle("Select An Option");
@@ -504,15 +515,14 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
         });
         AlertDialog dialog= aBuilder.create();
         dialog.show();
-        MediaPlayer mp=MediaPlayer.create(getContext(),R.raw.fail);
-        mp.start();
+
 
     }
 
     private void showAlreadyFoundMessage(String s){
         AlertDialog.Builder aBuilder=new AlertDialog.Builder(getContext());
         aBuilder.setMessage("\""+s+"\" has already been found");
-        aBuilder.setTitle("GameWord Already Found");
+        aBuilder.setTitle("TargetGameWord Already Found");
         aBuilder.setIcon(R.drawable.ic_target);
         aBuilder.setNeutralButton("Ok", new DialogInterface.OnClickListener() {
             @Override
@@ -526,8 +536,12 @@ public class TargetFragment extends Fragment implements View.OnClickListener {
 
     private void victory(String message, boolean highScore){
         clock.pause();
+        gameSounds.victory();
+        message=String.format(Locale.getDefault(),"%s%nTime: %s",message,timer.getText());
         AlertDialog.Builder aBuilder=new AlertDialog.Builder(getContext());
-        if(highScore)message=String.format(Locale.getDefault(),"%s%n%s",message,"[New High Score!]");
+        if(highScore){
+            message=String.format(Locale.getDefault(),"%s%n%s",message,"(New High Score!)");
+        }
         aBuilder.setMessage(message);
         aBuilder.setTitle("Victory");
         aBuilder.setIcon(R.drawable.ic_target);
