@@ -51,10 +51,10 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
     // the fragment initialization parameters
     private static final String LOAD_GAME = "LOAD_GAME_PARAMETER";
     private static final String LOAD_GAME_DATA = "LOAD_GAME_DATA_PARAMETER";
+    private final RandomColour randomColour = new RandomColour();
+    boolean firstAttempt = true;
     private boolean loadGame;
-    
     private Controller controller;
-
     //Other Fields
     private ScrabbleGame scrabbleGame;
     private LetterAdapter adapter;
@@ -63,13 +63,9 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
     private List<View> viewList;
     private List<View> allModifiedViews;
     private GenericGameSounds gameSounds;
-
     //Views
-    private TextView attemptTextView,foundTextView,currentScore,totalScore;
+    private TextView attemptTextView, foundTextView, currentScore, totalScore;
     private GridView grid;
-
-    boolean firstAttempt=true;
-    private final RandomColour randomColour=new RandomColour();
 
     public ScrabbleFragment() {
         // Required empty public constructor
@@ -86,8 +82,8 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         ScrabbleFragment fragment = new ScrabbleFragment();
         Bundle args = new Bundle();
         args.putBoolean(LOAD_GAME, load);
-        args.putString(LOAD_GAME_DATA,data);
-       
+        args.putString(LOAD_GAME_DATA, data);
+
         fragment.setArguments(args);
         return fragment;
     }
@@ -95,21 +91,21 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        controller=((MainActivity) getActivity()).controller;
-        AlertDialog dialog=loadDialog();
+        controller = ((MainActivity) getActivity()).controller;
+        AlertDialog dialog = loadDialog();
         dialog.show();
         if (getArguments() != null) {
             loadGame = getArguments().getBoolean(LOAD_GAME);
-            if(loadGame){
+            if (loadGame) {
                 String loadGameData = getArguments().getString(LOAD_GAME_DATA);
-                scrabbleGame = new ScrabbleGame(controller, loadGameData) ;
+                scrabbleGame = new ScrabbleGame(controller, loadGameData);
                 dialog.dismiss();
                 return;
             }
-            scrabbleGame =new ScrabbleGame(controller);
+            scrabbleGame = new ScrabbleGame(controller);
 
         }
-        gameSounds=new GenericGameSounds(getContext());
+        gameSounds = new GenericGameSounds(getContext());
         dialog.dismiss();
 
     }
@@ -131,22 +127,22 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
     }
 
     //  Initialisation Methods
-    private void initialise(View view){
+    private void initialise(View view) {
 
 
         //attempt
-        attemptTextView =(TextView)view.findViewById(R.id.newWord);
-        stringBuilder=new StringBuilder();
-        currentScore=(TextView)view.findViewById(R.id.currentScore);
+        attemptTextView = (TextView) view.findViewById(R.id.newWord);
+        stringBuilder = new StringBuilder();
+        currentScore = (TextView) view.findViewById(R.id.currentScore);
 
 
         //Progress
-        GridView foundGridView=(GridView)view.findViewById(R.id.drawerList);
-        totalScore=(TextView)view.findViewById(R.id.score);
-        foundTextView=(TextView)view.findViewById(R.id.foundCountView);
-        foundWordsAdapter=new ArrayAdapter<>(getContext(),android.R.layout.simple_list_item_1);
+        GridView foundGridView = (GridView) view.findViewById(R.id.drawerList);
+        totalScore = (TextView) view.findViewById(R.id.score);
+        foundTextView = (TextView) view.findViewById(R.id.foundCountView);
+        foundWordsAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1);
         foundGridView.setAdapter(foundWordsAdapter);
-        
+
 
         initialiseViewValues();
         prepareButtons(view);
@@ -154,21 +150,21 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
 
     }
 
-    private void initialiseViewValues(){
-        firstAttempt=true;
+    private void initialiseViewValues() {
+        firstAttempt = true;
         attemptTextView.setText("");
         currentScore.setText(String.valueOf(0));
-       totalScore.setText(String.format(Locale.getDefault(),"Score: %d", scrabbleGame.getScore()));
-        if(loadGame)foundWordsAdapter.addAll(scrabbleGame.getFoundWords());
-        foundTextView.setText(String.format(Locale.getDefault(),"Found Words: %d", foundWordsAdapter.getCount()));
+        totalScore.setText(String.format(Locale.getDefault(), "Score: %d", scrabbleGame.getScore()));
+        if (loadGame) foundWordsAdapter.addAll(scrabbleGame.getFoundWords());
+        foundTextView.setText(String.format(Locale.getDefault(), "Found Words: %d", foundWordsAdapter.getCount()));
     }
 
-    private void prepareGrid(View view){
-        viewList=new ArrayList<>();
-        allModifiedViews=new ArrayList<>();
-        adapter=new LetterAdapter(new ArrayList<ScrabbleLetter>());
+    private void prepareGrid(View view) {
+        viewList = new ArrayList<>();
+        allModifiedViews = new ArrayList<>();
+        adapter = new LetterAdapter(new ArrayList<ScrabbleLetter>());
         populateAdapter(adapter);
-        grid = (GridView)view.findViewById(R.id.gridView);
+        grid = (GridView) view.findViewById(R.id.gridView);
         grid.setAdapter(adapter);
         grid.setChoiceMode(GridView.CHOICE_MODE_MULTIPLE_MODAL);
         grid.setMultiChoiceModeListener(new MultiListener());
@@ -177,9 +173,9 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 //Check if tile used
                 gameSounds.click();
-                if(!adapter.isUsed(position)) {
-                  //check if item clicked is either the first item in a new attempt word or is adjacent to the last clicked item.
-                    boolean adjacent= adapter.selectedItems.size()==0 || ScrabbleGame.isAdjacent(position+1,adapter.selectedItems.get(adapter.selectedItems.size()-1 )+1);
+                if (!adapter.isUsed(position)) {
+                    //check if item clicked is either the first item in a new attempt word or is adjacent to the last clicked item.
+                    boolean adjacent = adapter.selectedItems.size() == 0 || ScrabbleGame.isAdjacent(position + 1, adapter.selectedItems.get(adapter.selectedItems.size() - 1) + 1);
                     if (!adapter.isSelected(position) && adjacent) {
                         grid.setItemChecked(position, true);
                         adapter.setSelected(position);
@@ -190,7 +186,7 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
                         viewList.add(view);
                     }
                     //if clicked position is selected and the last selected item (deselect)
-                    else if(adapter.isSelected(position) && position==adapter.selectedItems.get(adapter.selectedItems.size()-1)){
+                    else if (adapter.isSelected(position) && position == adapter.selectedItems.get(adapter.selectedItems.size() - 1)) {
                         grid.setItemChecked(position, false);
                         adapter.removeSelected(position);
                         stringBuilder.deleteCharAt(stringBuilder.indexOf(adapter.getItem(position).toString()));
@@ -204,11 +200,11 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         });
     }
 
-    private void prepareButtons(final View view){
+    private void prepareButtons(final View view) {
         view.findViewById(R.id.submitWord).setOnClickListener(this);
         view.findViewById(R.id.clearButton).setOnClickListener(this);
 
-        Button clearButton=(Button)view.findViewById(R.id.clearButton);
+        Button clearButton = (Button) view.findViewById(R.id.clearButton);
         assert clearButton != null;
         clearButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -230,74 +226,80 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
 
     }
 
-    private void populateAdapter(LetterAdapter adapter){
-        for(ScrabbleLetter letter: scrabbleGame.getGameLetters()){
+    private void populateAdapter(LetterAdapter adapter) {
+        for (ScrabbleLetter letter : scrabbleGame.getGameLetters()) {
             adapter.add(letter);
         }
     }
 
     //Game play methods
-    private void submitWord(){
-        if(firstAttempt){
+    private void submitWord() {
+        if (firstAttempt) {
             controller.updateGamesPlayed();
-            firstAttempt=false;
+            firstAttempt = false;
         }
-        String potential=attemptTextView.getText().toString();
-        if(scrabbleGame.submitWord(potential)){
+        String potential = attemptTextView.getText().toString();
+        if (scrabbleGame.submitWord(potential)) {
             adapter.setSelectionUsed();
             incrementProgress(potential);
             gameSounds.success();
             return;
-        }
-        else if(scrabbleGame.checkPlayed(potential)){
+        } else if (scrabbleGame.checkPlayed(potential)) {
             showAlreadyFoundMessage(potential.toLowerCase());
 
-        }
-        else showIncorrectMessage(potential.toLowerCase());
+        } else showIncorrectMessage(potential.toLowerCase());
         clear();
         gameSounds.fail();
     }
 
-    private void clear(){
+    private void clear() {
         adapter.clearSelection();
         viewList.clear();
-        stringBuilder.delete(0,stringBuilder.length());
+        stringBuilder.delete(0, stringBuilder.length());
         attemptTextView.setText("");
         currentScore.setText("");
     }
 
-    private void updatePoints(){
-        int points=scrabbleGame.getPoints();
+    private void updatePoints() {
+        int points = scrabbleGame.getPoints();
         controller.updatePoints(points);
-        Toast.makeText(getContext(),String.format(Locale.getDefault(),"%d points earned",points),Toast.LENGTH_SHORT).show();
+        LayoutInflater inflater = LayoutInflater.from(getContext());
+        View layout = inflater.inflate(R.layout.points_earned_toast, (ViewGroup) getView().findViewById(R.id.customToastContainer));
+        ((TextView) layout.findViewById(R.id.pointsEarnedTextView)).setText(String.format(Locale.getDefault(), "+%d Points", points));
+
+        Toast toast = new Toast(getContext());
+        toast.setView(layout);
+        toast.setDuration(Toast.LENGTH_LONG);
+        toast.show();
     }
 
-    private void incrementProgress(String word){
+
+    private void incrementProgress(String word) {
         foundWordsAdapter.add(word);
-        foundTextView.setText(String.format(Locale.getDefault(),"Found Words: %d", foundWordsAdapter.getCount()));
-       totalScore.setText(String.format(Locale.getDefault(),"Score: %d", scrabbleGame.getScore()));
-        for (View view:viewList){
+        foundTextView.setText(String.format(Locale.getDefault(), "Found Words: %d", foundWordsAdapter.getCount()));
+        totalScore.setText(String.format(Locale.getDefault(), "Score: %d", scrabbleGame.getScore()));
+        for (View view : viewList) {
             view.setBackgroundResource(0);
             view.setBackgroundColor(randomColour.getCurrentColor());
         }
         allModifiedViews.addAll(viewList);
         randomColour.nextColor();
-        if(scrabbleGame.gameOver()){
-            victory("No more words left in the grid",scrabbleGame.newHighScore());
+        if (scrabbleGame.gameOver()) {
+            victory("No more words left in the grid", scrabbleGame.newHighScore());
             gameSounds.victory();
         }
         clear();
 
     }
 
-    private void reset(){
-        AlertDialog dialog=loadDialog();
+    private void reset() {
+        AlertDialog dialog = loadDialog();
         dialog.setCancelable(false);
         dialog.show();
         clear();
         foundWordsAdapter.clear();
-        for(View view:allModifiedViews){
-            view.setBackground(ContextCompat.getDrawable(getContext(),R.drawable.tile_selector));
+        for (View view : allModifiedViews) {
+            view.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.tile_selector));
         }
         allModifiedViews.clear();
         updatePoints();
@@ -310,9 +312,9 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
 
 
     //Dialogs
-    private  void showIncorrectMessage(String s){
-        AlertDialog.Builder aBuilder=new AlertDialog.Builder(getContext());
-        aBuilder.setMessage("Sorry, \""+s+ "\" is an invalid word.").setIcon(R.drawable.ic_scrabble);
+    private void showIncorrectMessage(String s) {
+        AlertDialog.Builder aBuilder = new AlertDialog.Builder(getContext());
+        aBuilder.setMessage("Sorry, \"" + s + "\" is an invalid word.").setIcon(R.drawable.ic_scrabble);
         aBuilder.setTitle("Invalid Word");
         aBuilder.setNeutralButton("Ok", new DialogInterface.OnClickListener() {
             @Override
@@ -320,14 +322,14 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
                 dialog.dismiss();
             }
         });
-        AlertDialog dialog= aBuilder.create();
+        AlertDialog dialog = aBuilder.create();
         dialog.show();
 
     }
 
-    private void showAlreadyFoundMessage(String s){
-        AlertDialog.Builder aBuilder=new AlertDialog.Builder(getContext());
-        aBuilder.setMessage("\""+s+"\" has already been found").setIcon(R.drawable.ic_scrabble);
+    private void showAlreadyFoundMessage(String s) {
+        AlertDialog.Builder aBuilder = new AlertDialog.Builder(getContext());
+        aBuilder.setMessage("\"" + s + "\" has already been found").setIcon(R.drawable.ic_scrabble);
         aBuilder.setTitle("TargetGameWord Already Found");
         aBuilder.setNeutralButton("Ok", new DialogInterface.OnClickListener() {
             @Override
@@ -335,15 +337,16 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
                 dialog.dismiss();
             }
         });
-        AlertDialog dialog= aBuilder.create();
+        AlertDialog dialog = aBuilder.create();
         dialog.show();
     }
 
-    private void victory(String message,boolean highScore){
-        AlertDialog.Builder aBuilder=new AlertDialog.Builder(getContext());
+    private void victory(String message, boolean highScore) {
+        AlertDialog.Builder aBuilder = new AlertDialog.Builder(getContext());
         controller.updateGamesWon();
-        message=String.format(Locale.getDefault(),"%s%nScore: %d",message,scrabbleGame.getScore());
-        if(highScore)message=String.format(Locale.getDefault(),"%s%n%s",message,"(New High Score)");
+        message = String.format(Locale.getDefault(), "%s%nScore: %d", message, scrabbleGame.getScore());
+        if (highScore)
+            message = String.format(Locale.getDefault(), "%s%n%s", message, "(New High Score)");
         aBuilder.setMessage(message);
         aBuilder.setTitle("Victory").setIcon(R.drawable.ic_scrabble);
         aBuilder.setPositiveButton("Next Game", new DialogInterface.OnClickListener() {
@@ -352,22 +355,21 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
                 reset();
             }
         });
-        AlertDialog dialog= aBuilder.create();
+        AlertDialog dialog = aBuilder.create();
         dialog.show();
     }
 
     private void saveGameDialog() {
-        AlertDialog.Builder aBuilder=new AlertDialog.Builder(
+        AlertDialog.Builder aBuilder = new AlertDialog.Builder(
                 getContext());
         aBuilder.setMessage("Would you like to save your game?").
                 setTitle("Save Game?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if(!scrabbleGame.isNewGame()){
+                if (!scrabbleGame.isNewGame()) {
                     dialog.dismiss();
                     overwriteDialog();
-                }
-                else {
+                } else {
                     scrabbleGame.save(ScrabbleGame.SAVING_STATUS.NEW_SAVE);
                     dialog.dismiss();
                 }
@@ -380,12 +382,12 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         });
 
         aBuilder.setIcon(R.drawable.ic_scrabble);
-        AlertDialog dialog= aBuilder.create();
+        AlertDialog dialog = aBuilder.create();
         dialog.show();
     }
 
-    private void  overwriteDialog(){
-        AlertDialog.Builder builder=new AlertDialog.Builder(
+    private void overwriteDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(
                 getContext());
         builder.setMessage("A save of this already exists. Overwrite existing save?");
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
@@ -402,53 +404,53 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
             }
         });
 
-        AlertDialog dialog= builder.create();
+        AlertDialog dialog = builder.create();
         dialog.show();
     }
 
-    private void menuDialog(){
-        ArrayList<String> menuItems=new ArrayList<>();
+    private void menuDialog() {
+        ArrayList<String> menuItems = new ArrayList<>();
         menuItems.add("Save Game");
         menuItems.add("Load Game");
         menuItems.add("High Scores");
         menuItems.add("Exit Game(without saving)");
-        String[] m=new String[menuItems.size()];
-        AlertDialog.Builder builder=new  AlertDialog.Builder(getContext());
+        String[] m = new String[menuItems.size()];
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Select An Option");
         builder.setItems(menuItems.toArray(m), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                switch (which){
+                switch (which) {
                     case 0:
                         saveGameDialog();
                         break;
                     case 1:
-                        ((MainActivity)getContext()).savedGamesDialog(ScrabbleGame.SAVE_FILE_NAME);
+                        ((MainActivity) getContext()).savedGamesDialog(ScrabbleGame.SAVE_FILE_NAME);
                         break;
                     case 2:
-                        ((MainActivity)getContext()).highScoresDialog(ScrabbleGame.SCORE_FILE_NAME);
+                        ((MainActivity) getContext()).highScoresDialog(ScrabbleGame.SCORE_FILE_NAME);
                         break;
                     case 3:
-                        ((MainActivity)getContext()).onBackPressed();
+                        ((MainActivity) getContext()).onBackPressed();
                         break;
                     default:
-                        Toast.makeText(getContext(),"Item not yet Available",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Item not yet Available", Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
         AlertDialog dialog = builder.create();
-        Window window=dialog.getWindow();
-        if (window!=null){
-            window.setGravity(Gravity.BOTTOM|Gravity.RIGHT);
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setGravity(Gravity.BOTTOM | Gravity.RIGHT);
             window.setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT);
         }
         dialog.show();
 
     }
 
-    private AlertDialog loadDialog(){
-        AlertDialog.Builder aBuilder=new AlertDialog.Builder(
+    private AlertDialog loadDialog() {
+        AlertDialog.Builder aBuilder = new AlertDialog.Builder(
                 getContext());
         aBuilder.setMessage("Loading...").
                 setTitle("Loading");
@@ -456,33 +458,28 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         return aBuilder.create();
     }
 
-    public void searchForLongestWord(String option){
-        MyTask task=new MyTask(option);
+    public void searchForLongestWord(String option) {
+        gameSounds.purchase();
+        MyTask task = new MyTask(option);
         //noinspection unchecked
         task.execute();
     }
 
     @Override
     public void onClick(View v) {
-        int id=v.getId();
-        if(id==R.id.submitWord){
+        int id = v.getId();
+        if (id == R.id.submitWord) {
             submitWord();
         }
-        if(id==R.id.clearButton){
+        if (id == R.id.clearButton) {
             clear();
-        }
-
-        else if(id==R.id.newGameIcon||id==R.id.newGameText){
+        } else if (id == R.id.newGameIcon || id == R.id.newGameText) {
             reset();
-        }
-
-        else if(id==R.id.solutionsIcon||id==R.id.solutionsText){
-            PurchaseDialog dialogFragment=PurchaseDialog.newInstance(PurchaseDialog.SCRABBLE_GAME);
+        } else if (id == R.id.solutionsIcon || id == R.id.solutionsText) {
+            PurchaseDialog dialogFragment = PurchaseDialog.newInstance(PurchaseDialog.SCRABBLE_GAME);
             dialogFragment.setCallingFragment(this);
-            dialogFragment.show(getFragmentManager(),null);
-        }
-
-        else if(id==R.id.overFlowIcon||id==R.id.moreText){
+            dialogFragment.show(getFragmentManager(), null);
+        } else if (id == R.id.overFlowIcon || id == R.id.moreText) {
             menuDialog();
         }
     }
@@ -496,14 +493,14 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         private final List<Integer> usedItems;
         private final List<ScrabbleLetter> tiles;
 
-        LetterAdapter(List<ScrabbleLetter> list){
-            selectedItems=new ArrayList<>(9);
-            usedItems=new ArrayList<>();
-            tiles=list;
+        LetterAdapter(List<ScrabbleLetter> list) {
+            selectedItems = new ArrayList<>(9);
+            usedItems = new ArrayList<>();
+            tiles = list;
 
         }
 
-        public void add(ScrabbleLetter letter){
+        public void add(ScrabbleLetter letter) {
             tiles.add(letter);
         }
 
@@ -527,51 +524,50 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
             LayoutInflater inflater = LayoutInflater.from(getContext());
 
-            View item=convertView;
+            View item = convertView;
             TileHolder holder;
-            if(item==null){
-                item=inflater.inflate(R.layout.scrabble_tile,parent,false);
-                holder=new TileHolder(item);
+            if (item == null) {
+                item = inflater.inflate(R.layout.scrabble_tile, parent, false);
+                holder = new TileHolder(item);
                 item.setTag(holder);
-            }
-            else{
-                holder=(TileHolder)item.getTag();
+            } else {
+                holder = (TileHolder) item.getTag();
 
             }
             holder.populateFrom(getItem(position));
-            if(getItem(position).isUsed())grid.setItemChecked(position,true);
+            if (getItem(position).isUsed()) grid.setItemChecked(position, true);
             return item;
 
         }
 
-        void setSelected(int position){
+        void setSelected(int position) {
             selectedItems.add(position);
         }
 
-        void removeSelected(Integer position){
+        void removeSelected(Integer position) {
             selectedItems.remove(position);
         }
 
-        boolean isSelected(int position){
+        boolean isSelected(int position) {
             return selectedItems.contains(position);
         }
 
-        void clearSelection(){
-            for(int i:adapter.selectedItems){
-                if(!usedItems.contains(i)) grid.setItemChecked(i,false);
+        void clearSelection() {
+            for (int i : adapter.selectedItems) {
+                if (!usedItems.contains(i)) grid.setItemChecked(i, false);
             }
             selectedItems.clear();
         }
 
-        private void clearUsed(){
-            for(int i:usedItems){
-                grid.setItemChecked(i,false);
+        private void clearUsed() {
+            for (int i : usedItems) {
+                grid.setItemChecked(i, false);
             }
             usedItems.clear();
         }
 
 
-        void reset(){
+        void reset() {
             tiles.clear();
             clearUsed();
             ScrabbleFragment.this.populateAdapter(this);
@@ -579,12 +575,12 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         }
 
         @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-        boolean isUsed(int position){
+        boolean isUsed(int position) {
             return this.getItem(position).isUsed();
         }
 
-        void setSelectionUsed(){
-            for(int i:adapter.selectedItems){
+        void setSelectionUsed() {
+            for (int i : adapter.selectedItems) {
                 this.getItem(i).setUsed(true);
 
                 usedItems.add(i);
@@ -592,19 +588,17 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
         }
 
 
+        private class TileHolder {
+            private TextView letter = null;
+            private TextView value = null;
 
 
-        private class TileHolder{
-            private TextView letter=null;
-            private TextView value=null;
-
-
-            TileHolder(View row){
-                letter=(TextView)row.findViewById(R.id.letter);
-                value=(TextView)row.findViewById(R.id.tileValue);
+            TileHolder(View row) {
+                letter = (TextView) row.findViewById(R.id.letter);
+                value = (TextView) row.findViewById(R.id.tileValue);
             }
 
-            void populateFrom(ScrabbleLetter tile){
+            void populateFrom(ScrabbleLetter tile) {
                 letter.setText(tile.toString());
                 value.setText(String.valueOf(tile.getValue()));
             }
@@ -641,17 +635,17 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
     }
 
 
-    private class MyTask extends AsyncTask{
+    private class MyTask extends AsyncTask {
         final ScrabbleSolverDialog progressDialog;
 
 
-        MyTask(String purchasedOption){
-            progressDialog=ScrabbleSolverDialog.newInstance(purchasedOption);
+        MyTask(String purchasedOption) {
+            progressDialog = ScrabbleSolverDialog.newInstance(purchasedOption);
         }
 
         @Override
         protected void onPreExecute() {
-            progressDialog.show(getFragmentManager(),null);
+            progressDialog.show(getFragmentManager(), null);
         }
 
         @Override
@@ -662,15 +656,15 @@ public class ScrabbleFragment extends Fragment implements View.OnClickListener {
 
         @Override
         protected void onPostExecute(Object o) {
-            List<String> list=(List<String>)o;
+            List<String> list = (List<String>) o;
            /* Collections.sort(list,new Comparator<String>() {
                 @Override
                 public int compare(String o1, String o2) {
                     return scrabbleGame.scoreForWord(o1)-scrabbleGame.scoreForWord(o2);
                 }
             });*/
-            int listSize=list.size();
-            if(listSize!=0) progressDialog.setText(list.get(list.size()-1));
+            int listSize = list.size();
+            if (listSize != 0) progressDialog.setText(list.get(list.size() - 1));
             else progressDialog.setText("No Words Found.");
 
         }

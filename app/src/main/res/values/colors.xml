@@ -1,29 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3f51b5</color>
-    <color name="colorPrimaryDark">#303f9f</color>
-    <color name="colorAccent">#ff4081</color>
+    <color name="colorPrimary">#808080</color>
+    <color name="colorPrimaryDark">#404040</color>
+    <color name="colorAccent">#C0C0C0</color>
     <color name="white">#eeeeee</color>
     <color name="black_overlay">#66000000</color>
     <color name="light_gray">#9b9a9a</color>
     <color name="dark_gray">#292727</color>
     <color name="black">#000000</color>
     <color name="transparent">#00000000</color>
-    <color name="blue">#c8000e87</color>
-    <color name="darkBlue">#1976D2</color>
-    <color name="white_semi">#c8ffffff</color>
-    <color name="green_semi">#4caf50</color>
-    <color name="black_overlay_darker">#c8000000</color>
+    <color name="black_overlay_darker">#dc000000</color>
     <color name="warning_red">#ff0008</color>
     <color name="black_overlay_light">#37000000</color>
-    <color name="material_blue">#2196f3</color>
-    <color name="material_purple">#673ab7</color>
-    <color name="material_yellow">#ffeb3b</color>
-    <color name="material_brown">#795548</color>
-    <color name="material_red_900">#b71c1c</color>
-    <color name="material_teal">#009688</color>
-    <color name="material_green">#4caf50</color>
-    <color name="material_blue_grey">#607d8b</color>
     <color name="material_blue_grey_900">#263238</color>
     <color name="material_teal_900">#004d40</color>
+    <color name="material_teal_400">#26a69a</color>
+    <color name="main_background">#212121</color>
+    <color name="gray">#808080</color>
+
 </resources>

@@ -2,7 +2,6 @@ package com.applications.brian.wordWarrior.Logic;
 
 /**
  * Created by brian on 2018/02/22.
- *
  */
 public class ScrabbleLetter {
     private int value;
@@ -15,7 +14,6 @@ public class ScrabbleLetter {
         this.value = value;
         used = false;
     }
-
 
 
     public int getValue() {

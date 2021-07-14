@@ -14,8 +14,6 @@ import com.applications.brian.wordWarrior.Logic.Controller;
 import com.applications.brian.wordWarrior.R;
 
 
-
-
 /**
  * Activities that contain this fragment must implement the
  * {@link OnFragmentInteractionListener} interface
@@ -48,7 +46,7 @@ public class ArcadeGameFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        controller=((MainActivity) getActivity()).controller;
+        controller = ((MainActivity) getActivity()).controller;
     }
 
     @Override
@@ -59,14 +57,12 @@ public class ArcadeGameFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        Display display=getActivity().getWindowManager().getDefaultDisplay();
-        Point size= new Point();
+        Display display = getActivity().getWindowManager().getDefaultDisplay();
+        Point size = new Point();
         display.getSize(size);
-        gameView=new GameView(getContext(),size,controller);
-        ((ViewGroup)view.findViewById(R.id.mainArea)).addView(gameView);
+        gameView = new GameView(getContext(), size, controller);
+        ((ViewGroup) view.findViewById(R.id.mainArea)).addView(gameView);
     }
-
-
 
 
     @Override

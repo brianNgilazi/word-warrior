@@ -26,68 +26,72 @@ public class Controller {
     private Profile profile;
 
 
-
-    public Controller(Context context){
-        InputStream quick=context.getResources().openRawResource(R.raw.target_small);
-        InputStream avg=context.getResources().openRawResource(R.raw.target_medium);
-        InputStream large=context.getResources().openRawResource(R.raw.target_large);
-        InputStream extra_large=context.getResources().openRawResource(R.raw.target_extra_large);
-        gameDictionary =new GameDictionary(context.getResources().openRawResource(R.raw.englishwords), new InputStream[]{quick,avg,large,extra_large});
-        this.context=context;
+    public Controller(Context context) {
+        InputStream quick = context.getResources().openRawResource(R.raw.target_small);
+        InputStream avg = context.getResources().openRawResource(R.raw.target_medium);
+        InputStream large = context.getResources().openRawResource(R.raw.target_large);
+        InputStream extra_large = context.getResources().openRawResource(R.raw.target_extra_large);
+        gameDictionary = new GameDictionary(context.getResources().openRawResource(R.raw.englishwords), new InputStream[]{quick, avg, large, extra_large});
+        this.context = context;
         openProfile();
     }
 
     //Profile
-    private void openProfile(){
+    private void openProfile() {
         preferences = ((MainActivity) context).getPreferences(Context.MODE_PRIVATE);
-        profile=new Profile(preferences.getString(Profile.PREFERENCE_KEY,"0 0 0"));
+        profile = new Profile(preferences.getString(Profile.PREFERENCE_KEY, "0 0 0"));
 
     }
 
-    public void updatePoints(int points){
+    public void updatePoints(int points) {
         profile.incrementPoints(points);
     }
 
-    public void spendPoints(int points){
-        updatePoints(points*-1);
+    public void spendPoints(int points) {
+        updatePoints(points * -1);
     }
 
-    public void updateGamesPlayed(){
+    public void updateGamesPlayed() {
         profile.incrementGamesPlayed();
     }
 
-    public void updateGamesWon(){
+    public void updateGamesWon() {
         profile.incrementGamesWon();
     }
 
-    public void saveProfile(){
-        preferences.edit().putString(Profile.PREFERENCE_KEY,profile.toString()).apply();
+    public void saveProfile() {
+        preferences.edit().putString(Profile.PREFERENCE_KEY, profile.toString()).apply();
     }
 
-    public String profileInfo(){
-        return profile.profileInfo();
+    public int getProfilePoints() {
+        return profile.getPoints();
     }
 
-    public int getProfilePoints(){return profile.getPoints();}
+    public int getPlayedGames() {
+        return profile.getGamesPlayed();
+    }
 
-    public void resetProfile(){
+    public double getWinRate() {
+        return profile.getWinPercentage();
+    }
+
+    public void resetProfile() {
         profile.reset();
         saveProfile();
         context.deleteFile(TargetGame.SAVE_FILE_NAME);
-        for(String fileName:context.fileList()){
+        for (String fileName : context.fileList()) {
             context.deleteFile(fileName);
         }
     }
 
     //Accessing Dictionary and Data
+
     /**
-     *
      * @return a List containing all the words in the 'dictionary'
      */
-    GameDictionary getLexicon(){
+    public GameDictionary getLexicon() {
         return gameDictionary;
     }
-
 
 
     //Save and Delete Methods
@@ -116,33 +120,35 @@ public class Controller {
 
             InputStream inputStream = context.openFileInput(fileName);
             Scanner scanner = new Scanner(inputStream);
-            switch (fileName){
+            switch (fileName) {
                 case TargetGame.SAVE_FILE_NAME:
-                    while (scanner.hasNextLine()) {savedGames.add(new TargetGame.TargetSavedGame(scanner.nextLine()));}
+                    while (scanner.hasNextLine()) {
+                        savedGames.add(new TargetGame.TargetSavedGame(scanner.nextLine()));
+                    }
                     break;
                 case ScrabbleGame.SAVE_FILE_NAME:
-                    while (scanner.hasNextLine()) {savedGames.add(new ScrabbleGame.ScrabbleSavedGame(scanner.nextLine()));}
+                    while (scanner.hasNextLine()) {
+                        savedGames.add(new ScrabbleGame.ScrabbleSavedGame(scanner.nextLine()));
+                    }
                     break;
             }
 
             scanner.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             //e.printStackTrace();
         }
 
         return savedGames;
     }
 
-    void saveGame(String fileName,List<SavedGame> savedGames){
+    void saveGame(String fileName, List<SavedGame> savedGames) {
         try {
             PrintStream printStream = new PrintStream(context.openFileOutput(fileName, Context.MODE_PRIVATE));
             for (SavedGame savedGame : savedGames) {
                 printStream.println(savedGame);
             }
             printStream.close();
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             //e.printStackTrace();
 
 
@@ -151,24 +157,25 @@ public class Controller {
 
     public void deleteSavedGame(String name, String fileName) {
         List<SavedGame> savedGames = savedGamesList(fileName);
-        for(int i = 0; i< savedGames.size(); i++){
-            if(savedGames.get(i).getName().equals(name)){
+        for (int i = 0; i < savedGames.size(); i++) {
+            if (savedGames.get(i).getName().equals(name)) {
                 savedGames.remove(i);
             }
         }
-        saveGame(fileName,savedGames);
+        saveGame(fileName, savedGames);
     }
 
     //High Scores
     public List<Integer> getHighScores(String fileName) {
-        List<Integer> scores=new ArrayList<>();
-        try{
+        List<Integer> scores = new ArrayList<>();
+        try {
             InputStream inputStream = context.openFileInput(fileName);
             Scanner scanner = new Scanner(inputStream);
-            while (scanner.hasNextLine()) {scores.add(Integer.parseInt(scanner.nextLine()));}
+            while (scanner.hasNextLine()) {
+                scores.add(Integer.parseInt(scanner.nextLine()));
+            }
             scanner.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             //e.printStackTrace();
         }
         Collections.sort(scores);
@@ -176,7 +183,7 @@ public class Controller {
         return scores;
     }
 
-    void saveHighScores(String fileName, List<Integer> highScores){
+    void saveHighScores(String fileName, List<Integer> highScores) {
         Collections.sort(highScores);
         Collections.reverse(highScores);
         try {
@@ -185,13 +192,15 @@ public class Controller {
                 printStream.println(score);
             }
             printStream.close();
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             //e.printStackTrace();
 
         }
     }
 
+    public List<String> wordsList(){
+        return getLexicon().getWordList();
+    }
 
 
 }

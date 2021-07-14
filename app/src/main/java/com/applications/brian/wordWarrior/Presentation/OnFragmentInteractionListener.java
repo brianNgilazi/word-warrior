@@ -12,11 +12,11 @@ package com.applications.brian.wordWarrior.Presentation;
  */
 interface OnFragmentInteractionListener {
 
-    void loadGame(String fileName,String string, String level);
+    void loadGame(String fileName, String string, String level);
 
     void onLevelSelect(String mItem);
 
-    void onGameOptionSelect(int game,String mItem);
+    void onGameOptionSelect(int game, String mItem);
 
 
     void startGame(String string);

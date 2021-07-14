@@ -1,6 +1,7 @@
 package com.applications.brian.wordWarrior.Presentation;
 
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
@@ -12,7 +13,7 @@ import com.applications.brian.wordWarrior.R;
 
 /**
  * A simple {@link Fragment} subclass.
-
+ * <p>
  * Use the {@link AboutFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
@@ -43,10 +44,10 @@ public class AboutFragment extends Fragment implements View.OnClickListener {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view=inflater.inflate(R.layout.fragment_about,container,false);
+        View view = inflater.inflate(R.layout.fragment_about, container, false);
         view.findViewById(R.id.eulaButton).setOnClickListener(this);
         view.findViewById(R.id.creditButton).setOnClickListener(this);
-        final Toolbar toolbar=(Toolbar)view.findViewById(R.id.toolbar);
+        final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -59,13 +60,15 @@ public class AboutFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        int id=v.getId();
-        Toast.makeText(getContext(),"Item not yet Available",Toast.LENGTH_SHORT).show();
-        switch(id){
+        int id = v.getId();
+
+        switch (id) {
             case R.id.eulaButton:
-                // TODO: 2018/03/07 Add eula stuff
+                DialogFragment dialogFragment = new EulaDialog();
+                dialogFragment.show(getFragmentManager(), null);
                 break;
             case R.id.creditButton:
+                Toast.makeText(getContext(), "Item not yet Available", Toast.LENGTH_SHORT).show();
                 // TODO: 2018/03/07 Add credit stuff
                 break;
         }

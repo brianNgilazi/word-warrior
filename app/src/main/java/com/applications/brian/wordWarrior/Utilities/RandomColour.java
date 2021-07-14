@@ -15,9 +15,9 @@ public class RandomColour {
     private final int colors[] = {Color.parseColor("#0D47A1"), Color.parseColor("#00BCD4"),
             Color.parseColor("#4CAF50"), Color.parseColor("#7B1FA2"),
             Color.parseColor("#B71C1C"), Color.parseColor("#AD1457"),
-            Color.parseColor("#009688"),Color.parseColor("#673AB7"),
-            Color.parseColor("#21963F"),Color.parseColor("#FF5722"),
-            Color.parseColor("#CDDC39"),Color.parseColor("#FFEB3B")};
+            Color.parseColor("#FF9800"), Color.parseColor("#673AB7"),
+            Color.parseColor("#21963F"), Color.parseColor("#FF5722"),
+            Color.parseColor("#CDDC39"), Color.parseColor("#FFEE58")};
 
     private List<Integer> used;
     private int currentColorIndex = -1;

@@ -8,7 +8,6 @@ import android.widget.TextView;
 
 /**
  * Created by brian on 2018/03/08.
- *
  */
 public class ClockTask {
     private TextView timeTextView;
@@ -24,20 +23,20 @@ public class ClockTask {
         timeTextView = textView;
         time = new Time();
         textView.setText(time.stringValue());
-        running=false;
-        active =false;
-        this.activity=activity;
-        helper=new HelperThread();
-        helperTask=new HelperTask();
+        running = false;
+        active = false;
+        this.activity = activity;
+        helper = new HelperThread();
+        helperTask = new HelperTask();
     }
 
-    public void start(TextView textView){
+    public void start(TextView textView) {
 
-        if(textView!=timeTextView)timeTextView=textView;
-        if(!active){
-            Log.d("Timer","brand new start called");
-            active=true;
-            running=true;
+        if (textView != timeTextView) timeTextView = textView;
+        if (!active) {
+            Log.d("Timer", "brand new start called");
+            active = true;
+            running = true;
             helper.start();
             /*helperTask.cancel(true);
             helperTask=new HelperTask();
@@ -45,27 +44,27 @@ public class ClockTask {
 
             return;
         }
-        Log.d("Timer","Timer resumed");
-        running=true;
+        Log.d("Timer", "Timer resumed");
+        running = true;
     }
 
-    public void pause(){
-        running=false;
-        Log.d("Timer","pause called");
+    public void pause() {
+        running = false;
+        Log.d("Timer", "pause called");
     }
 
-    public void stopAndReset(){
-        Log.d("Timer","Reset called");
+    public void stopAndReset() {
+        Log.d("Timer", "Reset called");
         time.reset();
         timeTextView.setText(time.stringValue());
-        running=false;
+        running = false;
     }
 
-    public void stop(){
-        Log.d("Timer","Stop Called");
+    public void stop() {
+        Log.d("Timer", "Stop Called");
         //helperTask.cancel(true);
-        running=false;
-        active=false;
+        running = false;
+        active = false;
         try {
             helper.join();
         } catch (InterruptedException e) {
@@ -74,7 +73,6 @@ public class ClockTask {
 
 
     }
-
 
 
     private class HelperTask extends AsyncTask<Void, Void, Void> {
@@ -88,7 +86,7 @@ public class ClockTask {
                     publishProgress();
                 }
             }
-            Log.d("Timer","do in background done");
+            Log.d("Timer", "do in background done");
             return null;
         }
 
@@ -98,7 +96,7 @@ public class ClockTask {
         }
     }
 
-    private class HelperThread extends Thread{
+    private class HelperThread extends Thread {
 
         @Override
         public void run() {
@@ -114,7 +112,7 @@ public class ClockTask {
                     });
                 }
             }
-            Log.d("Timer","do in background done");
+            Log.d("Timer", "do in background done");
 
         }
     }

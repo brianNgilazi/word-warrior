@@ -23,30 +23,29 @@ import java.util.Random;
 public class ArcadeGame {
 
 
-    private final Context context;
-    public static final String SCORE_FILE_NAME="arcadeHighScores";
-    private final Controller controller;
-    private boolean gameOver;
-    private boolean paused;
-    private Player player;
-    private int gamePoints=0;
-    private final ArrayList<BackgroundItem> backgroundItems =new ArrayList<>();
-    private final ArrayList<Obstacle> obstacles=new ArrayList<>();
-    private List<Bitmap> obstacleImages=new ArrayList<>();
-    private final ArrayList<Letter> letters =new ArrayList<>();
-    private Bitmap letterImage;
-    public Bitmap gameOverImage,pauseImage;
-
-   // private static final int ITEM_COUNT=200;
-
-
-    private static final Random RANDOM_GENERATOR=new Random();
+    public static final String SCORE_FILE_NAME = "arcadeHighScores";
+    private static final Random RANDOM_GENERATOR = new Random();
     private static final int MINIMUM_X = 0;
     private static int MINIMUM_Y = 0;
     private static int Maximum_Y;
     private static int Maximum_X;
-    private int minimumSpeed;
+    private static int level = 1;
+    private static String currentWord;
+    private final Context context;
+    private final Controller controller;
+    private final ArrayList<BackgroundItem> backgroundItems = new ArrayList<>();
+    private final ArrayList<Obstacle> obstacles = new ArrayList<>();
+    private final ArrayList<Letter> letters = new ArrayList<>();
 
+    // private static final int ITEM_COUNT=200;
+    public Bitmap gameOverImage, pauseImage;
+    private boolean gameOver;
+    private boolean paused;
+    private Player player;
+    private int gamePoints = 0;
+    private List<Bitmap> obstacleImages = new ArrayList<>();
+    private Bitmap letterImage;
+    private int minimumSpeed;
     private SoundPool soundPool;
     private int explodeSoundID;
     private int upgradeLevelID;
@@ -54,26 +53,20 @@ public class ArcadeGame {
     private int collideSoundID;
 
 
-
-    private static int level=1;
-
-    private static String currentWord;
-
-
-    public ArcadeGame(Context context, int maxX, int maxY,Controller controller){
-        Maximum_Y=maxY;
-        Maximum_X=maxX;
-        MINIMUM_Y=Math.round(Util.convertDpToPx(56,context));
-        this.context=context;
-        this.controller=controller;
-        minimumSpeed= Math.round(Util.convertDpToPx(8,context));
-        player =new Player(context,controller.getLexicon());
-        int columns=maxX/50;
-        int rows=maxY/100;
-        for(int r=1;r<rows+1;r++){
-            if((r*100)<=MINIMUM_Y)continue;
-            for(int c=1;c<columns+1;c++) {
-                backgroundItems.add(new BackgroundItem(c*50, r*100));
+    public ArcadeGame(Context context, int maxX, int maxY, Controller controller) {
+        Maximum_Y = maxY;
+        Maximum_X = maxX;
+        MINIMUM_Y = Math.round(Util.convertDpToPx(56, context));
+        this.context = context;
+        this.controller = controller;
+        minimumSpeed = Math.round(Util.convertDpToPx(8, context));
+        player = new Player(context, controller.getLexicon());
+        int columns = maxX / 50;
+        int rows = maxY / 100;
+        for (int r = 1; r < rows + 1; r++) {
+            if ((r * 100) <= MINIMUM_Y) continue;
+            for (int c = 1; c < columns + 1; c++) {
+                backgroundItems.add(new BackgroundItem(c * 50, r * 100));
             }
         }
 
@@ -83,35 +76,42 @@ public class ArcadeGame {
 
     }
 
-
-    private void init(){
-        gameOver=false;
-        paused=false;
-        level=1;
-        gamePoints=0;
-        currentWord=player.getCurrentWord();
-        letters.add(new Letter(Maximum_X,Maximum_Y));
-        for(int i=0;i<2;i++) {obstacles.add(new Obstacle( Maximum_X, Maximum_Y));}
+    private static String getCurrentWord() {
+        StringBuilder builder = new StringBuilder(currentWord);
+        while (builder.length() < 26 * (level + 1)) {
+            builder.append(currentWord);
+        }
+        return builder.toString();
     }
 
-    private void sounds(){
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            SoundPool.Builder builder=new SoundPool.Builder();
-            builder.setMaxStreams(4);
-            soundPool=builder.build();
+    private void init() {
+        gameOver = false;
+        paused = false;
+        level = 1;
+        gamePoints = 0;
+        currentWord = player.getCurrentWord();
+        letters.add(new Letter(Maximum_X, Maximum_Y));
+        for (int i = 0; i < 2; i++) {
+            obstacles.add(new Obstacle(Maximum_X, Maximum_Y));
         }
-        else{
-            //noinspection deprecation
-            soundPool=new SoundPool(4, AudioManager.STREAM_MUSIC,0);
+    }
+
+    private void sounds() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            SoundPool.Builder builder = new SoundPool.Builder();
+            builder.setMaxStreams(4);
+            soundPool = builder.build();
+        } else {
+            soundPool = new SoundPool(4, AudioManager.STREAM_MUSIC, 0);
         }
         explodeSoundID = soundPool.load(context, R.raw.game_over, 1);
         upgradeLevelID = soundPool.load(context, R.raw.level_up, 1);
-        penaliseSoundID =soundPool.load(context,R.raw.needed_letter_collide,1);
-        collideSoundID =soundPool.load(context,R.raw.bug_collide,1);
+        penaliseSoundID = soundPool.load(context, R.raw.needed_letter_collide, 1);
+        collideSoundID = soundPool.load(context, R.raw.bug_collide, 1);
     }
 
     public void reset() {
-        minimumSpeed= Math.round(Util.convertDpToPx(8,context));
+        minimumSpeed = Math.round(Util.convertDpToPx(8, context));
         player.reset();
         letters.clear();
         obstacles.clear();
@@ -119,12 +119,13 @@ public class ArcadeGame {
     }
 
     public void update() {
-        if(!paused) {
+        if (!paused) {
             player.update();
             for (Letter letter : letters) {
                 letter.update();
                 if (Rect.intersects(player.getCollisionBoundary(), letter.getCollisionBoundary())) {
-                    if(player.penalise(letter.getText()))soundPool.play(penaliseSoundID,0.25f,0.25f,2,0,1.0f);
+                    if (player.penalise(letter.getText()))
+                        soundPool.play(penaliseSoundID, 0.25f, 0.25f, 2, 0, 1.0f);
                     letter.reset();
                 }
             }
@@ -132,7 +133,7 @@ public class ArcadeGame {
             for (Obstacle obstacle : obstacles) {
                 obstacle.update();
                 if (Rect.intersects(player.getCollisionBoundary(), obstacle.getCollisionBoundary())) {
-                    soundPool.play(collideSoundID,1.0f,1.0f,2,0,1.0f);
+                    soundPool.play(collideSoundID, 1.0f, 1.0f, 2, 0, 1.0f);
                     obstacle.reset();
 
 
@@ -144,53 +145,52 @@ public class ArcadeGame {
             }
             if (player.getHealthPoints() < 0) {
                 gameOver = true;
-                soundPool.play(explodeSoundID,0.8f,0.8f,1,1,1.0f);
+                soundPool.play(explodeSoundID, 0.8f, 0.8f, 1, 1, 1.0f);
             }
         }
 
     }
 
-    private void nextLevel(){
-        soundPool.play(upgradeLevelID,1.0f,1.0f,1,0,1.0f);
-        gamePoints+=(player.getHealthPoints()*level);
+    private void nextLevel() {
+        soundPool.play(upgradeLevelID, 1.0f, 1.0f, 1, 0, 1.0f);
+        gamePoints += (player.getHealthPoints() * level);
         level++;
-        if(level>2 && level%3==0){
+        if (level > 2 && level % 3 == 0) {
             obstacles.add(new Obstacle(Maximum_X, Maximum_Y));
-        }
-        else {
+        } else {
             increaseSpeed();
 
         }
-        currentWord=player.getCurrentWord();
+        currentWord = player.getCurrentWord();
 
     }
 
-    private void increaseSpeed(){
-        minimumSpeed+=minimumSpeed/5;
+    private void increaseSpeed() {
+        minimumSpeed += minimumSpeed / 5;
 
     }
 
-    private int objectSpeed(){
-        return minimumSpeed+RANDOM_GENERATOR.nextInt(minimumSpeed/5);
+    private int objectSpeed() {
+        return minimumSpeed + RANDOM_GENERATOR.nextInt(minimumSpeed / 5);
     }
 
-    public boolean newHighScore( ) {
-        List<Integer> highScores=controller.getHighScores(SCORE_FILE_NAME);
-        int size=highScores.size();
-        if(size<5){
+    public boolean newHighScore() {
+        List<Integer> highScores = controller.getHighScores(SCORE_FILE_NAME);
+        int size = highScores.size();
+        if (size < 5) {
             highScores.add(gamePoints);
-            controller.saveHighScores(SCORE_FILE_NAME,highScores);
+            controller.saveHighScores(SCORE_FILE_NAME, highScores);
             return true;
         }
-        int lowestScore=highScores.get(4);
-        if(gamePoints<lowestScore)return false;
-        for(int i=0;i<size;i++){
-            if(gamePoints>highScores.get(i)){
-                highScores.add(i,gamePoints);
+        int lowestScore = highScores.get(4);
+        if (gamePoints < lowestScore) return false;
+        for (int i = 0; i < size; i++) {
+            if (gamePoints > highScores.get(i)) {
+                highScores.add(i, gamePoints);
                 break;
             }
         }
-        controller.saveHighScores(SCORE_FILE_NAME,highScores.subList(0,5));
+        controller.saveHighScores(SCORE_FILE_NAME, highScores.subList(0, 5));
         return true;
     }
 
@@ -224,14 +224,6 @@ public class ArcadeGame {
         player.stopMoving();
     }
 
-    private static String getCurrentWord() {
-        StringBuilder builder=new StringBuilder(currentWord);
-        while(builder.length()<26*(level+1)){
-            builder.append(currentWord);
-        }
-        return builder.toString();
-    }
-
     //Game Pausing/Resuming
     public boolean isGameOver() {
         return gameOver;
@@ -242,38 +234,67 @@ public class ArcadeGame {
     }
 
     public void pause() {
-        paused=true;
+        paused = true;
     }
 
     public void unPause() {
-        paused=false;
+        paused = false;
     }
 
-    private void setUpImages(){
+    private void setUpImages() {
 
         //game Objects
-        int newSide=Maximum_Y/15;
-        letterImage=Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.letter),newSide,newSide);
-
+        int newSide = Maximum_Y / 15;
+        letterImage = Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.letter), newSide, newSide);
+        newSide = Maximum_Y / 20;
         obstacleImages = new ArrayList<>();
-        obstacleImages.add(Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_yellow),newSide,newSide));
-        obstacleImages.add(Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_light_orange),newSide,newSide));
-        obstacleImages.add(Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_dark_orange),newSide,newSide));
-        obstacleImages.add(Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_red),newSide,newSide));
-        obstacleImages.add(Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_lava),newSide,newSide));
+        obstacleImages.add(Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_yellow), newSide, newSide));
+        obstacleImages.add(Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_light_orange), newSide, newSide));
+        obstacleImages.add(Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_dark_orange), newSide, newSide));
+        obstacleImages.add(Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_red), newSide, newSide));
+        obstacleImages.add(Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.obstacle_lava), newSide, newSide));
 
         //game info
-        gameOverImage=Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.game_over),Maximum_X,Maximum_Y/2);
-        pauseImage=Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.paused),Maximum_X,Maximum_Y/2);
+        gameOverImage = Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.game_over), Maximum_X, Maximum_Y / 2);
+        pauseImage = Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.paused), Maximum_X, Maximum_Y / 2);
     }
 
 
-  //Game Object Classes
+    //Game Object Classes
+
+    /**
+     * Created by brian on 2018/02/15.
+     */
+    public static class BackgroundItem {
+
+        private int x;
+        private int y;
+        private char text;
+        private String values = "01";
+
+
+        BackgroundItem(int x, int y) {
+            this.x = x;
+            this.y = y;
+            text = values.charAt(RANDOM_GENERATOR.nextInt(values.length()));
+        }
+
+        public int getX() {
+            return x;
+        }
+
+        public int getY() {
+            return y;
+        }
+
+        public String getText() {
+            return String.valueOf(text);
+        }
+    }
 
     /**
      * Created by brian on 2018/02/15.
      * Class to represent the player;
-     *
      */
     public class Player {
         private Rect collisionBoundary;
@@ -287,7 +308,7 @@ public class ArcadeGame {
         private int maxX;
         private int maxY;
         private int totalScore = 50;
-        private int level =1;
+        private int level = 1;
         private boolean moving;
         private int direction;
 
@@ -295,44 +316,44 @@ public class ArcadeGame {
         private GameDictionary gameDictionary;
 
 
-        Player(Context context,GameDictionary gameDictionary) {
+        Player(Context context, GameDictionary gameDictionary) {
 
-            icon =Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shield),Maximum_X/6,Maximum_Y/10);
+            icon = Util.resizedBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shield), Maximum_X / 6, Maximum_Y / 10);
             this.gameDictionary = gameDictionary;
             wordSetUp();
             coordinatesSetUp();
         }
 
         //Init methods
-        private void wordSetUp(){
-            if(neededLetters==null)neededLetters=new ArrayList<>();
+        private void wordSetUp() {
+            if (neededLetters == null) neededLetters = new ArrayList<>();
             else neededLetters.clear();
             currentWord = gameDictionary.getRandomWord();
-            while (currentWord.length()>10 ||currentWord.length()<5) {
+            while (currentWord.length() > 10 || currentWord.length() < 5) {
                 currentWord = gameDictionary.getRandomWord();
             }
-            for(char c:currentWord.toCharArray())neededLetters.add(String.valueOf(c));
+            for (char c : currentWord.toCharArray()) neededLetters.add(String.valueOf(c));
         }
 
-        private void coordinatesSetUp(){
+        private void coordinatesSetUp() {
             this.maxX = Maximum_X - icon.getWidth();
             this.maxY = Maximum_Y;
             x = maxX / 2;
-            y = maxY - (icon.getHeight()+Math.round(Util.convertDpToPx(4,context)));//a little padding
+            y = maxY - (icon.getHeight() + Math.round(Util.convertDpToPx(4, context)));//a little padding
             collisionBoundary = new Rect(x, y, x + icon.getWidth(), maxY);
         }
 
-        void reset(){
+        void reset() {
             wordSetUp();
-            x=maxX/2;
+            x = maxX / 2;
             collisionBoundary = new Rect(x, y, x + icon.getWidth(), maxY);
-            level=1;
-            totalScore=50;
+            level = 1;
+            totalScore = 50;
         }
 
         void update() {
             if (moving) {
-                x += ( minimumSpeed* direction);
+                x += (minimumSpeed * direction);
                 if (x > maxX) {
                     x = MINIMUM_X;
                 }
@@ -346,7 +367,7 @@ public class ArcadeGame {
 
         void move(int touchCoordinate) {
             moving = true;
-            this.direction = (touchCoordinate-x < 0 ? -1 : 1);
+            this.direction = (touchCoordinate - x < 0 ? -1 : 1);
 
         }
 
@@ -355,19 +376,19 @@ public class ArcadeGame {
         }
 
         void losePoints(int i) {
-            totalScore-=i;
+            totalScore -= i;
         }
 
         void updateWordInProgress(String letter) {
-            boolean removed=neededLetters.remove(letter);
-            if(removed)totalScore+=5;
-            if (neededLetters.size()==0) complete();
+            boolean removed = neededLetters.remove(letter);
+            if (removed) totalScore += 5;
+            if (neededLetters.size() == 0) complete();
 
         }
 
-        boolean penalise(String letter){
-            if(neededLetters.contains(letter)){
-                totalScore-=2;
+        boolean penalise(String letter) {
+            if (neededLetters.contains(letter)) {
+                totalScore -= 2;
                 return true;
             }
             return false;
@@ -375,21 +396,21 @@ public class ArcadeGame {
 
         private void complete() {
             level++;
-            totalScore += currentWord.length()*level;
+            totalScore += currentWord.length() * level;
             wordSetUp();
         }
 
         //Getters
         public String getHealth() {
-            return String.format(Locale.getDefault(), "HP: %d",totalScore);
+            return String.format(Locale.getDefault(), "HP: %d", totalScore);
         }
 
         public String getPoints() {
-            return String.format(Locale.getDefault(), "Pts: %d    Lvl: %d",ArcadeGame.this.gamePoints,level);
+            return String.format(Locale.getDefault(), "Pts: %d    Lvl: %d", ArcadeGame.this.gamePoints, level);
         }
 
-        public String getCurrentWordProgress(){
-            return String.format(Locale.getDefault(), "%s",neededLetters.toString().replace(", "," "));
+        public String getCurrentWordProgress() {
+            return String.format(Locale.getDefault(), "%s", neededLetters.toString().replace(", ", " "));
         }
 
         int getLevel() {
@@ -424,55 +445,50 @@ public class ArcadeGame {
 
     /**
      * Created by brian on 2018/02/16.
-     *
      */
     public class Letter {
 
-        private String text;
-        private Bitmap icon;
-        private int x,y;
         private final int maxX;
         private final int maxY;
-        private int speed=ArcadeGame.this.minimumSpeed;
         private final Rect collisionBoundary;
+        private String text;
+        private Bitmap icon;
+        private int x, y;
+        private int speed;
 
 
+        Letter(int maxX, int maxY) {
 
+            icon = ArcadeGame.this.letterImage;
+            text = String.valueOf(getCurrentWord().charAt(RANDOM_GENERATOR.nextInt(getCurrentWord().length())));
+            this.maxX = maxX - icon.getWidth();
+            this.maxY = maxY;
 
+            x = RANDOM_GENERATOR.nextInt(this.maxX);
+            y = MINIMUM_Y;
+            speed = ArcadeGame.this.objectSpeed();
 
-        Letter(int maxX, int maxY){
-
-            icon=ArcadeGame.this.letterImage;
-            text=String.valueOf(getCurrentWord().charAt(RANDOM_GENERATOR.nextInt(getCurrentWord().length())));
-            this.maxX=maxX-icon.getWidth();
-            this.maxY=maxY;
-
-            x= RANDOM_GENERATOR.nextInt(this.maxX);
-            y=MINIMUM_Y;
-            speed=ArcadeGame.this.objectSpeed();
-
-            collisionBoundary =new Rect(x,y,x+icon.getWidth(),y+icon.getHeight());
+            collisionBoundary = new Rect(x, y, x + icon.getWidth(), y + icon.getHeight());
         }
 
-        void update(){
+        void update() {
 
-            y+=speed;
-            if(y>maxY){
+            y += speed;
+            if (y > maxY) {
                 ArcadeGame.this.player.updateWordInProgress(this.text);
-                y= MINIMUM_Y;
-                x= RANDOM_GENERATOR.nextInt(maxX);
-                speed=minimumSpeed+ RANDOM_GENERATOR.nextInt(5);
-                text=String.valueOf(getCurrentWord().charAt(RANDOM_GENERATOR.nextInt(getCurrentWord().length())));
+                y = MINIMUM_Y;
+                x = RANDOM_GENERATOR.nextInt(maxX);
+                speed = minimumSpeed + RANDOM_GENERATOR.nextInt(5);
+                text = String.valueOf(getCurrentWord().charAt(RANDOM_GENERATOR.nextInt(getCurrentWord().length())));
 
             }
             updateCollisionBoundary();
 
         }
 
-        private void updateCollisionBoundary(){
-            collisionBoundary.set(x,y,x+icon.getWidth(),y+icon.getHeight());
+        private void updateCollisionBoundary() {
+            collisionBoundary.set(x, y, x + icon.getWidth(), y + icon.getHeight());
         }
-
 
 
         public String getText() {
@@ -485,16 +501,15 @@ public class ArcadeGame {
         }
 
         public int getTextY() {
-            return collisionBoundary.centerY()+Math.round(Util.convertDpToPx(32,context))/2;
+            return collisionBoundary.centerY() + Math.round(Util.convertDpToPx(32, context)) / 2;
         }
 
 
-
         void reset() {
-            y=MINIMUM_Y;
-            x= RANDOM_GENERATOR.nextInt(maxX);
-            speed=ArcadeGame.this.objectSpeed();
-            text=String.valueOf(getCurrentWord().charAt(RANDOM_GENERATOR.nextInt(getCurrentWord().length())));
+            y = MINIMUM_Y;
+            x = RANDOM_GENERATOR.nextInt(maxX);
+            speed = ArcadeGame.this.objectSpeed();
+            text = String.valueOf(getCurrentWord().charAt(RANDOM_GENERATOR.nextInt(getCurrentWord().length())));
             updateCollisionBoundary();
         }
 
@@ -504,111 +519,77 @@ public class ArcadeGame {
     }
 
     /**
-     * Created by brian on 2018/02/15.
-     *
-     */
-    public static class BackgroundItem {
-
-        private int x;
-        private int y;
-        private  char text;
-        private String values="01";
-
-
-        BackgroundItem(int x,int y){
-            this.x=x;
-            this.y=y;
-            text= values.charAt(RANDOM_GENERATOR.nextInt(values.length()));
-        }
-
-        public int getX() {
-            return x;
-        }
-
-        public int getY() {
-            return y;
-        }
-
-        public String getText() {
-            return String.valueOf(text);
-        }
-    }
-
-    /**
      * Created by brian on 2018/02/16.
-     *
      */
     public class Obstacle {
-        private String penalty;
-
-        private Bitmap icon;
         private final int LOW_PENALTY = 0;
         private final int MEDIUM_PENALTY = 1;
         private final int HIGH_PENALTY = 2;
         private final int VERY_HIGH_PENALTY = 3;
         private final int EXTREME_PENALTY = 4;
-        private int x,y;
         private final int maxX;
         private final int maxY;
-        private int speed=minimumSpeed;
         private final Rect collisionBoundary;
-        private final int[] penaltyArray={5,5,5,5,5,5,5,5,5,5,10,10,10,10,10,20,20,20,40,40,80};
+        private final int[] penaltyArray = {5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 10, 10, 10, 10, 10, 20, 20, 20, 40, 40, 80};
+        private String penalty;
+        private Bitmap icon;
+        private int x, y;
+        private int speed;
 
 
-        Obstacle(int maxX, int maxY){
+        Obstacle(int maxX, int maxY) {
 
-            
-            penalty =String.valueOf(penaltyArray[RANDOM_GENERATOR.nextInt(penaltyArray.length)]);
+
+            penalty = String.valueOf(penaltyArray[RANDOM_GENERATOR.nextInt(penaltyArray.length)]);
             setIcon(Integer.parseInt(penalty));
-            this.maxX=maxX-icon.getWidth();
-            this.maxY=maxY;
+            this.maxX = maxX - icon.getWidth();
+            this.maxY = maxY;
 
-            x= RANDOM_GENERATOR.nextInt(this.maxX);
-            y=MINIMUM_Y;
-            speed=ArcadeGame.this.objectSpeed();
+            x = RANDOM_GENERATOR.nextInt(this.maxX);
+            y = MINIMUM_Y;
+            speed = ArcadeGame.this.objectSpeed();
 
-            collisionBoundary =new Rect(x,y,x+icon.getWidth(),y+icon.getHeight());
+            collisionBoundary = new Rect(x, y, x + icon.getWidth(), y + icon.getHeight());
         }
 
-        private void setIcon(int penaltyValue){
-            switch (penaltyValue){
-                case 5:
-                    icon=ArcadeGame.this.obstacleImages.get(LOW_PENALTY);
-                    break;
-                case 10:
-                    icon=ArcadeGame.this.obstacleImages.get(MEDIUM_PENALTY);
-                    break;
-                case 20:
-                    icon=ArcadeGame.this.obstacleImages.get(HIGH_PENALTY);
-                    break;
-                case 40:
-                    icon=ArcadeGame.this.obstacleImages.get(VERY_HIGH_PENALTY);
-                    break;
-                case 80:
-                    icon=ArcadeGame.this.obstacleImages.get(EXTREME_PENALTY);
-                    break;
-            }
-        }
+        void update() {
 
-        void update(){
-
-            y+=speed;
-            if(y>maxY){
+            y += speed;
+            if (y > maxY) {
                 ArcadeGame.this.player.losePoints(Integer.parseInt(penalty));
-                y=MINIMUM_Y;
-                x= RANDOM_GENERATOR.nextInt(maxX);
-                speed=minimumSpeed+ RANDOM_GENERATOR.nextInt(5);
-                penalty =String.valueOf(penaltyArray[RANDOM_GENERATOR.nextInt(penaltyArray.length)]);
+                y = MINIMUM_Y;
+                x = RANDOM_GENERATOR.nextInt(maxX);
+                speed = minimumSpeed + RANDOM_GENERATOR.nextInt(5);
+                penalty = String.valueOf(penaltyArray[RANDOM_GENERATOR.nextInt(penaltyArray.length)]);
                 setIcon(Integer.parseInt(penalty));
 
             }
-            collisionBoundary.set(x,y,x+icon.getWidth(),y+icon.getHeight());
+            collisionBoundary.set(x, y, x + icon.getWidth(), y + icon.getHeight());
 
         }
 
-
         public Bitmap getIcon() {
             return icon;
+        }
+
+        private void setIcon(int penaltyValue) {
+            switch (penaltyValue) {
+                case 5:
+                    icon = ArcadeGame.this.obstacleImages.get(LOW_PENALTY);
+                    break;
+                case 10:
+                    icon = ArcadeGame.this.obstacleImages.get(MEDIUM_PENALTY);
+                    break;
+                case 20:
+                    icon = ArcadeGame.this.obstacleImages.get(HIGH_PENALTY);
+                    break;
+                case 40:
+                    icon = ArcadeGame.this.obstacleImages.get(VERY_HIGH_PENALTY);
+                    break;
+                case 80:
+                    icon = ArcadeGame.this.obstacleImages.get(EXTREME_PENALTY);
+                    break;
+            }
         }
 
         public int getX() {
@@ -622,11 +603,11 @@ public class ArcadeGame {
 
 
         void reset() {
-            y=MINIMUM_Y;
-            x= RANDOM_GENERATOR.nextInt(maxX);
-            speed=ArcadeGame.this.objectSpeed();
-            collisionBoundary.set(x,y,x+icon.getWidth(),y+icon.getHeight());
-            penalty =String.valueOf(penaltyArray[RANDOM_GENERATOR.nextInt(penaltyArray.length)]);
+            y = MINIMUM_Y;
+            x = RANDOM_GENERATOR.nextInt(maxX);
+            speed = ArcadeGame.this.objectSpeed();
+            collisionBoundary.set(x, y, x + icon.getWidth(), y + icon.getHeight());
+            penalty = String.valueOf(penaltyArray[RANDOM_GENERATOR.nextInt(penaltyArray.length)]);
             setIcon(Integer.parseInt(penalty));
 
         }
@@ -634,7 +615,6 @@ public class ArcadeGame {
         Rect getCollisionBoundary() {
             return collisionBoundary;
         }
-
 
 
     }

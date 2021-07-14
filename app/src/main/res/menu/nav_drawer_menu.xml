@@ -8,6 +8,7 @@
             android:title="@string/dashboard" />
         <item
             android:icon="@drawable/ic_game"
+            android:menuCategory="container"
             android:title="@string/games">
             <menu>
                 <item
@@ -22,18 +23,21 @@
                     android:id="@+id/arcade"
                     android:icon="@drawable/ic_game"
                     android:title="@string/arcade" />
+                <item
+                    android:id="@+id/solver_menu_item"
+                    android:icon="@android:drawable/ic_menu_search"
+                    android:title="@string/solver_menu_item_string" />
             </menu>
         </item>
 
     </group>
 
-    <group android:id="@+id/group_about">
+    <group>
         <item
             android:id="@+id/reset_profile"
             android:icon="@drawable/ic_reset"
             android:title="@string/reset_profile" />
         <item
-            android:id="@+id/nav_settings"
             android:icon="@drawable/ic_settings"
             android:title="@string/settings" />
         <item

@@ -18,7 +18,6 @@ import java.util.List;
 
 /**
  * Created by brian on 2018/02/12.
- *
  */
 
 public class LevelPickerDialog extends DialogFragment {
@@ -28,12 +27,12 @@ public class LevelPickerDialog extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view=inflater.inflate(R.layout.level_picker_fragment,container,false);
-        final List<String> levels= TargetGame.Levels();
-        SeekBar seekBar=(SeekBar)view.findViewById(R.id.seekBar);
-        final TextView textView=(TextView)view.findViewById(R.id.levelTextView);
+        View view = inflater.inflate(R.layout.target_level, container, false);
+        final List<String> levels = TargetGame.Levels();
+        SeekBar seekBar = (SeekBar) view.findViewById(R.id.seekBar);
+        final TextView textView = (TextView) view.findViewById(R.id.levelTextView);
         textView.setText(levels.get(0));
-        seekBar.setMax(levels.size()-1);
+        seekBar.setMax(levels.size() - 1);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -50,7 +49,7 @@ public class LevelPickerDialog extends DialogFragment {
 
             }
         });
-        Button button=(Button)view.findViewById(R.id.ok_button);
+        Button button = (Button) view.findViewById(R.id.ok_button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -61,10 +60,8 @@ public class LevelPickerDialog extends DialogFragment {
         getDialog().setTitle("Pick A Level");
 
 
-
         return view;
     }
-
 
 
     @Override

@@ -22,12 +22,11 @@ import java.util.Locale;
 
 /**
  * Created by brian on 2018/03/04.
- *
  */
 
 public class HighScoreDialog extends DialogFragment {
 
-    private final static String FILE_NAME_ARG="fileName";
+    private final static String FILE_NAME_ARG = "fileName";
     private String fileName;
 
     private ListView listView;
@@ -41,81 +40,80 @@ public class HighScoreDialog extends DialogFragment {
     public static HighScoreDialog newInstance(String fileName) {
 
         Bundle args = new Bundle();
-        args.putString(FILE_NAME_ARG,fileName);
+        args.putString(FILE_NAME_ARG, fileName);
         HighScoreDialog fragment = new HighScoreDialog();
         fragment.setArguments(args);
         return fragment;
     }
 
+    public static ArrayAdapter<String> scoresListDetail(List<Integer> list, int game, Context context) {
+
+
+        List<String> stringList = new ArrayList<>();
+        int position = 1;
+        if (game != (GameHomeFragment.TARGET)) {
+            for (int score : list) {
+                stringList.add(String.format(Locale.getDefault(), "%d. %d", position, score));
+                position++;
+            }
+
+        } else {
+            Collections.reverse(list);
+            for (int score : list) {
+                stringList.add(String.format(Locale.getDefault(), "%d. %s", position, Time.secondsToTimerString(score)));
+                position++;
+            }
+        }
+        while (position < 6) {
+            stringList.add(String.format(Locale.getDefault(), "%d. %s", position, "-"));
+            position++;
+        }
+
+        return new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, stringList);
+
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        controller=((MainActivity)getActivity()).controller;
+        controller = ((MainActivity) getActivity()).controller;
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view=inflater.inflate(R.layout.high_scores_layout,container,false);
+        View view = inflater.inflate(R.layout.high_scores_layout, container, false);
         listView = (ListView) view.findViewById(R.id.scores);
-        fileName=getArguments().getString(FILE_NAME_ARG,"");
+        fileName = getArguments().getString(FILE_NAME_ARG, "");
         addListDetail();
         getDialog().setTitle("High Scores");
-        if(adapter.getCount()==0)return inflater.inflate(R.layout.no_items_layout,container,false);
+        if (adapter.getCount() == 0)
+            return inflater.inflate(R.layout.no_items_layout, container, false);
         return view;
     }
 
-    private void addListDetail(){
+    private void addListDetail() {
 
-        List<Integer> list=controller.getHighScores(fileName);
+        List<Integer> list = controller.getHighScores(fileName);
         List<String> stringList = new ArrayList<>();
-        if(!fileName.equals(TargetGame.SCORE_FILE_NAME)) {
+        if (!fileName.equals(TargetGame.SCORE_FILE_NAME)) {
             int position = 1;
             for (int score : list) {
                 stringList.add(String.format(Locale.getDefault(), "%d. %d", position, score));
                 position++;
             }
-        }
-        else{
+        } else {
             Collections.reverse(list);
             int position = 1;
             for (int score : list) {
-                stringList.add(String.format(Locale.getDefault(),"%d. %s",position, Time.secondsToTimerString(score)));
+                stringList.add(String.format(Locale.getDefault(), "%d. %s", position, Time.secondsToTimerString(score)));
                 position++;
             }
 
         }
 
-        adapter=new ArrayAdapter<>(getContext(),android.R.layout.simple_list_item_1,stringList);
+        adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, stringList);
         listView.setAdapter(adapter);
-
-    }
-
-    public static ArrayAdapter<String> scoresListDetail(List<Integer> list,int game, Context context){
-
-
-        List<String> stringList = new ArrayList<>();
-        int position = 1;
-        if(game!=(GameHomeFragment.TARGET)) {
-            for (int score : list) {
-                stringList.add(String.format(Locale.getDefault(), "%d. %d", position, score));
-                position++;
-            }
-
-        }
-        else{
-            Collections.reverse(list);
-            for (int score : list) {
-                stringList.add(String.format(Locale.getDefault(),"%d. %s",position, Time.secondsToTimerString(score)));
-                position++;
-            }
-        }
-        while (position<6){
-            stringList.add(String.format(Locale.getDefault(), "%d. %s", position, "-"));
-            position++;
-        }
-
-        return new ArrayAdapter<>(context,android.R.layout.simple_list_item_1,stringList);
 
     }
 }

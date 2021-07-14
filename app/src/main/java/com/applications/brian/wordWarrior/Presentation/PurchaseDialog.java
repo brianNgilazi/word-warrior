@@ -25,13 +25,12 @@ import java.util.Map;
 
 /**
  * Created by brian on 2018/03/02.
- *
  */
 
 public class PurchaseDialog extends DialogFragment implements View.OnClickListener {
 
-    public static final int TARGET_GAME=0;
-    public static final int SCRABBLE_GAME=1;
+    public static final int TARGET_GAME = 0;
+    public static final int SCRABBLE_GAME = 1;
     //public static final int ARCADE_GAME=2;
     private int id;
     private TextView insufficientText;
@@ -49,29 +48,30 @@ public class PurchaseDialog extends DialogFragment implements View.OnClickListen
     public static PurchaseDialog newInstance(int viewID) {
 
         Bundle args = new Bundle();
-        args.putInt("ID",viewID);
+        args.putInt("ID", viewID);
         PurchaseDialog fragment = new PurchaseDialog();
         fragment.setArguments(args);
         return fragment;
     }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        id=getArguments().getInt("ID");
+        id = getArguments().getInt("ID");
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        controller=((MainActivity)getActivity()).controller;
+        controller = ((MainActivity) getActivity()).controller;
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view=inflater.inflate(R.layout.purchase_dialog,container,false);
-        insufficientText=(TextView)view.findViewById(R.id.insufficientPoints);
-        ((TextView)view.findViewById(R.id.currentBalance)).setText(String.format(Locale.getDefault(),"Current points: %d",controller.getProfilePoints()));
+        View view = inflater.inflate(R.layout.purchase_dialog, container, false);
+        insufficientText = (TextView) view.findViewById(R.id.insufficientPoints);
+        ((TextView) view.findViewById(R.id.currentBalance)).setText(String.format(Locale.getDefault(), "Current points: %d", controller.getProfilePoints()));
         (view.findViewById(R.id.purchaseButton)).setOnClickListener(this);
         (view.findViewById(R.id.cancelButton)).setOnClickListener(this);
         listView = (ListView) view.findViewById(R.id.purchases_List);
@@ -80,11 +80,10 @@ public class PurchaseDialog extends DialogFragment implements View.OnClickListen
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if(costMap.get(adapter.getItem(position))>controller.getProfilePoints()){
+                if (costMap.get(adapter.getItem(position)) > controller.getProfilePoints()) {
                     insufficientText.setVisibility(View.VISIBLE);
                     insufficientText.setText(R.string.insufficient_points);
-                }
-                else insufficientText.setVisibility(View.INVISIBLE);
+                } else insufficientText.setVisibility(View.INVISIBLE);
             }
         });
         getDialog().setTitle("Shop");
@@ -92,67 +91,66 @@ public class PurchaseDialog extends DialogFragment implements View.OnClickListen
 
     }
 
-    private void addListDetail(){
-        switch (id){
+    private void addListDetail() {
+        switch (id) {
             case TARGET_GAME:
                 costMap = TargetSolverDialog.getPurchaseOptionsCost();
                 break;
             case SCRABBLE_GAME:
-                costMap =ScrabbleSolverDialog.getPurchaseOptionsCost();
+                costMap = ScrabbleSolverDialog.getPurchaseOptionsCost();
                 break;
         }
-        List<String> list=new ArrayList<>();
+        List<String> list = new ArrayList<>();
         list.addAll(costMap.keySet());
         Collections.sort(list, new Comparator<String>() {
             @Override
             public int compare(String o1, String o2) {
-                return Integer.parseInt(o1.substring(o1.lastIndexOf(" ")+1))-Integer.parseInt(o2.substring(o2.lastIndexOf(" ")+1));
+                return Integer.parseInt(o1.substring(o1.lastIndexOf(" ") + 1)) - Integer.parseInt(o2.substring(o2.lastIndexOf(" ") + 1));
             }
         });
-        adapter=new ArrayAdapter<>(getContext(),android.R.layout.simple_list_item_single_choice,list);
+        adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_single_choice, list);
         listView.setAdapter(adapter);
 
     }
 
-    public void setCallingFragment(Fragment fragment){
-        callingFragment=fragment;
+    public void setCallingFragment(Fragment fragment) {
+        callingFragment = fragment;
     }
 
     @Override
     public void onClick(View v) {
-        if(v.getId()==R.id.purchaseButton) {
-            int itemIndex=listView.getCheckedItemPosition();
-            if(itemIndex<0){
+        if (v.getId() == R.id.purchaseButton) {
+            int itemIndex = listView.getCheckedItemPosition();
+            if (itemIndex < 0) {
                 insufficientText.setVisibility(View.VISIBLE);
                 insufficientText.setText(R.string.no_option_selected);
                 return;
             }
             String item = adapter.getItem(listView.getCheckedItemPosition());
-            if(item==null){
+            if (item == null) {
                 insufficientText.setText(R.string.no_option_selected);
                 return;
             }
-            int cost=costMap.get(item);
-            if(cost>controller.getProfilePoints()){
-               return;
+            int cost = costMap.get(item);
+            if (cost > controller.getProfilePoints()) {
+                return;
             }
             controller.spendPoints(cost);
             getDialog().cancel();
-            switch (id){
+            switch (id) {
                 case TARGET_GAME:
-                    TargetSolverDialog.newInstance(item, ((TargetFragment)callingFragment)).show(getFragmentManager(), null);
-                    ((TargetFragment)callingFragment).purchaseMade();
+                    TargetSolverDialog.newInstance(item, ((TargetFragment) callingFragment)).show(getFragmentManager(), null);
+                    ((TargetFragment) callingFragment).purchaseMade();
                     break;
                 case SCRABBLE_GAME:
-                    if(callingFragment!=null){
-                        ((ScrabbleFragment)callingFragment).searchForLongestWord(item);
+                    if (callingFragment != null) {
+                        ((ScrabbleFragment) callingFragment).searchForLongestWord(item);
                     }
                     break;
             }
 
 
-        }
-        else {
+        } else {
             controller.updatePoints(1000);
             getDialog().cancel();
         }

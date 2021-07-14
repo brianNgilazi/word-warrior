@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -28,28 +28,37 @@ import java.util.Locale;
 
 /**
  * Created by brian on 2018/02/08.
- *
  */
 
-public class SavedGamesDialog extends Fragment {
+public class SavedGamesDialog extends DialogFragment {
 
+
+    public static SavedGamesDialog newInstance(String fileName, List<String> list) {
+
+        Bundle args = new Bundle();
+        args.putStringArrayList("LIST", (ArrayList<String>) list);
+        args.putString("FILENAME", fileName);
+        SavedGamesDialog fragment = new SavedGamesDialog();
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        List<String> savedGames=getArguments().getStringArrayList("LIST");
-        if(savedGames==null || savedGames.size()==0)return inflater.inflate(R.layout.no_items_layout,container,false);
-        View layout=inflater.inflate(R.layout.saved_games_layout,container,false);
+        List<String> savedGames = getArguments().getStringArrayList("LIST");
+        if (savedGames == null || savedGames.size() == 0)
+            return inflater.inflate(R.layout.no_items_layout, container, false);
+        View layout = inflater.inflate(R.layout.saved_games_layout, container, false);
 
-        RecyclerView recyclerView =(RecyclerView)layout.findViewById(R.id.savedGameRecyclerView);
+        RecyclerView recyclerView = (RecyclerView) layout.findViewById(R.id.savedGameRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-        String fileName=getArguments().getString("FILENAME","");
-        if(fileName.equals(TargetGame.SAVE_FILE_NAME)){
+        String fileName = getArguments().getString("FILENAME", "");
+        if (fileName.equals(TargetGame.SAVE_FILE_NAME)) {
             TargetSavedGameAdapter adapter = new TargetSavedGameAdapter(savedGames, (MainActivity) getActivity(), (((MainActivity) getActivity()).controller));
             recyclerView.setAdapter(adapter);
-        }
-        else if(fileName.equals(ScrabbleGame.SAVE_FILE_NAME)){
+        } else if (fileName.equals(ScrabbleGame.SAVE_FILE_NAME)) {
             ScrabbleSavedGameAdapter adapter = new ScrabbleSavedGameAdapter(savedGames, (MainActivity) getActivity(), (((MainActivity) getActivity()).controller));
             recyclerView.setAdapter(adapter);
         }
@@ -57,22 +66,8 @@ public class SavedGamesDialog extends Fragment {
         return layout;
     }
 
-    public static SavedGamesDialog newInstance(String fileName,List<String> list) {
-
-        Bundle args = new Bundle();
-        args.putStringArrayList("LIST",(ArrayList<String>)list);
-        args.putString("FILENAME",fileName);
-        SavedGamesDialog fragment = new SavedGamesDialog();
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-
-
-
     /**
      * Created by brian on 2018/02/05.
-     *
      */
     static class TargetSavedGameAdapter extends RecyclerView.Adapter<TargetSavedGameAdapter.TargetSavedGameHolder> {
 
@@ -80,17 +75,18 @@ public class SavedGamesDialog extends Fragment {
         private final OnFragmentInteractionListener listener;
         private final Controller controller;
 
-        TargetSavedGameAdapter(List<String> data, OnFragmentInteractionListener listener, Controller controller){
-            targetSavedGames =new ArrayList<>();
-            for(String s:data){
+        TargetSavedGameAdapter(List<String> data, OnFragmentInteractionListener listener, Controller controller) {
+            targetSavedGames = new ArrayList<>();
+            for (String s : data) {
                 targetSavedGames.add(new TargetGame.TargetSavedGame(s));
             }
-            this.controller=controller;
-            this.listener=listener;
+            this.controller = controller;
+            this.listener = listener;
         }
+
         @Override
         public TargetSavedGameHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            final Context context=parent.getContext();
+            final Context context = parent.getContext();
             LayoutInflater inflater = LayoutInflater.from(context);
             View card = inflater.inflate(R.layout.saved_game_item_layout, parent, false);
             return new TargetSavedGameHolder(card);
@@ -106,45 +102,45 @@ public class SavedGamesDialog extends Fragment {
             holder.row2.setText(holder.targetSavedGame.getRow(2));
             holder.row3.setText(holder.targetSavedGame.getRow(3));
             holder.date.setText(holder.targetSavedGame.getName());
-            int score=holder.targetSavedGame.getScore();
-            int target=holder.targetSavedGame.getTotal();
+            int score = holder.targetSavedGame.getScore();
+            int target = holder.targetSavedGame.getTotal();
             holder.gameProgress.setProgress(score);
 
             holder.card.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    listener.loadGame(TargetGame.SAVE_FILE_NAME,holder.targetSavedGame.toString(),holder.targetSavedGame.getLevel());
+                    listener.loadGame(TargetGame.SAVE_FILE_NAME, holder.targetSavedGame.toString(), holder.targetSavedGame.getLevel());
                 }
             });
             holder.deleteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    AlertDialog.Builder builder=new AlertDialog.Builder(
+                    AlertDialog.Builder builder = new AlertDialog.Builder(
                             v.getContext());
                     builder.setMessage("Are you sure you're ready to let go?")
                             .setPositiveButton("I suppose", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            targetSavedGames.remove(holder.targetSavedGame);
-                            controller.deleteSavedGame(holder.targetSavedGame.getName(),TargetGame.SAVE_FILE_NAME);
-                            TargetSavedGameAdapter.this.notifyItemRemoved(holder.getAdapterPosition());
-                            if(targetSavedGames.size()==0){
-                                ((MainActivity)listener).onBackPressed();
-                            }
-                            dialog.dismiss();
-                        }
-                    })
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    targetSavedGames.remove(holder.targetSavedGame);
+                                    controller.deleteSavedGame(holder.targetSavedGame.getName(), TargetGame.SAVE_FILE_NAME);
+                                    TargetSavedGameAdapter.this.notifyItemRemoved(holder.getAdapterPosition());
+                                    if (targetSavedGames.size() == 0) {
+                                        ((MainActivity) listener).onBackPressed();
+                                    }
+                                    dialog.dismiss();
+                                }
+                            })
                             .setNegativeButton("Not yet", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    });
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
                     builder.create().show();
                 }
 
             });
-            holder.fractionFound.setText(String.format(Locale.getDefault(),"%s/%s",score,target));
+            holder.fractionFound.setText(String.format(Locale.getDefault(), "%s/%s", score, target));
         }
 
         @Override
@@ -165,20 +161,17 @@ public class SavedGamesDialog extends Fragment {
             TargetGame.TargetSavedGame targetSavedGame;
 
 
-
             TargetSavedGameHolder(View card) {
                 super(card);
-                this.card=card;
-                row1= (TextView) card.findViewById(R.id.row1);
-                row2= (TextView) card.findViewById(R.id.row2);
-                row3= (TextView) card.findViewById(R.id.row3);
+                this.card = card;
+                row1 = (TextView) card.findViewById(R.id.row1);
+                row2 = (TextView) card.findViewById(R.id.row2);
+                row3 = (TextView) card.findViewById(R.id.row3);
                 date = (TextView) card.findViewById(R.id.date);
-                fractionFound =(TextView)card.findViewById(R.id.fractionFound);
-                gameProgress=(ProgressBar)card.findViewById(R.id.gameProgress);
-                deleteButton =(ImageView)card.findViewById(R.id.deleteImageView);
+                fractionFound = (TextView) card.findViewById(R.id.fractionFound);
+                gameProgress = (ProgressBar) card.findViewById(R.id.gameProgress);
+                deleteButton = (ImageView) card.findViewById(R.id.deleteImageView);
             }
-
-
 
 
         }
@@ -186,7 +179,6 @@ public class SavedGamesDialog extends Fragment {
 
     /**
      * Created by brian on 2018/02/05.
-     *
      */
     static class ScrabbleSavedGameAdapter extends RecyclerView.Adapter<ScrabbleSavedGameAdapter.ScrabbleSavedGameHolder> {
 
@@ -194,17 +186,18 @@ public class SavedGamesDialog extends Fragment {
         private final OnFragmentInteractionListener listener;
         private final Controller controller;
 
-        ScrabbleSavedGameAdapter(List<String> data, OnFragmentInteractionListener listener, Controller controller){
-            scrabbleSavedGames =new ArrayList<>();
-            for(String s:data){
+        ScrabbleSavedGameAdapter(List<String> data, OnFragmentInteractionListener listener, Controller controller) {
+            scrabbleSavedGames = new ArrayList<>();
+            for (String s : data) {
                 scrabbleSavedGames.add(new ScrabbleGame.ScrabbleSavedGame(s));
             }
-            this.controller=controller;
-            this.listener=listener;
+            this.controller = controller;
+            this.listener = listener;
         }
+
         @Override
         public ScrabbleSavedGameHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            final Context context=parent.getContext();
+            final Context context = parent.getContext();
             LayoutInflater inflater = LayoutInflater.from(context);
             View card = inflater.inflate(R.layout.scrabble_saved_item, parent, false);
             return new ScrabbleSavedGameHolder(card);
@@ -215,37 +208,35 @@ public class SavedGamesDialog extends Fragment {
         public void onBindViewHolder(final ScrabbleSavedGameHolder holder, final int position) {
             holder.scrabbleSavedGame = scrabbleSavedGames.get(position);
 
-            String details=String.format("%s%n%s%n%s%n%s%n%s%n%s",holder.scrabbleSavedGame.getRow(1),
-                    holder.scrabbleSavedGame.getRow(2),holder.scrabbleSavedGame.getRow(3),
-                    holder.scrabbleSavedGame.getRow(4),holder.scrabbleSavedGame.getRow(5),
+            String details = String.format("%s%n%s%n%s%n%s%n%s%n%s", holder.scrabbleSavedGame.getRow(1),
+                    holder.scrabbleSavedGame.getRow(2), holder.scrabbleSavedGame.getRow(3),
+                    holder.scrabbleSavedGame.getRow(4), holder.scrabbleSavedGame.getRow(5),
                     holder.scrabbleSavedGame.getRow(6));
             holder.gameLetters.setText(details);
             holder.date.setText(holder.scrabbleSavedGame.getName());
             holder.score.setText(String.valueOf(holder.scrabbleSavedGame.getScore()));
 
 
-
-
             holder.card.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    listener.loadGame(ScrabbleGame.SAVE_FILE_NAME,holder.scrabbleSavedGame.toString(),null);
+                    listener.loadGame(ScrabbleGame.SAVE_FILE_NAME, holder.scrabbleSavedGame.toString(), null);
                 }
             });
             holder.deleteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    AlertDialog.Builder builder=new AlertDialog.Builder(
+                    AlertDialog.Builder builder = new AlertDialog.Builder(
                             v.getContext());
                     builder.setMessage("Are you sure you're ready to let go?")
                             .setPositiveButton("I suppose", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     scrabbleSavedGames.remove(holder.scrabbleSavedGame);
-                                    controller.deleteSavedGame(holder.scrabbleSavedGame.getName(),ScrabbleGame.SAVE_FILE_NAME);
+                                    controller.deleteSavedGame(holder.scrabbleSavedGame.getName(), ScrabbleGame.SAVE_FILE_NAME);
                                     ScrabbleSavedGameAdapter.this.notifyItemRemoved(holder.getAdapterPosition());
-                                    if(scrabbleSavedGames.size()==0){
-                                        ((MainActivity)listener).onBackPressed();
+                                    if (scrabbleSavedGames.size() == 0) {
+                                        ((MainActivity) listener).onBackPressed();
                                     }
                                     dialog.dismiss();
                                 }
@@ -278,17 +269,14 @@ public class SavedGamesDialog extends Fragment {
             ScrabbleGame.ScrabbleSavedGame scrabbleSavedGame;
 
 
-
             ScrabbleSavedGameHolder(View card) {
                 super(card);
-                this.card=card;
-                gameLetters= (TextView) card.findViewById(R.id.game_letters);
+                this.card = card;
+                gameLetters = (TextView) card.findViewById(R.id.game_letters);
                 date = (TextView) card.findViewById(R.id.date);
-                score =(TextView)card.findViewById(R.id.score);
-                deleteButton =(ImageView)card.findViewById(R.id.deleteImageView);
+                score = (TextView) card.findViewById(R.id.score);
+                deleteButton = (ImageView) card.findViewById(R.id.deleteImageView);
             }
-
-
 
 
         }

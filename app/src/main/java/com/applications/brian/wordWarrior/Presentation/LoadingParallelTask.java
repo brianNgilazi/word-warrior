@@ -9,37 +9,35 @@ import com.applications.brian.wordWarrior.R;
 
 /**
  * Created by Brian on 19-Jan-17.
- *
  */
-class LoadingParallelTask extends AsyncTask<Void,Void, Void> {
+class LoadingParallelTask extends AsyncTask<Void, Void, Void> {
 
     private final Context context;
 
 
-
-    LoadingParallelTask(Context context){
-        this.context=context;
+    LoadingParallelTask(Context context) {
+        this.context = context;
     }
 
     @Override
     protected Void doInBackground(Void... params) {
 
-        ((MainActivity)context).controller=new Controller(context);
+        ((MainActivity) context).controller = new Controller(context);
         return null;
     }
 
     @Override
     protected void onPostExecute(Void v) {
         super.onPostExecute(v);
-        ((MainActivity)context).dashboard();
+        ((MainActivity) context).dashboard();
 
     }
 
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        LoadingFragment loadingFragment =  LoadingFragment.newInstance();
-        FragmentTransaction transaction=((MainActivity)context).getSupportFragmentManager().beginTransaction();
+        LoadingFragment loadingFragment = LoadingFragment.newInstance();
+        FragmentTransaction transaction = ((MainActivity) context).getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragmentContainer, loadingFragment);
         transaction.commit();
     }
